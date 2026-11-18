@@ -1,0 +1,75 @@
+{
+  "event": {
+    "status": "effective",
+    "as_of": "2026-07-20T12:00:00Z",
+    "jurisdiction": "Example jurisdiction",
+    "source": {
+      "id": "official-notice",
+      "published_at": "2026-07-20T08:00:00Z"
+    }
+  },
+  "claims": [
+    {
+      "id": "effective-scope",
+      "claim_type": "legal_scope",
+      "critical": true,
+      "supported": true,
+      "source_role": "competent_authority",
+      "legal_status": "effective",
+      "effective_from": "2026-07-20T00:00:00Z",
+      "source": {
+        "id": "official-notice",
+        "published_at": "2026-07-20T08:00:00Z"
+      }
+    },
+    {
+      "id": "implementation-detail",
+      "claim_type": "implementation",
+      "critical": false,
+      "supported": null,
+      "source_role": "industry_source"
+    }
+  ],
+  "transmission": {
+    "nodes": [
+      {
+        "id": "event",
+        "node_type": "event"
+      },
+      {
+        "id": "input-cost",
+        "node_type": "market"
+      },
+      {
+        "id": "issuer-margin",
+        "node_type": "company"
+      }
+    ],
+    "edges": [
+      {
+        "from": "event",
+        "to": "input-cost",
+        "mechanism": "supply_constraint"
+      },
+      {
+        "from": "input-cost",
+        "to": "issuer-margin",
+        "mechanism": "cost_pass_through"
+      }
+    ]
+  },
+  "market_evidence": [
+    {
+      "id": "consensus-before-event",
+      "evidence_type": "pre_event_expectation",
+      "published_at": "2026-07-19T12:00:00Z",
+      "supported": true
+    },
+    {
+      "id": "comparable-market-move",
+      "evidence_type": "comparable_market_evidence",
+      "observed_at": "2026-07-20T10:00:00Z",
+      "supported": true
+    }
+  ]
+}

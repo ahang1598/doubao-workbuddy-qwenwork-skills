@@ -380,7 +380,7 @@ async function observeEvent(event, env = process.env, { emit } = {}) {
       stage,
       extra.error_code || 'OPERATION_FAILED',
       event.command === 'start' && extra.startup_outcome === 'failed',
-      { env },
+      { env, emit, beforeCreation: stage === 'startup' },
     );
   }
 }

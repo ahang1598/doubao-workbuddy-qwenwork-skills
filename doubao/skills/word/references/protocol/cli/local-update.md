@@ -37,6 +37,7 @@ lark-cli docs +local-update --doc "<token>" \
 | `--revision-id` | 视指令 | 图表数据指令禁止；其余见下表 | 顶层 CLI flag；指定写入所依据的文档版本，不能写进业务 option JSON |
 | `--content` | 视指令 | 文本/块写入、插入行列 | 新内容；`str_replace` 传空字符串表示删除匹配文本；表格插入行列可省略 |
 | `--pattern` | 视指令 | `str_replace` | 要匹配的旧文本 |
+| `--move-option` | `move` 必填 | `move` | JSON object；字段查询 `move` |
 | `--block-id` | 视指令 | `str_replace`、block 与表格指令 | `str_replace` 可用它限定搜索范围，表格指令用表格 ID，批量删除见 `block_delete` |
 | `--table-option` | 视指令 | `table`、`table_geometry` | 单层 JSON object；`action` 必填；支持内联、`@relative-file` 或 stdin |
 | `--chart-option` | 视指令 | `chart_data` | 单层 JSON object；`action=create|replace` 必填 |
@@ -52,12 +53,16 @@ lark-cli docs +local-update --doc "<token>" \
 
 | 指令 | 顶层 `--revision-id` |
 |---|---|
+| `move` | 必填，使用当前 Fetch 或上一笔成功回执的文档版本；不接受省略或 `-1`，续写条件见 `move` |
 | `style_update`、`style_apply`、`watermark`、`table_of_contents`、`comment`、`field_update`、`object`、`table_geometry` | 必填，接受 `-1` 或非负安全整数；优先使用本次读取返回的文档版本 |
 | `chart_data` | 禁止传入；`action=replace` 使用 `expected_data_version` |
 | `revision` | 禁止传入；接受/拒绝使用 `revisions` 返回的 `state_fingerprint`，模式/追踪控制不需要它 |
 | 其余文本、block、表格指令 | 可选；省略或 `-1` 使用最近一次读取的版本，未读取时用当前状态；非负值指定版本 |
 
-安全整数上限为 `9007199254740991`。要求传 `--revision-id` 的命令即使使用 `-1` 也要传这个参数，并按命令提供所需指纹和 `plan_token`。文档版本用于发现写入冲突。发生冲突，或前一笔写入改变了下一步依赖的 ID、坐标或 XML 时，重新读取受影响的范围。
+安全整数上限为 `9007199254740991`。要求传 `--revision-id` 的命令即使使用 `-1` 也要传这个参数，并按命令提供所需指纹和 `plan_token`。文档版本用于发现写入冲突。
+
+- 连续修改时，对允许传入 `--revision-id` 的命令，下一笔使用前一笔成功回执返回的有效 `new_revision_id`。样式 dry-run 与 commit 仍使用专项要求的同一版本。
+- 出现版本相关报错或下一步依赖的证据已变化时，重新读取受影响范围，使用最新版本和证据调整请求；若版本推进超出已确认的写入，可能由于用户手动编辑，在回复中进行提示。
 
 修订模式下连续写入及待审保护查询 `revisions`；普通文档 revision 不能代替待审决议的 `state_fingerprint`。
 
@@ -73,6 +78,7 @@ lark-cli docs +local-update --doc "<token>" \
 | `block_delete` | 原子删除一个或多个 block/inline object | `--block-id` |
 | `block_insert_after` | 在指定 block 后插入一个或多个 XML block | `--block-id` `--content` |
 | `block_replace` | 用 XML 整体替换目标 block | `--block-id` `--content` |
+| `move` | 在同一文档内移动完整段落、标题、列表项或整表 | `--revision-id` `--move-option` |
 | `append` | 在尾随连续分节符前追加正文 XML | `--content` |
 
 通用命令见上表；领域命令包括 `table`、`table_geometry`、`chart_data`、`style_update`、`style_apply`、`watermark`、`table_of_contents`、`comment`、`field_update`、`revision`、`object`。细分动作放在对应 option 的 `action`；仅使用当前 CLI 帮助暴露的入口。样式必须先 dry-run 再携带 plan token 提交。
@@ -113,6 +119,8 @@ lark-cli docs +local-update --doc "<token>" \
 
 下一步需要新 ID、坐标或版本时，可从对应回执取得，或读取相应范围。表格坐标与分页关系见专项说明。
 
+`move` 在普通编辑下保留原 ID；修订模式实际移动的目标 ID 从 `command_result.block_id_map` 获取，不从 `document.new_blocks` 推导，详见 `move`。
+
 宿主 `block_replace.block_ids` 仅用于同一 story、同一父容器、连续文本块的跨 carrier 书签边界更新，不是通用批量替换；只有当前 CLI 帮助暴露对应参数时才按 `xml:p` 的书签规则使用。
 
 ## 更新回执
@@ -144,7 +152,7 @@ lark-cli docs +local-update --doc "<token>" \
 | `command_result` | 结构化领域结果；包含 Chart Data 版本、样式 dry-run/commit、目录/水印、批注、Field、修订、表格几何和对象操作回执；当返回安全整数 `new_revision_id` 时，应优先作为下一次写入的文档版本。普通文本和块命令可能不返回该字段 |
 | `warnings` | 归一化、兼容性或能力限制诊断，格式见下 |
 
-修订模式下，受支持的修改会记录为待审修订，回执通过 `revision_changes.created_revision_ids` / `updated_revision_ids` 返回本次新增 / 更新的待审阅修订 ID，用于定向查询修订前后内容；它们不同于文档版本 `new_revision_id`，示例与查询规则见 `revisions`。
+修订模式下，受支持的修改会记录为待审修订，回执通过 `revision_changes.created_revision_ids` / `updated_revision_ids` 返回本次新增 / 更新的待审阅修订 ID，用于定向查询修订前后内容；它们不同于文档版本 `new_revision_id`，示例与查询规则见 `revisions`。move 的修订变化按专项区分 `complete`、`not_applicable` 和 `unavailable`，不能假定一定返回新增卡 ID。
 
 以 CLI 本身的退出码和完整 JSON 读取回执。退出码为 0、`ok=true` 且返回该命令所需的字段时，按 `result` 和命令回执判断结果。失败时保留实际错误信息。响应缺失或不完整时，按[Canvas 遇到问题怎么办](../../workflows/canvas-doc-recovery.md)处理原请求。
 
@@ -172,6 +180,6 @@ REPAIR_CHILD_WRAPPED: <td>
 ## 安全与能力边界
 
 - 局部修改可用精确的块 ID 或文本范围。
-- CLI 返回 `confirmation_required` 时按 `lark-shared` 展示 action、risk 和关键参数；用户确认后才能追加 `--yes`（仅当该命令实际支持）。
+- CLI 返回 `confirmation_required` 时，展示 action、risk 和关键参数；用户确认后才能追加 `--yes`（仅当该命令实际支持）。
 - 未知 command、非法 `--table-option` 已知字段、派发失败或客户端不可达时，不直调 `LocalDocxUpdate` 私有 API。参照[异常处理](../../workflows/canvas-doc-recovery.md)。
 - 不支持在线文档的 `overwrite`、`block_copy_insert_after`、`block_move_after`。XML 全局能力限制查询 `xml:common`；对象级限制按命中的 XML/CLI 专项关键词判断。

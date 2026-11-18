@@ -6,7 +6,6 @@ import { realpathSync } from 'node:fs';
 import { onlineEnvironment } from '../runtime/online-environment.mjs';
 import { resolveCreationBinding } from '../runtime/task-binding.mjs';
 import { resolveTaskSource } from '../runtime/browser-stream.mjs';
-import { launchSingleTaskDashboard } from './audit-dashboard.mjs';
 import { resolveLiveScope } from '../runtime/product-scope.mjs';
 import { remoteDashboard, resolveInspectionEnvironment } from '../runtime/remote-dashboard.mjs';
 import { detectRuntimeMode } from '../runtime/runtime-mode.mjs';
@@ -66,7 +65,6 @@ export async function createInspection(
     run = runInspection,
     output = emit,
     detectMode = detectRuntimeMode,
-    launchDashboard = launchSingleTaskDashboard,
   } = {},
 ) {
   const dashboardMode = input.dashboard_mode ?? 'auto';
@@ -86,10 +84,7 @@ export async function createInspection(
   });
   // Use the selected profile binding for both API routing and the dashboard.
   const environment = binding.length ? binding[binding.indexOf('--env') + 1] : input.environment;
-  const routing =
-    dashboardMode === 'remote' || environment
-      ? resolveInspectionEnvironment({ environment })
-      : null;
+  const routing = resolveInspectionEnvironment({ environment });
   const source = await resolveSource(input);
   if (source.status === 'not_live') {
     return output({ status: 'not_live', source_type: source.sourceType || 'douyin' });
@@ -120,7 +115,7 @@ export async function createInspection(
     extra,
   ];
   // Pin the same API environment for dry-run and the single create, even if the default profile changes.
-  const childEnv = routing ? onlineEnvironment() : process.env;
+  const childEnv = onlineEnvironment();
   const dryRunRaw = await run([...args, '--dry-run'], childEnv);
   const dryRun = parseCliResult(dryRunRaw);
   if (dryRunRaw.code !== 0 || !dryRun.ok) {
@@ -159,31 +154,7 @@ export async function createInspection(
     );
   }
   const runtime = detectMode();
-  // Doubao Work opens the deployed console page even on a local desktop.
-  let dashboard =
-    dashboardMode === 'remote' && routing
-      ? remoteDashboard({ ...routing, projectName, taskId })
-      : { status: 'not_applicable' };
-  if (dashboardMode !== 'remote' && runtime.mode === 'local') {
-    try {
-      dashboard = {
-        status: 'ready',
-        ...(await launchDashboard({
-          projectName,
-          taskId,
-          taskName,
-          scenarioId,
-          profile: binding[binding.indexOf('--profile') + 1],
-          account_id: binding.includes('--account-id')
-            ? binding[binding.indexOf('--account-id') + 1]
-            : undefined,
-          environment,
-        })),
-      };
-    } catch (error) {
-      dashboard = { status: 'unavailable', message: safeMessage(error?.message) };
-    }
-  }
+  const dashboard = remoteDashboard({ ...routing, projectName, taskId });
   return output({
     status: 'created',
     source_type: source.sourceType || (source.sourceMethod === 'direct_flv' ? 'flv' : 'douyin'),

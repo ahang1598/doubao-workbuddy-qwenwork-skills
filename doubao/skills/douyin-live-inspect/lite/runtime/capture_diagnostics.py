@@ -2,20 +2,22 @@
 import hashlib
 import html
 import json
+import os
 import re
 import sys
 import sqlite3
+from runtime.diagnostics import capture_failed
 
-CODES = {'XHS_FETCH_FAILED','XHS_PAGE_UNAVAILABLE','XHS_AUTH_REQUIRED','XHS_STREAM_UNAVAILABLE','XHS_LIVE_STATE_UNKNOWN','BROWSER_SOURCE_TIMEOUT','BROWSER_SOURCE_TASK_CLOSED','INVALID_BROWSER_SOURCE','STREAM_RETRY_EXHAUSTED','DOUYIN_FETCH_FAILED','DOUYIN_PAGE_UNAVAILABLE',
+CODES = {'BILI_FETCH_FAILED', 'BILI_PAGE_UNAVAILABLE', 'BILI_AUTH_REQUIRED', 'BILI_STREAM_UNAVAILABLE', 'BILI_LIVE_STATE_UNKNOWN', 'BILI_ROOM_UNAVAILABLE', 'BILI_REPLAY_UNSUPPORTED', 'XHS_FETCH_FAILED','XHS_PAGE_UNAVAILABLE','XHS_AUTH_REQUIRED','XHS_STREAM_UNAVAILABLE','XHS_LIVE_STATE_UNKNOWN','BROWSER_SOURCE_TIMEOUT','BROWSER_SOURCE_TASK_CLOSED','INVALID_BROWSER_SOURCE','STREAM_RETRY_EXHAUSTED','DOUYIN_FETCH_FAILED','DOUYIN_PAGE_UNAVAILABLE',
          'DOUYIN_FLV_UNAVAILABLE','DOUYIN_RESOLVER_UNAVAILABLE','SOURCE_CANCELLED','none'}
-REASONS = {'stream_retry_exhausted','source_resolution_failed','capture_failed','offline',
+REASONS = {'stream_retry_exhausted','source_resolution_failed','capture_failed','offline','end_requested',
            'unknown','user_stop','duration_limit','execution_limit'}
 CATEGORIES = {'http_error','process_exit','encoder_unavailable','permission_denied','tls_error',
-              'network_timeout','connection_error','invalid_media','stream_missing'}
-EXCEPTIONS = {'SourceError','XiaohongshuResolveError','DouyinResolveError','PermissionError','OSError','RuntimeError',
-              'OperationalError','MemoryError','TimeoutError','FileNotFoundError','ValueError'}
-FILES = {'xiaohongshu_live.py','xiaohongshu_source.py','media.py','realtime.py','platform_support.py','douyin_live.py','store.py','video.py'}
-FUNCTIONS = {'resolve_xiaohongshu','resolve_live','fetch','capture','capture_session','resolve_with_retry','resolve_douyin','collect','consume',
+              'network_timeout','connection_error','invalid_media','stream_missing','ffmpeg_configuration_error'}
+EXCEPTIONS = {'SourceError','BilibiliResolveError','XiaohongshuResolveError','DouyinResolveError','PermissionError','OSError','RuntimeError',
+              'OperationalError','DatabaseError','MemoryError','TimeoutError','FileNotFoundError','ValueError'}
+FILES = {'bilibili_live.py','xiaohongshu_live.py','xiaohongshu_source.py','media.py','realtime.py','platform_support.py','douyin_live.py','store.py','video.py'}
+FUNCTIONS = {'resolve_xiaohongshu','resolve_platform_live','resolve_live','fetch','capture','capture_session','resolve_with_retry','resolve_douyin','collect','consume',
              'join','start','guarded_capture','media_popen','connection','nofollow_open','capture_video'}
 MESSAGES = {
     'out_of_memory':'运行时明确报告内存不足，保留已检测内容并按原任务收尾。',
@@ -24,6 +26,7 @@ MESSAGES = {
     'cause_unknown':'采集失败；现有证据不足以确定具体原因，不能据此判断停播、登录限制或排除网络/TLS/编码器故障。',
     'http_error':'采集进程报告 HTTP 错误；状态码只能证明该次请求结果，不能单凭它判断停播或需要登录。',
     'encoder_unavailable':'采集进程报告编码器不可用，请核对实际执行环境的 FFmpeg 编码器支持。',
+    'ffmpeg_configuration_error':'当前 FFmpeg 不支持采集所需的滤镜、选项或输出格式，保留已录片段。',
     'permission_denied':'采集发生访问拒绝，请按安全调用帧核对实际执行环境的文件或进程权限，不扩大权限或另建任务。',
     'tls_error':'采集进程报告证书校验错误，请核对实际执行环境的受信任证书，保持 TLS 校验。',
     'network_timeout':'采集进程报告网络超时，请核对实际执行环境的网络连通性；不能推断直播已结束。',
@@ -81,7 +84,7 @@ def safe_exception(value):
 
 
 def summarize(task):
-    if task.get('kind','live')!='live' or task.get('capture_status')!='failed':return None
+    if task.get('kind','live')!='live' or not capture_failed(task):return None
     process=safe_process(task.get('capture_process_diagnostic'))
     exception=safe_exception(task.get('capture_diagnostic'))
     stream=safe_exception(task.get('stream_diagnostic'))
@@ -126,8 +129,9 @@ def section(summary):
 
 def public_summary(task):
     """User-facing impact only; process evidence remains in the original task."""
-    if task.get('kind','live') != 'live' or task.get('capture_status') != 'failed':return None
-    reason = ('浏览器补流等待超时' if task.get('source_error_code')=='BROWSER_SOURCE_TIMEOUT' else '来源暂不可解析' if task.get('source_end_reason') == 'source_resolution_failed'
+    if task.get('kind','live') != 'live' or not capture_failed(task):return None
+    reason = ('本地存储异常' if any(type((task.get(key) or {}).get('sqlite_errorcode')) is int
+                for key in ('capture_diagnostic','failure_diagnostic','stream_diagnostic')) else '浏览器补流等待超时' if task.get('source_error_code')=='BROWSER_SOURCE_TIMEOUT' else '来源暂不可解析' if task.get('source_end_reason') == 'source_resolution_failed'
               else '采集异常')
     return {'message':reason+'，采集已中断，未确认直播停播。已采集内容继续处理，缺失范围以报告覆盖情况为准。',
             'offline_confirmed':False,
@@ -156,7 +160,7 @@ def attach(store,data, *, include_diagnostics=False):
         for candidate in (folder,path):
             if candidate.is_symlink() or (candidate.exists() and getattr(candidate.lstat(),'st_file_attributes',0)&0x400):
                 raise ValueError('diagnostic path must not be a link')
-        folder.mkdir(mode=0o700,exist_ok=True)
+        folder.mkdir(mode=0o777 if os.name == 'nt' else 0o700,exist_ok=True)
         if not path.exists() or path.read_bytes()!=content.encode('utf-8'):atomic(path,content)
         data['diagnostic_delivery']={'type':'html_attachment','status':'ready','path':str(path.resolve()),
             'message':'请通过宿主附件能力交付此独立诊断 HTML，并展示实际附件入口；本地 Windows 同样交付附件，不只发送路径。已交付相同路径则无需重复。诊断附件不是质检报告，不确认报告成功。'}

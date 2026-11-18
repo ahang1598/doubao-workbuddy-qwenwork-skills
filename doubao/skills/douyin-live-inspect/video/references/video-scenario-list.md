@@ -30,4 +30,4 @@
 node ../scripts/api.mjs --operation 'content/+video-scenario-list' < params.json
 ```
 
-按 [项目与场景选择](../../references/product-boundary.md#项目与场景选择) 展示所选项目内全部视频场景。唯一场景自动使用，多个每批 10 个供选择并支持下一批；同名按序号和描述消歧。无场景属于配置缺失，新建检测按产品边界的回退规则转 Lite，并保留控制台配置入口；禁止复用直播场景编号。
+按 [项目与场景选择](../../references/product-boundary.md#项目与场景选择) 展示所选项目内全部视频场景。唯一场景自动使用，多个每批 10 个供选择并支持下一批；同名按序号和描述消歧。无场景属于配置缺失，提供控制台配置入口；禁止复用直播场景编号。

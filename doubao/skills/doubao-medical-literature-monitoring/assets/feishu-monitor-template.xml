@@ -29,7 +29,7 @@
 4) 直接调用 Skill 包内 match-journal-rank.js 原地富化 report-data.json；脚本自动发现内置索引，不复制脚本/索引、不创建 assets、不推导 __dirname 或检查软链接。仅环境明确给出替代索引时才可选指定替代索引路径；返回 journal_rank_index_unavailable 时省略分区继续，不阻塞报告；
 5) 运行渲染脚本，参数为 input=report-data.json、output=overview.svg；脚本只接受 report_items，不能再传旧 items 清单；
 6) 直接在本位置写入 <whiteboard type="svg" path="@overview.svg"></whiteboard>，由文档工具读取同工作目录的本地 SVG；不要读取完整 SVG 内联，不要上传 SVG、生成公网 URL 或改用 <img>；
-7) 三张分类卡标题与脚本保持一致：最新医学资讯、共识、指南与监管、研究进展；分类卡只显示 display_id 与 short_label，不在画板重复生成全部条目的 original_title、期刊/来源、日期或链接矩阵。完整原题、真实来源和可点击链接保留在正文；下面正文标题尽量沿用同一 display_id 便于图文定位，但不做标号格式、连续性或逐项一致性校验。
+7) 三张分类卡标题与脚本保持一致：最新医学资讯、共识、指南与监管、研究进展；分类卡只显示 display_id 与 short_label，不在画板重复生成全部条目的 original_title、期刊/来源、日期或链接矩阵。完整原题、真实来源和可点击链接保留在正文；下面正文标题尽量沿用同一 display_id 便于图文定位，用于图文相互定位。
 -->
 <whiteboard type="svg" path="@overview.svg"></whiteboard>
 
@@ -62,7 +62,7 @@
 <h2>{{研究主题}}</h2>
 <!-- 每一条研究/预印本标题都必须用 <a href="{{source_url}}"> 包裹并可点击；只写纯文本标题或仅在段末放来源链接均不合格。 -->
 <h3>【{{display_id，例如 研究-01/预印本-02}}】 <a href="{{source_url}}">{{研究题名或研究简称}}</a></h3>
-	<!-- 日期必填。journal_name 优先逐字取自 Europe PMC journalInfo.journal.title/journalTitle、PubMed ESummary fulljournalname/source 或 Crossref container-title。PMC 命中的最终候选先批量补刊名，不逐篇回读；有刊名时用“期刊：真实期刊名”，仍缺失时写“收录平台：PubMed Central”，绝不能写“期刊：PubMed Central”。预印本按 preprint_platform 写“平台”。PMID/DOI 有则追加、没有则省略。journal_rank_2025 非空时写“期刊级别：中科院 X 区/北大核心（2025）”；其他影响因子或分区只有可靠来源明确返回且带年份/口径时才追加；没有就省略。经资讯报道发现的论文，研究标题必须链接对应论文/数据库/DOI 落地页，不能链接报道页。预印本在正文醒目标注“未经同行评议”。 -->
+	<!-- 日期必填。journal_name 优先逐字取自 Europe PMC journalInfo.journal.title/journalTitle、PubMed ESummary fulljournalname/source 或 Crossref container-title。PMC 命中的最终候选先批量补刊名；有刊名时用“期刊：真实期刊名”，仍缺失时写“收录平台：PubMed Central”，绝不能写“期刊：PubMed Central”。预印本按 preprint_platform 写“平台”。PMID/DOI 有则追加、没有则省略。journal_rank_2025 非空时写“期刊级别：中科院 X 区/北大核心（2025）”；其他影响因子或分区只有可靠来源明确返回且带年份/口径时才追加；没有就省略。经资讯报道发现的论文，研究标题必须链接对应论文/数据库/DOI 落地页，不能链接报道页。预印本在正文醒目标注“未经同行评议”。 -->
 	<p><span text-color="gray">发表日期：{{YYYY-MM-DD}} ｜ {{journal_name 非空则写“期刊：真实期刊名”；PMC 元数据仍缺失时写“收录平台：PubMed Central”；其他来源按 record_source 写“来源：PubMed/Europe PMC/Crossref/其他数据库”；预印本写“平台：平台名”}}{{ ｜ PMID/DOI 可得时再追加}}{{ ｜ journal_rank_2025 非空时写“期刊级别：…（2025）”}}{{ ｜ 其他影响因子或分区可得时写一个，并附年份与口径}}</span></p>
 	<p>{{按 support_level 控制篇幅并逐段原样写入 report-data.json 的 body_blocks；snippet 只覆盖 support_excerpt 可见事实，abstract/official_full 才可展开对象、设计、结果和限制；保留关键阴性/无差异结果。}}</p>
 	<p><span text-color="gray"><b>问题线索：</b>{{仅存在 focus_question 时，根据 question_thread 说明研究与问题的直接/间接关系、摘要或来源明确给出的相关结果，以及这些结果对问题回答增加了什么、仍不能推出什么。无 focus_question 时删除本段。}}</span></p>
@@ -102,4 +102,4 @@
   <tr><td><b>持续关注的问题与背景</b></td><td>{{仅用户原话有明确 focus_question 时展示 focus_question 与 question_context；这是自动预填信息，不要求用户再次作答。无明确问题时删除整行}}</td></tr>
 </table>
 <p>我已经根据该领域特点和本次检索结果生成以上默认配置。{{存在 focus_question 时补充“后续报告会继续围绕该问题和背景更新阶段性回答”。}}如无调整，回复 <b>确认创建</b> 即可；也可以进一步告诉我最想重点关注的子领域、技术路线、人群或进展类型，或修改频率与来源。</p>
-<!-- 飞书报告到此结束。任何外部能力激活引导都只能在文档创建并回读后追加到最终聊天，不得写入本文档。 -->
+<!-- 飞书报告到此结束。任何外部能力激活引导都只能在文档生成后追加到最终聊天，不得写入本文档。 -->

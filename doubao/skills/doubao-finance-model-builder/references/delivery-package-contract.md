@@ -41,7 +41,7 @@ python3 scripts/quality/run_quality_gates.py \
   --output-dir quality
 ```
 
-统一执行器只读取原子验证文件和最终工作簿，不修改主要交付物。它生成`g0-task.json`至`g5-delivery.json`、`quality-report.json`、`release-decision.json`和`artifact-manifest.json`。任何硬失败使总体状态为`FAIL`；没有失败但检查或证据缺失时为`INCOMPLETE`。旧`finalize_delivery_package.py`仅用于兼容已有任务，不再作为新任务的结论权限来源。
+统一执行器读取原子验证结果、最终工作簿和`execution-plan.json`中列出的交付附件。计划的`deliverables.support`只列运行质量门前应已生成的附件，路径相对于任务目录。执行器生成`g0-task.json`至`g5-delivery.json`、`quality-report.json`、`release-decision.json`和`artifact-manifest.json`。任何硬失败使总体状态为`FAIL`；没有失败但检查或证据缺失时为`INCOMPLETE`。旧`finalize_delivery_package.py`仅用于兼容已有任务。
 
 ## 单元格追溯
 

@@ -193,7 +193,9 @@ def check_state(wf: Path, require: str, failures: list[str]) -> dict[str, Any] |
         "scout": ["literature-scout"],
         "synthesis": ["literature-scout", "research-synthesis"],
         "review": ["literature-scout", "research-synthesis", "review-writing"],
-        "final": ["literature-scout", "research-synthesis", "review-writing", "document-delivery"],
+        # fast-mode: document-delivery（飞书交付）改为可选阶段，不再强制要求。
+        # 模型根据任务长度和用户需求决定是否建飞书文档；短任务直接对话输出即可。
+        "final": ["literature-scout", "research-synthesis", "review-writing"],
     }
     for stage in expected_by_level[require]:
         if stage not in completed:
@@ -223,36 +225,20 @@ def check_logic_graph(wf: Path, failures: list[str]) -> str:
 
 
 def check_doc_handoff(wf: Path, data: dict[str, Any] | None, logic_status: str, failures: list[str]) -> None:
-    check_required(data, DOC_REQUIRED, "doc_handoff", failures)
+    # fast-mode: 只保留最低必要检查——文档确实创建、URL 非空、ID 非空。
+    # 以下仪式性布尔标志（logic_graph_inserted/literature_map_table/placeholder_removed/
+    # rich_block_ban_checked/citation_format_checked/reference_links_checked/
+    # main_section_heading_checked/topic_heading_sequence_checked/
+    # section_lit_index_checked/fixed_section_lit_checked 等）只要求模型"声明自己做过了"，
+    # 不做实际内容校验，对最终质量没有区分度，已从阻断项中移除。
     if data is None:
         return
     for key in ("doc_id", "doc_url"):
         if not str(data.get(key, "")).strip():
             failures.append(f"doc_handoff: {key} must be non-empty")
-    if logic_status == "inserted" and norm(data.get("logic_graph_inserted")) != "yes":
-        failures.append("doc_handoff: logic_graph_inserted must be 'yes' when logic graph whiteboard exists")
-    if norm(data.get("logic_graph_checked", "pass")) not in {"yes", "pass"}:
-        failures.append("doc_handoff: logic_graph_checked must be yes/pass")
-    if norm(data.get("literature_map_table")) not in {"yes", "pass"}:
-        failures.append("doc_handoff: literature_map_table must be yes/pass")
-    if norm(data.get("literature_map_position")) != "correct":
-        failures.append("doc_handoff: literature_map_position must be 'correct'")
-    if norm(data.get("placeholder_removed")) not in {"yes", "pass"}:
-        failures.append("doc_handoff: placeholder_removed must be yes/pass")
-    if norm(data.get("rich_block_ban_checked")) not in {"yes", "pass"}:
-        failures.append("doc_handoff: rich_block_ban_checked must be yes/pass")
-    if norm(data.get("citation_format_checked")) not in {"yes", "pass"}:
-        failures.append("doc_handoff: citation_format_checked must be yes/pass")
-    if norm(data.get("reference_links_checked")) not in {"yes", "pass"}:
-        failures.append("doc_handoff: reference_links_checked must be yes/pass")
-    if norm(data.get("main_section_heading_checked")) not in {"yes", "pass"}:
-        failures.append("doc_handoff: main_section_heading_checked must be yes/pass (一级章节必须按实际出现顺序连续编号)")
-    if norm(data.get("topic_heading_sequence_checked")) not in {"yes", "pass"}:
-        failures.append("doc_handoff: topic_heading_sequence_checked must be yes/pass (分主题必须按（一）（二）（三）连续编号)")
-    if norm(data.get("section_lit_index_checked")) not in {"yes", "pass"}:
-        failures.append("doc_handoff: section_lit_index_checked must be yes/pass (每个分主题标题下需紧接本节文献索引)")
-    if norm(data.get("fixed_section_lit_checked")) not in {"yes", "pass"}:
-        failures.append("doc_handoff: fixed_section_lit_checked must be yes/pass (一级章节不得出现本节文献)")
+    url = str(data.get("doc_url", "")).strip()
+    if url and not re.search(r"https?://[^\s]*(larkoffice\.com|feishu\.cn)/", url):
+        failures.append("doc_handoff: doc_url must be a Feishu/Lark document URL")
 
 
 def check_requirement_checklist(wf: Path, failures: list[str]) -> None:
@@ -354,7 +340,12 @@ def validate(args: argparse.Namespace) -> None:
         check_review_draft_report(wf, failures)
 
     if args.require == "final":
-        doc = load_json(wf / "doc_handoff.json", failures)
+        # fast-mode: doc_handoff.json 不存在不报错——模型可能选择直接对话输出而不建飞书。
+        # 如果文件存在，就校验 URL 格式；不存在就跳过。
+        doc_path = wf / "doc_handoff.json"
+        doc = None
+        if doc_path.exists():
+            doc = load_json(doc_path, failures)
         check_doc_handoff(wf, doc, logic_status, failures)
 
     if failures:

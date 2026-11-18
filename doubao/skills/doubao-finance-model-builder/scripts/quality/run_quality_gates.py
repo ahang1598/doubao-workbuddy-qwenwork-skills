@@ -52,7 +52,15 @@ def locate(root: Path, names: Iterable[str]) -> Path | None:
     return None
 
 
-def load_atomic(root: Path, check_id: str, names: list[str], required: bool = True) -> dict[str, Any]:
+def load_atomic(
+    root: Path,
+    check_id: str,
+    names: list[str],
+    required: bool = True,
+    *,
+    workflows: set[str] | None = None,
+    manifest_name: str | None = None,
+) -> dict[str, Any]:
     path = locate(root, names)
     if path is None:
         return {
@@ -75,6 +83,15 @@ def load_atomic(root: Path, check_id: str, names: list[str], required: bool = Tr
     warnings = list(payload.get("warnings") or [])
     if parse_error:
         errors.append(f"无法解析验证结果：{parse_error}")
+    workflow = payload.get("workflow")
+    if status == "PASS" and workflows is not None and (not isinstance(workflow, str) or workflow not in workflows):
+        status = "FAIL"
+        errors.append("审计工作流与执行工作流不一致")
+    if status == "PASS" and manifest_name is not None:
+        manifest = locate(root, [manifest_name])
+        if manifest is None or payload.get("manifest_sha256") != file_sha256(manifest):
+            status = "FAIL"
+            errors.append(f"验证结果与当前证据清单不匹配：{manifest_name}")
     return {
         "check_id": check_id,
         "status": status,
@@ -115,6 +132,42 @@ def result_names_for_calculation(workflows: set[str]) -> list[tuple[str, list[st
     return [(f"g3.{workflow}", mapping[workflow]) for workflow in sorted(workflows)]
 
 
+def audit_support_files(root: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    check = {"check_id": "g5.support_files", "status": "PASS", "errors": [], "warnings": []}
+    files = []
+    try:
+        plan = json.loads((root / "execution-plan.json").read_text(encoding="utf-8"))
+        support = plan["deliverables"]["support"]
+        if not isinstance(support, list) or any(not isinstance(path, str) or not path for path in support):
+            raise ValueError("deliverables.support must be a list of file paths")
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        check["status"] = "INCOMPLETE"
+        check["errors"].append(f"无法读取计划中的交付附件：{exc}")
+        return check, files
+
+    for relative in dict.fromkeys(support):
+        try:
+            path = safe_path(root, relative)
+        except ValueError as exc:
+            check["status"] = "FAIL"
+            check["errors"].append(str(exc))
+            continue
+        exists = path.is_file()
+        size = path.stat().st_size if exists else 0
+        files.append({
+            "path": relative,
+            "role": "support",
+            "exists": exists,
+            "bytes": size,
+            "sha256": file_sha256(path) if size else None,
+        })
+        if not size:
+            if check["status"] != "FAIL":
+                check["status"] = "INCOMPLETE"
+            check["errors"].append(f"交付附件缺失或为空：{relative}")
+    return check, files
+
+
 def build_gates(root: Path, workflows: set[str], hero_relative: str) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     hero = safe_path(root, hero_relative)
     hero_exists = hero.is_file()
@@ -136,7 +189,9 @@ def build_gates(root: Path, workflows: set[str], hero_relative: str) -> tuple[li
         load_atomic(root, "g1.source_validation", ["source-validation.json"]),
     ]
     if workflows.intersection({"dcf", "comps"}):
-        g1_checks.append(load_atomic(root, "g1.equity_evidence", ["equity-evidence-validation.json"]))
+        g1_checks.append(load_atomic(
+            root, "g1.equity_evidence", ["equity-evidence-validation.json"], manifest_name="equity-evidence.json",
+        ))
     g1 = aggregate("G1", "证据与时点", g1_checks)
 
     g2 = aggregate(
@@ -153,8 +208,8 @@ def build_gates(root: Path, workflows: set[str], hero_relative: str) -> tuple[li
 
     g4_checks = [
         load_atomic(root, "g4.unified_model_audit", ["model-audit.json"]),
-        load_atomic(root, "g4.formula_semantics", ["formula-semantic-audit.json"]),
-        load_atomic(root, "g4.direct_artifact", ["artifact-audit.json"]),
+        load_atomic(root, "g4.formula_semantics", ["formula-semantic-audit.json"], workflows=workflows),
+        load_atomic(root, "g4.direct_artifact", ["artifact-audit.json"], workflows=workflows),
         load_atomic(root, "g4.visual_audit", ["visual-audit.json"]),
     ]
     for item in g4_checks:
@@ -208,20 +263,24 @@ def build_gates(root: Path, workflows: set[str], hero_relative: str) -> tuple[li
                 "warnings": [],
             }
         )
+    support_check, support_files = audit_support_files(root)
+    delivery_checks.append(support_check)
     g5 = aggregate("G5", "交付与结论", delivery_checks)
     prior_statuses = [g0["status"], g1["status"], g2["status"], g3["status"], g4["status"]]
     if g5["status"] == "PASS" and any(status != "PASS" for status in prior_statuses):
         g5["status"] = "INCOMPLETE"
         g5["errors"].append("上游质量门未全部通过，结论发布仍被阻断")
 
+    hero_record = {
+        "path": hero_relative,
+        "exists": hero_exists,
+        "bytes": hero_bytes,
+        "sha256": hero_hash,
+    }
     manifest = {
         "package_root": str(root),
-        "hero": {
-            "path": hero_relative,
-            "exists": hero_exists,
-            "bytes": hero_bytes,
-            "sha256": hero_hash,
-        },
+        "hero": hero_record,
+        "files": [{"role": "hero", **hero_record}, *support_files],
     }
     return [g0, g1, g2, g3, g4, g5], manifest
 

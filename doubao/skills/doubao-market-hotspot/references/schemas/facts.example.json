@@ -1,0 +1,68 @@
+{
+  "meta": {
+    "skill": "doubao-market-hotspot",
+    "as_of": "2026-01-01T15:00:00+08:00",
+    "market_or_jurisdiction": "示例辖区",
+    "mode": "传导模式",
+    "task_id": "example-001"
+  },
+  "claims": [
+    {
+      "claim_id": "example_fact",
+      "statement": "示例一手事实，仅用于结构说明",
+      "claim_type": "fact",
+      "period": "2025",
+      "value": 100,
+      "unit": "示例单位",
+      "currency": "CNY",
+      "source": "示例主管部门公告",
+      "source_date": "2026-01-01",
+      "url": "https://example.com/source",
+      "confidence": "high",
+      "calculation": "",
+      "input_claims": [],
+      "source_type": "regulatory_filing"
+    },
+    {
+      "claim_id": "example_inference",
+      "statement": "示例条件推演，仅用于结构说明",
+      "claim_type": "inference",
+      "period": "2025",
+      "value": null,
+      "unit": "",
+      "currency": "",
+      "source": "",
+      "source_date": "",
+      "url": "",
+      "confidence": "medium",
+      "calculation": "",
+      "input_claims": [
+        "example_fact"
+      ]
+    }
+  ],
+  "assumptions": [
+    "示例条件假设"
+  ],
+  "data_gaps": [
+    {
+      "missing": "示例待核实字段",
+      "impact": "影响对应分项的定量区间收敛"
+    }
+  ],
+  "payload": {
+    "event": "示例监管调整",
+    "scope": "示例产业链",
+    "event_status": "confirmed",
+    "baseline": {
+      "as_of": "2026-01-01"
+    },
+    "channels": [
+      "成本传导"
+    ],
+    "exposures": [
+      "示例上下游主体"
+    ],
+    "scenarios": []
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "version": "3.0.0",
+  "skill_name": "doubao-public-company-analysis",
+  "default_mode": "auto",
+  "modes": {
+    "快速判断": {},
+    "聚焦分析": {},
+    "完整研究": {}
+  },
+  "loading_profile": "references/loading-profile.json",
+  "deterministic_tool": "scripts/company_cashflow_bridge.py",
+  "tool_contract": "references/deterministic-tool-contract.md",
+  "conditional_tool_policy": "现金流工具按需用于有结构化输入的复算，普通问答不要求调用。",
+  "delivery_tiers": {
+    "direct": {
+      "format": "as_requested_or_direct_answer"
+    },
+    "brief": {
+      "format": "as_requested_or_focused_analysis"
+    },
+    "full": {
+      "format": "as_requested_by_user_and_capability"
+    }
+  }
+}

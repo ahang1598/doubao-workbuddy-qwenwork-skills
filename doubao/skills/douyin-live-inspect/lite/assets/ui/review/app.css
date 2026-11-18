@@ -117,13 +117,17 @@
 }
 .conclusionBody {
   display: flex;
-  align-items: center;
   min-height: 112px;
+  align-items: center;
+  gap: 30px;
   padding: 24px 30px;
   border-radius: 9px;
   background: #fff;
 }
 .conclusionBody p {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
   font-size: 15px;
   line-height: 1.7;
   font-weight: 600;
@@ -609,3 +613,18 @@
     text-align: left;
   }
 }
+
+.conclusionScore { flex: 0 0 150px; }
+.scoreEyebrow { font-size: 13px; font-weight: 600; color: #696586; }
+.scoreNumber { font-size: 48px; font-weight: 750; line-height: 1.2; letter-spacing: -2px; color: #5047d6; font-variant-numeric: tabular-nums; }
+.scoreNumber small { margin-left: 8px; font-size: 16px; font-weight: 400; letter-spacing: 0; color: #9b98ac; }
+@media (max-width: 600px) {
+  .conclusionBody { gap: 16px; }
+  .conclusionScore { flex-basis: 100px; }
+  .scoreNumber { font-size: 40px; }
+}
+
+.scoreTable { width: 100%; border-collapse: collapse; text-align: left; }
+.scoreTable th, .scoreTable td { padding: 10px; border-bottom: 1px solid #eef1f5; vertical-align: top; }
+
+.scoreTable .timecode:not(:disabled) { color: #1664ff; }

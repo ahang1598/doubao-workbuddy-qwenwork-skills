@@ -2,6 +2,8 @@
 import telemetry, { EVENTS } from '../telemetry/main.mjs';
 // 查询指定账号的认证状态，不输出凭证。
 import { parseArgs } from 'node:util';
+import { localLoginStatus } from '../runtime/auth-local-login.mjs';
+import { profileName } from '../runtime/auth-store.mjs';
 import { getAuthStatus } from '../runtime/auth.mjs';
 await telemetry.runCommand(
   { command: EVENTS.formal.AUTH_STATUS, skip: process.argv.includes('--help') },
@@ -18,7 +20,7 @@ await telemetry.runCommand(
       if (values.help)
         console.log('Usage: node scripts/auth-status.mjs [--profile NAME] [--environment online]');
       else {
-        const result = { ok: true, command: 'auth-status', data: await getAuthStatus(values) };
+        const result = { ok: true, command: 'auth-status', data: { ...await getAuthStatus(values), login: await localLoginStatus(profileName(values)) } };
         console.log(JSON.stringify(result));
         return result;
       }

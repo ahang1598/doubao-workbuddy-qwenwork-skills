@@ -44,6 +44,36 @@ def _evidence(store):
     return items
 
 
+def visual_samples(task, segments):
+    if task.get('kind', 'live') != 'live' or task.get('image_inspection') is not True:
+        return None
+    items, failed, planned = [], [], set()
+    for segment in segments:
+        planned.update(segment.get('frame_sample_times_ms', []))
+        review = segment.get('review_result') or {}
+        viewed = set(review.get('images_viewed', []))
+        decisions = _decisions(segment)
+        for frame in segment.get('frames', []):
+            fid = frame['id']
+            hits = [d for d in decisions if _result(d) == 'hit' and any(
+                fid in event.get('evidence_ids', []) for event in d.get('events', []))]
+            image_results = [d.get('channels', {}).get('image', {}).get('status') for d in decisions
+                             if 'image' in d.get('channels', {})]
+            status = ('pending' if fid not in viewed or not image_results else 'hit' if hits else
+                      'no_hit' if all(v == 'no_hit' for v in image_results) else 'insufficient')
+            items.append({'evidence_id': f"{segment['id']}:{fid}", 'time_ms': frame['time_ms'],
+                          'status': status})
+        times = segment.get('frame_failed_times_ms', [])
+        if segment.get('frame_status') in {'failed', 'unavailable'}:
+            times = sorted(set(times) | (set(segment.get('frame_sample_times_ms', [])) -
+                                        {f['time_ms'] for f in segment.get('frames', [])}))
+        failed.extend({'time_ms': t, 'reason': '录制画面不可用' if segment.get('frame_failure') == 'recording_unavailable'
+                       else '抽帧失败，未检测该时刻画面'} for t in times)
+    return {'interval_seconds': task.get('frame_interval_seconds', 120), 'planned_count': len(planned),
+            'captured_count': len(items), 'inspected_count': sum(i['status'] != 'pending' for i in items),
+            'items': sorted(items, key=lambda i: i['time_ms']), 'failures': sorted(failed, key=lambda i: i['time_ms'])}
+
+
 def coverage(store):
     status = store.status()
     from runtime.full_live import speech_only_scope
@@ -228,7 +258,16 @@ def build_report(store, token=''):
         coverage_complete=False
         scoped_conclusion['rule_load_gaps']=rule_gaps
         scoped_conclusion['summary']=scoped_conclusion.get('summary','')+' '+' '.join(g['message'] for g in rule_gaps)
-    return {**video_state, 'report_kind': task.get('kind', 'live'),
+    from runtime.remediation import build as build_remediation
+    remediation = build_remediation(task, segments)
+    levels = {f's{sid}-d{di}-e{ei}': item['level']
+              for item in [*remediation['items'], *remediation.get('pending', [])]
+              for sid, di, ei in (source.split(':') for source in item['source_ids'])}
+    for item in evidence:
+        if task.get('kind', 'live') == 'live':
+            item['remediation_level'] = levels.get(item['id'],
+                'waiting' if remediation['status'] == 'waiting' else 'ungraded')
+    return {**video_state, 'visual_samples': visual_samples(task, segments), 'remediation': remediation, 'report_kind': task.get('kind', 'live'),
             'inspection_scope': 'speech_only' if speech_only else None,
             'task': {'id': task.get('id'), 'name': task.get('name', '直播内容质检'),
             'scenario_name': '' if task.get('rules_mode')=='dynamic' else task.get('scenario', ''), 'created_time': _seconds(task.get('created_at')),
@@ -271,9 +310,9 @@ class _SnapshotView:
 
 def _pipeline_issues(task, segments):
     """Describe evidence and current work without inventing incident history."""
-    from runtime.diagnostics import failure_label
+    from runtime.diagnostics import failure_label, capture_failed
     issues = []
-    if task.get('capture_status') == 'failed':
+    if capture_failed(task):
         issues.append({'stage':'capture', 'state':'failed', 'message':failure_label(task),
                        'action':'已采集内容仍然保留。', 'segments':[]})
     if (task.get('worker_status') in {'failed','setup_pending'} and
@@ -491,6 +530,6 @@ def build_snapshot(store, token='', *, report=None, recap=None):
             'updated_at': (task.get('capture_epoch', 0) + task['capture_end_ms'] / 1000) if task.get('capture_epoch') and task.get('capture_end_ms') is not None else _seconds(task.get('updated_at'))},
             'records': records, 'refreshed_at': dt.datetime.now(dt.timezone.utc).isoformat(),
             'quality_report_url': 'quality.html' if store.status()['report_ready'] else '',
-            'review_report_supported': task.get('kind') != 'video', 'recap': {k: v for k, v in recap.items() if k != 'document' and k not in ('evidence', 'references', 'video', 'coverage')},
+            'review_report_supported': task.get('kind') != 'video' or task.get('video_recap_enabled', False), 'recap': {k: v for k, v in recap.items() if k != 'document' and k not in ('evidence', 'references', 'video', 'coverage')},
             'review_report_url': 'review.html' if recap['available'] else '',
             'pipeline': store.status().get('pipeline', {}), 'coverage': cov}

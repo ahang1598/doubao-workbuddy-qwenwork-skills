@@ -44,7 +44,7 @@ company、market、today 必填；code、announcement_type、announcement_date �
 | source | 来源名称及日期 |
 | url | 有公开链接时填写；没有时可以省略，不能编链接 |
 | usage_type | 见下表 |
-| period | 有具体期间时填写，供正文口径核查 |
+| period | 有具体期间时填写 |
 | value / unit | 该 claim 用于图表数据点时必填，必须与 report.json 中对应点值和单位一致 |
 | calculation | usage_type 为 author_calculation 时必填，写出算式 |
 
@@ -73,4 +73,4 @@ report.json 的 summary、paragraph、callout、list item、table cell 和 chart
 
 ## 校验边界
 
-check_facts.py 检查 JSON 结构、meta、claim_id、source、usage_type、计算公式和明显的来源分级错误。完整报告门禁进一步检查未知 fact_ids、未绑定关键数字、图表点值与 claim.value/unit 不一致、期间和语气口径等。错误阻断 HTML 生成；警告仍需逐条复核。
+check_facts.py 检查事实表结构、公告日期、claim_id 和必填字段。显式标记为券商、媒体或市场观点的来源不能登记为 hard_fact，作者计算值须填写 calculation。

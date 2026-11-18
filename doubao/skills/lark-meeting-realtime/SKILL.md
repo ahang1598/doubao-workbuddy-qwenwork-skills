@@ -1,7 +1,7 @@
 ---
 name: lark-meeting-realtime
 version: 1.0.0
-description: "基于会议或关联录音的实时发言、聊天和共享内容回答问题；查询进行中的飞书会议，邀请参会人，发送会中文本/表情，管理会议聊天、倒计时、录制、主持操作及个人笔记。"
+description: "基于会议或关联录音的实时发言、聊天和共享内容回答问题；查询进行中的飞书会议，邀请参会人，发送会中文本/表情，管理会议聊天、倒计时、录制、本人麦克风、主持操作及个人笔记。"
 metadata:
   requires:
     bins: ["lark-cli"]
@@ -15,6 +15,8 @@ metadata:
 交接时传递已有标识、用户目标和必要查询结果，不重复发现会议。预约会议、忙闲和会议室管理使用 [lark-calendar](../lark-calendar/SKILL.md)。
 
 本产物所有命令自动以当前登录用户身份执行，无需传入身份参数，也没有身份选择或切换的需要。遇到未认证、token 或 scope 错误时，直接根据错误响应中的提示（如 `missing_scopes`、`console_url`）引导用户在应用后台补开权限后重试。
+
+操作本人麦克风使用 `+meeting-self-mute` 或 `+meeting-self-unmute`，不要使用参会人管理命令；`request_submitted` 表示申请已提交，不表示已开麦。
 
 ## 标识与操作边界
 
@@ -128,6 +130,7 @@ lark-cli vc +meeting-events --meeting-id <meeting_id> --page-all --format pretty
 | `vc +meeting-transfer-host` | 将会议主持人权限转移给指定参会人 | [lark-vc-meeting-transfer-host](references/lark-vc-meeting-transfer-host.md) |
 | `vc +meeting-end` | 结束整场进行中的会议 | [lark-vc-meeting-end](references/lark-vc-meeting-end.md) |
 | `vc +meeting-participant-kickout` | 移出一至十个指定参会人 | [lark-vc-meeting-participant-kickout](references/lark-vc-meeting-participant-kickout.md) |
+| `vc +meeting-self-mute` / `vc +meeting-self-unmute` | 操作当前登录用户本人的麦克风 | [lark-vc-self-microphone](references/lark-vc-self-microphone.md) |
 | `vc +meeting-participant-mute` | 将指定参会人闭麦 | [lark-vc-meeting-participant-audio](references/lark-vc-meeting-participant-audio.md) |
 | `vc +meeting-participant-unmute` | 请求指定参会人开麦 | [lark-vc-meeting-participant-audio](references/lark-vc-meeting-participant-audio.md) |
 | `vc +meeting-invite` | 邀请指定用户加入会议 | [lark-vc-meeting-invite](references/lark-vc-meeting-invite.md) |

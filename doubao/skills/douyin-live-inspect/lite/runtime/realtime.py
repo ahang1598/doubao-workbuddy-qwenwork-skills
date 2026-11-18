@@ -7,6 +7,7 @@ separate threads, so a slow recognizer cannot apply backpressure to live capture
 import os
 from pathlib import Path
 import shutil
+import sqlite3
 import threading
 import time
 import wave
@@ -33,7 +34,7 @@ class CaptureStream:
         self.base=session['base_ms']
         self.raw=store.root/'audio'/f'capture-{index:06d}.pcm'
         self.frames=store.root/'frames'/f'.capture-{index:06d}'
-        self.frames.mkdir(mode=0o700,exist_ok=True)
+        self.frames.mkdir(mode=0o777 if os.name == 'nt' else 0o700,exist_ok=True)
         self.done=threading.Event()
         self.error=None
         self.offset=0
@@ -99,9 +100,13 @@ class CaptureStream:
                         if not data:break
                         out.write(data)
                         if time.monotonic()-last_progress>=1:
-                            self.store.update_progress(capture_active_span={'start_ms':self.base,'end_ms':self.base+out.tell()//32})
+                            self.store.update_progress(capture_reconnecting=False, capture_active_span={'start_ms':self.base,'end_ms':self.base+out.tell()//32})
                             last_progress=time.monotonic()
-            except (OSError,ValueError):self.error='PCM_WRITE_FAILED'
+            except (OSError,ValueError,sqlite3.Error) as error:
+                from runtime.diagnostics import failure_details
+                self.reader_failure=error
+                self.diagnostic=failure_details(error)
+                self.error='PCM_WRITE_FAILED'
             finally:self.done.set()
         self.reader=threading.Thread(target=collect,daemon=True)
         self.consumer=threading.Thread(target=self.consume,daemon=True)
@@ -339,6 +344,8 @@ class CaptureStream:
             self.cancel=threading.Event()
             self.cancel.set()
         finally:
+            # The reader failed before teardown; cleanup must not replace its cause.
+            primary = getattr(self,'reader_failure',None) or primary
             bridge, self.bridge = self.bridge, None
             actions = [('cleanup_asr_bridge', bridge.close)] if bridge else []
             if self.consumer:
@@ -350,7 +357,8 @@ class CaptureStream:
 def recording_segments(store):
     from runtime.media import closed_segments
     import json
-    result=[]
+    from runtime.flv_capture import recordings
+    result=recordings(store)
     for path in sorted((store.root/'media').glob('session-*.json')):
         session=json.loads(path.read_text())
         for index,start,end,media in closed_segments(store,session):
@@ -361,6 +369,8 @@ def recording_segments(store):
 def recover_spools(store,cancel):
     """Replay only the uncommitted PCM tail; successful units remain immutable."""
     import json
+    from runtime.flv_capture import recover
+    recover(store)
     sessions=[]
     for path in sorted((store.root/'audio').glob('capture-*.pcm')):
         index=int(path.stem.split('-')[-1])

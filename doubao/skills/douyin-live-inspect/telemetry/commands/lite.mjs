@@ -114,8 +114,12 @@ function recordCommandFinished(
         "errno",
         "winerror",
         "sqlite_errorcode",
-      ])
+      ]) {
+        // setup_pending exits successfully but still carries the installer failure.
+        if (["errno", "winerror"].includes(key) && extra.failure_component === "ffmpeg" &&
+            extra.recovery_outcome === "failed") continue;
         delete extra[key];
+      }
     }
     telemetry.commandExtra = {
       ...extra,

@@ -1,0 +1,3 @@
+interface:
+  display_name: "回答中的静态结构图解"
+  short_description: "用确定性 HTML/SVG 解释流程、机制、架构、关系和时间线。 保留真实工具和交付边界。"

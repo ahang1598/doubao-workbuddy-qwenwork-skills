@@ -187,6 +187,14 @@ def validate_source(text, claims, output_format="markdown"):
             if claim_id not in claims:
                 errors.append(f"L{number} 引用了不存在的 claim_id: {claim_id}")
 
+    body = re.split(
+        r"(?m)^##\s+数据来源\s*$|<h[1-9](?:\s+[^>]*)?>\s*数据来源\s*</h[1-9]>",
+        text,
+        maxsplit=1,
+    )[0]
+    if not fact_ids(body):
+        errors.append("正文缺少事实引用；请在关键事实句末添加 {fact:claim_id}，不能只在文末列来源")
+
     used = set(fact_ids(text))
     unused = sorted(set(claims) - used)
     if unused:
@@ -196,7 +204,7 @@ def validate_source(text, claims, output_format="markdown"):
     return errors, warnings
 
 
-def replace_fact_markers(text):
+def replace_fact_markers(text, claims=None):
     order = []
     numbers = {}
 
@@ -206,7 +214,12 @@ def replace_fact_markers(text):
             if claim_id not in numbers:
                 numbers[claim_id] = len(order) + 1
                 order.append(claim_id)
-            markers.append(f"[{numbers[claim_id]}]")
+            marker = f"[{numbers[claim_id]}]"
+            if claims is not None:
+                url = str(claims[claim_id].get("url") or "").strip()
+                if url:
+                    marker += f"({url})"
+            markers.append(marker)
         return "".join(markers)
 
     display = FACT_RE.sub(replace, text)
@@ -215,14 +228,14 @@ def replace_fact_markers(text):
 
 
 def make_markdown_display(text, claims):
-    display, order, numbers = replace_fact_markers(text)
+    display, order, numbers = replace_fact_markers(text, claims)
     entries = []
     for claim_id in order:
         claim = claims[claim_id]
         number = numbers[claim_id]
         source = str(claim.get("source", "未注明来源"))
         source_date = str(claim.get("source_date", ""))
-        url = str(claim.get("url", "")).strip()
+        url = str(claim.get("url") or "").strip()
         label = source + (f"（{source_date}）" if source_date else "")
         entries.append(f"[{number}] [{label}]({url})" if url else f"[{number}] {label}")
 
@@ -257,7 +270,7 @@ def make_lark_xml_display(text, claims):
         source_date = str(claim.get("source_date", ""))
         label = source + (f"（{source_date}）" if source_date else "")
         safe_label = html.escape(label)
-        url = str(claim.get("url", "")).strip()
+        url = str(claim.get("url") or "").strip()
         content = (
             f'<a href="{html.escape(url, quote=True)}">{safe_label}</a>'
             if url else safe_label
@@ -315,6 +328,18 @@ def self_test():
     if ("{fact:" in output or "## 数据来源" not in output or "[1]" not in output
             or not output.rstrip().endswith(DISCLAIMER)):
         raise AssertionError(output)
+    if "一季度收入为 100。[1](https://example.com)" not in output:
+        raise AssertionError("正文引用应链接到对应来源")
+    without_body_citation = source.replace("{fact:revenue_q1}", "")
+    errors, _ = validate_source(without_body_citation, claim_map(data), "markdown")
+    if not errors:
+        raise AssertionError("正文没有引用时应拒绝生成")
+    sources_only = without_body_citation.replace(
+        DISCLAIMER, "## 数据来源\n\n{fact:revenue_q1}\n\n" + DISCLAIMER
+    )
+    errors, _ = validate_source(sources_only, claim_map(data), "markdown")
+    if not errors:
+        raise AssertionError("仅在数据来源章节标记引用时应拒绝生成")
     source_with_old_section = source.replace(
         "\n\n" + DISCLAIMER,
         "\n\n## 数据来源\n\n旧来源。\n\n" + DISCLAIMER,

@@ -102,6 +102,10 @@ def prepare_windows(store):
             target=store.root/'frames'/f"sample-{row['index']:06d}-{n}.jpg"
             def local():
                 try:
+                    if source.suffix == '.flv':
+                        from runtime.media_fallback import ensure
+                        if not ensure(store,cancel,'local_frame'):return False
+                        task.update(store.task())
                     result=media_command([mediakit.config(task,'ffmpeg_bin','ffmpeg'),'-nostdin','-v','error','-y',
                         '-ss',str(offset),'-i',str(source),'-frames:v','1','-vf','scale=min(1280\\,iw):-2',
                         '-q:v','10',str(target)],store=store,timeout=10)

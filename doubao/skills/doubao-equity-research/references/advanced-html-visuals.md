@@ -31,7 +31,7 @@
 
 每个章节通常只有一个主视觉。新增第二张图前必须写出它回答的不同问题；若问题相同，保留信息密度最高的一张。图表数量没有配额，零张也可以。
 
-首次使用或修改后运行：
+脚本或运行环境版本验收时运行；已验收版本直接使用：
 
 ```bash
 python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/lark_visuals.py" --self-test
@@ -162,5 +162,5 @@ python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/lark_visuals.py" \
 5. **可访问性**：不依赖颜色区分唯一信息，图前后文本足以表达结论；
 6. **克制**：删除不改变判断的装饰、重复指标和无解释图形；
 7. **独立问题**：每个视觉都有唯一、非空的 `visual_purposes`；
-8. **HTML 闭环**：打开报告确认图表位于目标章节且渲染可用，并设置 `html_block_checks.embedded_in_html_report=true`、`chart_source_embedded=true`；
+8. **HTML 闭环**：打开报告确认图表已嵌入目标章节且渲染可用；
 9. **HTML 报告交付**：只要生成过本文件涉及的图表 HTML，就必须嵌入完整报告并在浏览器复核；生成受阻时保持未完成。

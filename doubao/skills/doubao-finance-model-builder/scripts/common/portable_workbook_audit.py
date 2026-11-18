@@ -414,7 +414,10 @@ def audit_contract(
     recalculate: str = "auto",
     timeout: int = 60,
     soffice_path: Optional[str] = None,
+    recalculation: Optional[Recalculation] = None,
+    inspect_output: Optional[Path] = None,
 ) -> dict[str, Any]:
+    """Audit the workbook. The caller owns any supplied recalculation's temporary files."""
     original = Path(workbook_path).resolve()
     errors: list[str] = []
     warnings: list[str] = []
@@ -482,11 +485,13 @@ def audit_contract(
     finally:
         formula_book.close()
 
-    recalculation = (
-        Recalculation("SKIPPED", "none", original, "recalculation disabled")
-        if recalculate == "off"
-        else recalculate_with_libreoffice(original, timeout=timeout, soffice_path=soffice_path)
-    )
+    owns_recalculation = recalculation is None
+    if recalculation is None:
+        recalculation = (
+            Recalculation("SKIPPED", "none", original, "recalculation disabled")
+            if recalculate == "off"
+            else recalculate_with_libreoffice(original, timeout=timeout, soffice_path=soffice_path)
+        )
     audit_path = recalculation.workbook_path or original
     if recalculation.status == "UNAVAILABLE":
         message = "未找到LibreOffice，无法独立重算公式"
@@ -598,6 +603,11 @@ def audit_contract(
         "workbook_structure_before_recalculation": pre_recalculation_structure,
         "workbook_structure_after_recalculation": structure,
     }
-    if recalculation.temp_root:
+    if owns_recalculation and recalculation.temp_root:
         shutil.rmtree(recalculation.temp_root, ignore_errors=True)
+    if inspect_output is not None:
+        inspect_output.write_text(
+            json.dumps(pre_recalculation_structure, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
     return output

@@ -25,7 +25,7 @@
 - 港股：港交所披露易公告、月报表及翌日披露报表。检索“results/profit warning, dividend, bonus issue, rights issue, placing, share consolidation/subdivision, repurchase, conversion, next day disclosure return”。
 - 美股：SEC EDGAR 的 10-K、10-Q、8-K、20-F、6-K、注册声明、招股补充和发行人公司行动文件；再以公司投资者关系网站补充财报与指引。
 
-不要依赖单一关键词：先按发行人和日期范围浏览完整公告列表，再用类别词复核。结构化 `seed_finance_search` 可用于定位候选项，但不能替代官方结果页与公告正文。
+不要依赖单一关键词：先按发行人和日期范围浏览完整公告列表，再用类别词复核。公告候选项优先用 `seed_finance_search` 定位，不可用时回退 `general_search`；仍须核对官方结果页与公告正文。
 
 ## 证据清单和处置
 

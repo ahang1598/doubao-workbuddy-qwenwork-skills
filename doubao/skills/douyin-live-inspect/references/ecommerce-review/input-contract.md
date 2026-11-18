@@ -35,7 +35,7 @@
 }
 ```
 
-- `review_dimensions`：固定为 `content_analysis`；当前数据不足以生成 `live_score`。
+- `review_dimensions`：固定为 `content_analysis`；评分放在 content_analysis.scoring，不启用旧经营指标 live_score。
 - `fd.sg`：从 GetReport 完整 ASR 归一化出的有序分段。`st`、`et` 是整数毫秒；`tc/cm/dc/rp/ia/wm` 保留原电商复盘契约要求的类型，缺数据时使用类型正确的空值。
 - `fd.pd/fd.wd/fd.scs/fd.bm/fd.iad`：保持原电商复盘输入结构；当前链路无对应数据时分别传入空数组或空对象，不得省略、不得伪造。
 - `fd.ev.quality_report`：GetReport 的任务状态、场景 ID/名称、整体结论和规则命中摘要。`scenario_name` 来自本次已核验场景；电商、金融、汽车使用对应指导，其他名称使用通用复盘，不能按数字 ID 跨项目推断行业。
@@ -53,3 +53,5 @@
 - 质检规则“未命中”只代表该规则未发现风险，不代表主播陈述已经事实核验。
 - 无时间戳的质检结论只能用于全局总结，不得绑定到具体片段。
 - 允许为分析读取完整 ASR；最终回答不得输出原始 ASR 全文。
+
+`fd.ev.scoring_context` 提供稳定证据 ID 和已有风险；评分输出遵循[评分规则](../review-scoring.md)。

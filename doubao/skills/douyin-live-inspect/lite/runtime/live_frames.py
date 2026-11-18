@@ -29,32 +29,35 @@ def prepare_one(store,cancel):
     finished={f['time_ms'] for f in row.get('frames',[])}|set(row.get('frame_failed_times_ms',[]))
     at=next(t for t in row['frame_sample_times_ms'] if t not in finished)
     row={**row,'sample_at_ms':at}
-    recording=next((s for s in recording_segments(store) if s['start_ms']<=at<s['end_ms']),None)
+    recordings=recording_segments(store)
+    recording=next((s for s in recordings if s['start_ms']<=at<s['end_ms']),None)
     if not recording:
-        if task.get('capture_status') in {'ended','failed','stopped'}:
-            store.update_segment(row['id'],frame_status='unavailable',frame_failure='recording_unavailable')
+        if task.get('capture_status') in {'ended','failed','stopped'} or any(s['start_ms']>at for s in recordings):
+            failed = [*row.get('frame_failed_times_ms', []), at]
+            remaining = set(row['frame_sample_times_ms']) - finished - {at}
+            store.update_segment(row['id'], frame_status='pending' if remaining else 'unavailable',
+                                 frame_failed_times_ms=failed, frame_failure='recording_unavailable')
         return
     source=store.local_path(recording['media_file']);offset=(at-recording['start_ms'])/1000
     target=store.root/'frames'/f'live-{at}.jpg'
     state=dict(task.get('optional_frames',{}));ok=False
     remote_first=task.get('asr_policy')=='remote_first' and task.get('frames_policy')=='remote_first'
+    def local():
+        from runtime.media_fallback import ensure
+        try:
+            if source.suffix == '.flv':
+                if not ensure(store,cancel,'local_frame'):return False
+                task.update(store.task())
+            result=media_command([config(task,'ffmpeg_bin','ffmpeg'),'-nostdin','-v','error','-y','-ss',str(offset),'-i',str(source),'-frames:v','1','-vf','scale=min(1280\\,iw):-2',str(target)],store=store,timeout=10)
+            return result.returncode==0 and valid_frame(target,task,store)
+        except (OSError,RuntimeError,subprocess.SubprocessError):return False
     if remote_first:
         from runtime.remote_frames import sample
-        def local():
-            try:
-                result=media_command([config(task,'ffmpeg_bin','ffmpeg'),'-nostdin','-v','error','-y','-ss',str(offset),'-i',str(source),'-frames:v','1','-vf','scale=min(1280\\,iw):-2',str(target)],store=store,timeout=10)
-                return result.returncode==0 and valid_frame(target,task,store)
-            except (OSError,RuntimeError,subprocess.SubprocessError):return False
         ok=sample(store,row,source,offset,target,cancel,local)
         if ok is None:return
-    elif not state.get('local_unavailable') and at not in row.get('frame_local_attempted_times_ms',[]):
+    elif at not in row.get('frame_local_attempted_times_ms',[]):
         if not store.update_segment(row['id'],frame_local_attempted_times_ms=row.get('frame_local_attempted_times_ms',[])+[at]):return
-        try:
-            result=media_command([config(task,'ffmpeg_bin','ffmpeg'),'-nostdin','-v','error','-y','-ss',str(offset),'-i',str(source),'-frames:v','1','-vf','scale=min(1280\\,iw):-2',str(target)],store=store,timeout=10)
-            ok=result.returncode==0 and valid_frame(target,task,store)
-        except (OSError,RuntimeError,subprocess.SubprocessError):pass
-        if not ok:
-            state['local_unavailable']=True;store.update_task(optional_frames=state)
+        ok=local()
     elif at in row.get('frame_local_attempted_times_ms',[]) and target.is_file():
         ok=valid_frame(target,task,store)
     if not ok and task.get('asr_policy')=='local_first' and task.get('frames_policy')=='local_first' and not cancel.is_set():

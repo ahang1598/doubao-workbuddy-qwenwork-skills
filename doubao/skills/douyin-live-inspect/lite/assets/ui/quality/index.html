@@ -90,10 +90,16 @@
           <section class="rules-section">
             <div class="section-title"><div><h2>规则检测结果</h2>
               <p>本次检测使用的全部质检规则</p>
+              <details class="inspection-details"><summary>查看检测范围与完成情况</summary><p id="inspection-details"></p></details>
             </div></div>
             <div class="rule-grid" id="rule-grid"></div>
 
           </section>
+          <details class="rules-section" id="visual-samples" hidden>
+            <summary>画面抽检</summary>
+            <p id="visual-samples-summary"></p>
+            <div class="rule-grid" id="visual-samples-list"></div>
+          </details>
         </div>
       </div>
     </main>

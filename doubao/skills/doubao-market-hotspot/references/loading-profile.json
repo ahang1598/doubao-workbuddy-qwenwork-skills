@@ -1,0 +1,43 @@
+{
+  "version": "3.0.0",
+  "initial_files": [
+    "SKILL.md"
+  ],
+  "mode_references": {
+    "传导模式": [
+      "transmission-framework.md"
+    ],
+    "路径模式": [
+      "event-path.md"
+    ],
+    "快速判断": []
+  },
+  "conditional_references": {
+    "source_or_cutoff": "source-policy.md",
+    "compare_affected_entities": "transmission-framework.md",
+    "policy_or_regulation": "transmission-framework.md",
+    "market_pricing": "priced-in-evidence.md",
+    "cross_market_or_units": "market-profiles.md",
+    "quantified_scenarios_or_monitoring": "event-path.md",
+    "deterministic_calculation": "deterministic-tool-contract.md",
+    "report_or_partial_evidence": "output-structure.md"
+  },
+  "reference_policy": "read_mode_reference_then_only_conditionally_relevant_references; do_not_preload_directory",
+  "delivery_tiers": {
+    "direct": {
+      "format": "as_requested_or_direct_answer",
+      "label": "焦点直答",
+      "modes": ["快速判断"]
+    },
+    "brief": {
+      "format": "as_requested_or_focused_impact_analysis",
+      "label": "专题拆解",
+      "modes": ["传导模式", "路径模式"]
+    },
+    "full": {
+      "format": "as_requested_by_user_and_capability",
+      "label": "深度研究材料",
+      "modes": ["传导模式", "路径模式"]
+    }
+  }
+}

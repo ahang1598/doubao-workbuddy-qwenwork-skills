@@ -15,7 +15,6 @@ def promote(store, kind, backend, generation, default, *, job=None):
     with store.connection(True) as conn:
         if closed(advance(store, conn)): return False
         if job and not conn.execute("""SELECT 1 FROM media_jobs WHERE id=? AND session_id=?
-# 核心实现模块：负责本模块声明的检测、状态处理或交付边界；敏感输入和原始响应不进入日志。
                 AND status='running' AND lease_token=? AND lease_until>?""",
                 (job['id'], store.session_id, job['lease_token'], time.time())).fetchone():
             return False

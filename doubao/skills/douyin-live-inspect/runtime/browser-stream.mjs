@@ -1,3 +1,4 @@
+import { isBilibiliUrl, resolveBilibiliLive } from './bilibili-live.mjs';
 import { isXiaohongshuUrl, resolveXiaohongshuLive } from './xiaohongshu-live.mjs';
 import http from 'node:http';
 import https from 'node:https';
@@ -99,11 +100,11 @@ export async function probeBrowserStream(value, { lookup = dnsLookup, timeoutMs 
   finally { clearTimeout(timer); }
 }
 
-export async function resolveTaskSource(input, { resolveAnonymous = resolveDouyinLive, probe = probeBrowserStream, now = Date.now, resolveXhs = resolveXiaohongshuLive } = {}) {
+export async function resolveTaskSource(input, { resolveAnonymous = resolveDouyinLive, probe = probeBrowserStream, now = Date.now, resolveXhs = resolveXiaohongshuLive, resolveBili = resolveBilibiliLive } = {}) {
   if (['live_page_url', 'douyin_url', 'live_pull_url'].filter(key => input[key] !== undefined).length > 1) throw fail('INVALID_INPUT', '请只提供一个直播来源。');
   const pageUrl = input.live_page_url ?? input.douyin_url;
   if (['activity_id', 'ActivityId', 'room_id', 'roomId'].some(key => input[key] !== undefined)) {
-    throw fail('INVALID_INPUT', '暂不支持直播间 ID，请提供抖音直播页面链接或 FLV 流地址。');
+    throw fail('INVALID_INPUT', '暂不支持直播间 ID，请提供支持的直播页面链接或 FLV 流地址。');
   }
   if (input.live_pull_url !== undefined) {
     if (input.douyin_url !== undefined || input.browser_source !== undefined) {
@@ -121,8 +122,11 @@ export async function resolveTaskSource(input, { resolveAnonymous = resolveDouyi
     catch { throw fail('FLV_STREAM_UNAVAILABLE', 'FLV 流地址暂时无法独立读取音视频，请提供有效流地址。本次未创建任务。'); }
     return { status: 'ready', streamUrl, sourceMethod: 'direct_flv', roomName: '', accountName: '' };
   }
+  if (input.live_page_url !== undefined && isBilibiliUrl(pageUrl)) {
+    return resolveBili(pageUrl, { browserSource: input.browser_source, probe, now });
+  }
   if (input.live_page_url !== undefined && isXiaohongshuUrl(pageUrl)) {
-    return resolveXhs(pageUrl, { browserSource: input.browser_source, probe, now });
+    return resolveXhs(pageUrl, { browserSource: input.browser_source, now });
   }
   input = { ...input, douyin_url: pageUrl };
   try { return await resolveAnonymous(pageUrl); }

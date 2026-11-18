@@ -16,7 +16,7 @@
 典型工作流：先读取现有迷你图了解配置 → 执行创建/更新/删除。
 
 **常见配置错误（必须注意）**：
-- **数据源范围要精确**：迷你图的数据源范围必须与实际数据行列精确对应，范围偏移会导致图形展示错误
+- **数据源范围要精确**：迷你图的数据源范围必须与实际数据行列精确对应，范围偏移会导致图形展示错误。创建或更新时，`source` 和 `source_range.range` 可传裸 A1 范围或带同表前缀的范围。跨表或有歧义的引用会返回参数错误。
 - **不要与 SPARKLINE() 公式混淆**：飞书表格的 `SPARKLINE()` 公式函数已被禁用，迷你图只能通过 `+sparkline-{create|update|delete}` 的对象方式创建
 - **胜负 / count 迷你图原生支持**：`config.type="win_loss"`——别因速查表没列就判"不支持"绕路
 
@@ -102,7 +102,7 @@ lark-cli sheets +sparkline-list --url "..." --sheet-id "$SID" --group-id "grpA"
 lark-cli sheets +sparkline-create --url "..." --sheet-id "$SID" --properties @sparkline.json
 ```
 
-`sparkline.json` 示例（在 F 列嵌入两行折线迷你图，数据分别来自 A2:E2 和 A3:E3）：
+`sparkline.json` 示例（在 Sheet1 的 F 列嵌入两行折线迷你图，数据分别来自 A2:E2 和 A3:E3）：
 
 ```jsonc
 {
@@ -119,7 +119,7 @@ lark-cli sheets +sparkline-create --url "..." --sheet-id "$SID" --properties @sp
 > 两步式：先 `+sparkline-list --group-id <id>` 拿当前组的 `sparkline_id` 列表，再构造 `properties.sparklines[]`——**每项必须带 `sparkline_id`**。只改样式可只传 `properties.config`（不带 `sparklines`，整组样式覆盖式更新）。
 
 ```bash
-# 假设 +sparkline-list 已返回 group_id=grpA，组内 sparkline_id=sl_1 / sl_2
+# 假设目标工作表为 Sheet1，+sparkline-list 已返回 group_id=grpA，组内 sparkline_id=sl_1 / sl_2
 lark-cli sheets +sparkline-update --url "..." --sheet-id "$SID" --group-id "grpA" --properties '{
   "sparklines": [
     {"sparkline_id":"sl_1","source":"'Sheet1'!A2:A20"},

@@ -16,8 +16,11 @@ def completion(store):
     recap = recap_report(store)
     version = recap.get('evidence_version')
     deliveries = task.get('report_deliveries', {})
-    failed_recap = recap.get('status') == 'blocked' or recap.get('terminal_failure', False)
+    failed_recap = recap.get('status') == 'blocked' or recap.get('terminal_failure', False) or (task.get('kind') == 'video' and recap.get('status') == 'failed')
     def delivered(kind):
+        if kind == 'quality' and task.get('kind') == 'video':
+            from runtime.video_report import delivered_report
+            return bool(delivered_report(store))
         receipt = deliveries.get(kind, {})
         if version is None or receipt.get('evidence_version') != version:return False
         if receipt.get('outcome', 'ready') == 'failed':
@@ -64,7 +67,7 @@ def outcome_available(task, kind, outcome, status, recap):
 
 
 def acknowledge(store, value):
-    if store.task().get('review_protocol') != 'lite_review_v2':
+    if store.task().get('review_protocol') != 'lite_review_v2' and store.task().get('kind') != 'video':
         raise ValueError('delivery acknowledgement requires current live review protocol')
     if value.get('kind') not in {'quality', 'recap'}:
         raise ValueError('report kind must be quality or recap')
@@ -82,10 +85,10 @@ def acknowledge(store, value):
         raise ValueError('report not ready or evidence version changed')
     if not outcome_available(store.task(), value['kind'], outcome, status, report):
         raise ValueError('report outcome not available')
-    with store.connection(True) as conn:
-        task = store._task(conn)
-        from runtime.recap import evidence_input
-        if evidence_input(task, store._segments(conn))['evidence_version'] != value['evidence_version']:
+    from runtime.recap import snapshot, evidence_input
+    # Receipt validation must use the same window projection as recap generation.
+    with snapshot(store, True) as (task, segments, conn):
+        if evidence_input(task, segments)['evidence_version'] != value['evidence_version']:
             raise ValueError('report evidence changed')
         deliveries = task.setdefault('report_deliveries', {})
         previous = deliveries.get(value['kind'], {})

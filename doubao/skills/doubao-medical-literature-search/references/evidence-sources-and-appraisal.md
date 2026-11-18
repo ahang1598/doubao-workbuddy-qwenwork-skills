@@ -1,6 +1,6 @@
 # 证据来源、检索与评价
 
-本文件只管“按什么顺序查、优先查什么、哪些证据可用、如何记录和评价”。问题拆解、检索批次和预算见 `core-workflow.md`；图表见 `synthesis-and-visualization.md`；最终文档结构和交付 QA 见 `output-and-qa.md`。
+本文件只管“按什么顺序查、优先查什么、哪些证据可用、如何记录和评价”。问题拆解、检索批次和预算见 `core-workflow.md`；图表见 `synthesis-and-visualization.md`；最终文档结构和交付见 `output-and-qa.md`。
 
 用户要求国标著录或可投稿综述时，引用、论文格式及证据等级的稿件展示按 `review-manuscript-and-citations.md`；本文件的检索、评价和内部六列 CSV 流程继续适用。
 

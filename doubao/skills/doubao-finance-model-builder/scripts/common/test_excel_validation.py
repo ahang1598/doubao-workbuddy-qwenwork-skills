@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 
+import importlib.util
+import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from openpyxl import Workbook
 
-from portable_workbook_audit import inspect_workbook_structure, lint_formula
+from portable_workbook_audit import Recalculation, audit_contract, inspect_workbook_structure, lint_formula, sha256_file
 
 
 class ExcelValidationTests(unittest.TestCase):
@@ -56,6 +60,74 @@ class ExcelValidationTests(unittest.TestCase):
             self.assertEqual(model["hidden_rows"], [2])
             self.assertEqual(model["hidden_columns"], ["C"])
             self.assertEqual(model["data_validations"][0]["type"], "list")
+
+    def test_reuses_supplied_recalculation_and_exports_original_snapshot(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            original = root / "model.xlsx"
+            cached = root / "recalculated.xlsx"
+            workbook = Workbook()
+            workbook.active["A1"] = 1
+            workbook.active["B1"] = "=A1+1"
+            workbook.save(original)
+            workbook.active["A1"] = 2
+            workbook.save(cached)
+            workbook.close()
+            recalculation = Recalculation("SUCCESS", "test", cached, temp_root=root)
+            contract = {"workflow": "test", "required_sheets": ["Sheet"], "formula_ranges": [], "key_outputs": []}
+            snapshot = root / "workbook-inspect.json"
+
+            with patch("portable_workbook_audit.recalculate_with_libreoffice") as recalculate:
+                result = audit_contract(original, contract, recalculation=recalculation, inspect_output=snapshot)
+                recalculate.assert_not_called()
+
+            self.assertEqual(result["status"], "PASS")
+            self.assertTrue(cached.is_file())
+            self.assertEqual(
+                json.loads(snapshot.read_text(encoding="utf-8"))["artifact_sha256"], sha256_file(original),
+            )
+            self.assertNotEqual(sha256_file(original), sha256_file(cached))
+
+    def test_three_statement_checks_share_recalculation_and_reject_bad_dividend(self):
+        script = Path(__file__).resolve().parents[1] / "three-statements" / "audit_three_statements_workbook.py"
+        spec = importlib.util.spec_from_file_location("three_statements_audit", script)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            original = root / "model.xlsx"
+            workbook = Workbook()
+            workbook.remove(workbook.active)
+            for name in module.REQUIRED_SHEETS:
+                workbook.create_sheet(name)
+            workbook["检查"]["B2"] = '=IF(COUNTIF(G4:G4,"失败")=0,"PASS","FAIL")'
+            workbook["现金流量表"]["A1"] = "cfs.dividends"
+            workbook["现金流量表"]["B1"] = 1
+            workbook.save(original)
+            workbook.close()
+            scratch = root / "recalculation"
+            scratch.mkdir()
+            recalculation = Recalculation("SUCCESS", "test", original, temp_root=scratch)
+            output = root / "artifact-audit.json"
+            snapshot = root / "workbook-inspect.json"
+
+            with (
+                patch.object(module, "recalculate_with_libreoffice", return_value=recalculation) as recalculate,
+                patch("portable_workbook_audit.recalculate_with_libreoffice") as duplicate_recalculate,
+                patch.object(sys, "argv", [str(script), str(original), str(output), "--recalculate", "required",
+                                          "--inspect-output", str(snapshot)]),
+                patch("builtins.print"),
+                self.assertRaises(SystemExit) as exit_result,
+            ):
+                module.main()
+
+            self.assertEqual(exit_result.exception.code, 1)
+            recalculate.assert_called_once()
+            duplicate_recalculate.assert_not_called()
+            result = json.loads(output.read_text(encoding="utf-8"))
+            self.assertTrue(any("支付股利为正现金流" in error for error in result["errors"]))
+            self.assertTrue(snapshot.is_file())
+            self.assertFalse(scratch.exists())
 
 
 if __name__ == "__main__":

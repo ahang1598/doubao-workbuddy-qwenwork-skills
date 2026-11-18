@@ -1,4 +1,4 @@
 interface:
   display_name: "行业研究 Industry Analysis"
-  short_description: "先定判断主线，再用三级数据分级取证、按固定五大板块写透，最终交付一份可溯源、有判断、产业链贯通的飞书行业深度报告"
-  default_prompt: "用 $doubao-industry-analysis 为我做一份{行业/赛道}的中长期深度研究报告：先想清楚判断主线，再取证、按五大板块写透，最终交付飞书文档（图全部用表格呈现，内容以论证充分、信息完整为准）。"
+  short_description: "行业问题默认简洁回答；完整报告保留主线、三级取证与固定五大板块"
+  default_prompt: "用 $doubao-industry-analysis 为我做一份{行业/赛道}的中长期深度研究报告：先想清楚判断主线，再取证、按五大板块写透，最终交付飞书文档（内容以论证充分、信息完整为准）。"

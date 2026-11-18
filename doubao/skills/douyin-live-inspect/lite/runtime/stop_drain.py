@@ -73,10 +73,23 @@ def advance(store, conn, task, state, batches, segments, stalled, now):
         for segment in pending:
             if not idle and segment['id'] not in stalled_ids:continue
             why = reason(segment, batches)
+            # Slow main-Agent reasoning does not invalidate a usable contract.
+            if why == 'review_not_dispatched' or any(
+                    b.get('executor') != 'child' and str(segment['id']) in b['targets'] for b in batches):
+                continue
+            if why == 'asr_result_timeout' and task.get('worker_status') in {'done','failed','stopped'}:
+                why = 'worker_stopped'
             has_text = any(str(u.get('text', '')).strip() for u in segment.get('subtitles', [])) or bool(segment.get('frames'))
             # A successful remote submit is not a recognition result. Honor the
             # already-frozen query budget, reserving a review window within the cap.
             remote_deadline = segment.get('asr_cloud_deadline_at')
+            # Let an already-ready local backup claim the cloud timeout before
+            # a heartbeat seals the segment. This window never slides.
+            if (type(remote_deadline) in (int,float) and math.isfinite(remote_deadline)
+                    and task.get('asr_policy') == 'local_first'
+                    and task.get('local_backup_status') == 'ready'
+                    and not segment.get('asr_recovery_attempts')):
+                remote_deadline += IDLE_SECONDS
             if (why == 'asr_result_timeout' and segment.get('asr_task_id')
                     and task.get('worker_status') not in {'done','failed','stopped'}
                     and type(remote_deadline) in (int,float) and math.isfinite(remote_deadline)
@@ -84,7 +97,7 @@ def advance(store, conn, task, state, batches, segments, stalled, now):
                 state['deadline_at'] = max(state['deadline_at'], min(remote_deadline, hard-IDLE_SECONDS))
                 continue
             # Partial saved speech can still be reviewed after media failure.
-            if has_text and why in {'asr_result_timeout', 'frames_timeout'}:
+            if has_text and why in {'asr_result_timeout', 'frames_timeout', 'worker_stopped'}:
                 segment['drain_media_failure'] = why
                 if segment['asr_status'] not in ASR_DONE:
                     segment.update(asr_status='timed_out', asr_final=True,
@@ -93,6 +106,8 @@ def advance(store, conn, task, state, batches, segments, stalled, now):
                 conn.execute("UPDATE media_jobs SET status='skipped',lease_token=NULL,lease_until=NULL,last_error_code='drain_media_timeout',updated_at=? "
                              "WHERE session_id=? AND segment_id=? AND status NOT IN ('succeeded','failed','skipped')",
                              (now, store.session_id, segment['id']))
+            if has_text and why == 'review_timeout' and segment.get('drain_review_retries'):
+                continue
             if has_text and not segment.get('drain_review_retries'):
                 segment.update(review_status='pending', drain_review_retries=1)
                 segment.pop('review_defer', None)
@@ -106,17 +121,8 @@ def advance(store, conn, task, state, batches, segments, stalled, now):
                 if retry_ids.intersection(map(int, batch['targets'])):retire(store, conn, batch, now)
             state['recovery_attempts'] += 1
             state.update(last_progress_at=now, deadline_at=min(hard, now+IDLE_SECONDS))
-        # A stopped media worker cannot finish pending jobs. Preserve any partial
-        # transcript for review instead of prematurely completing the whole task.
-        if task.get('capture_status') in finishing.TERMINAL and task.get('worker_status') in {'done','failed','stopped'}:
-            for segment in store._segments(conn):
-                if segment['review_status'] in {'done','skipped'}:continue
-                if segment['asr_status'] not in ASR_DONE:
-                    segment.update(asr_status='failed', asr_final=True,
-                                   asr_diagnostic={'category':'ASR_WORKER_STOPPED'})
-                    segment['drain_media_failure'] = 'worker_stopped'
-                if segment['frame_status'] not in FRAME_DONE:segment['frame_status']='unavailable'
-                store._write_segment(conn, segment['id'], segment)
+        # Keep pending media for processing-only recovery until the drain budget
+        # expires; worker exit alone must not retire evidence and freeze the task.
 
     segments = store._segments(conn)
     from runtime.realtime_policy import skip_empty
@@ -136,7 +142,12 @@ def advance(store, conn, task, state, batches, segments, stalled, now):
         if immediate and task.get('stop_audit'):
             task['stop_audit']['discarded_segments'] = sum(s.get('skip_code')=='USER_DISCARD' for s in segments)
         reviewed = sum(s['review_status']=='done' and bool(s.get('review_result')) for s in segments)
-        unresolved = sum(s['review_status']!='done' or bool(s.get('drain_media_failure')) for s in segments)
+        # A local pass with no voice is finished work, even when no review was claimed.
+        silent = sum(s.get('skip_code') == 'NO_SPEECH_EVIDENCE' and s['asr_status'] == 'success'
+                     and (s.get('asr_metrics') or {}).get('asr_calls') == 0
+                     and not (s.get('speech_gaps') or s.get('speech_detected') or s.get('drain_media_failure'))
+                     for s in segments)
+        unresolved = sum(s['review_status']!='done' or bool(s.get('drain_media_failure')) for s in segments) - silent
         why = state.get('blocking_reason') or next(iter(blockers), None)
         if not why:why = next((s.get('drain_media_failure') for s in segments if s.get('drain_media_failure')), None)
         why = why or ('no_captured_content' if not segments else 'none' if not unresolved else 'incomplete_evidence')

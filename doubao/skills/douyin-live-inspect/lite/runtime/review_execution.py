@@ -104,7 +104,7 @@ def failure(command, code, request_id=None):
 def arguments(argv):
     parser = argparse.ArgumentParser(add_help=False, exit_on_error=False)
     parser.add_argument('command', choices=sorted(COMMANDS))
-    for name in ('task-dir', 'request-id', 'context-id', 'input-file', 'dispatch-input-file', 'result-id', 'offset'):
+    for name in ('task-dir', 'request-id', 'context-id', 'input-file', 'dispatch-input-file', 'result-id', 'offset', 'retry-pending-from'):
         parser.add_argument('--'+name)
     parser.add_argument('--next', action='store_true', dest='claim_next')
     parser.add_argument('--dispatcher-id', default='main')
@@ -222,7 +222,7 @@ def recovery_view(root, conn, session_id, result):
                           current_recovery(conn, session_id, result), read_only=True)['data']
 
 
-def state(root, request_id=None, context_id=None):
+def state(root, request_id=None, context_id=None, *, submit_argv=None):
     if not request_id and not context_id: raise ValueError('identity required')
     record = read_record(root, request_id) if request_id else None
     requested_context = context_id
@@ -246,12 +246,22 @@ def state(root, request_id=None, context_id=None):
         if request_id and requested_context and not record and not binding:
             raise ValueError('request binding unavailable')
         record = {**(record or {}), **binding}
+        if submit_argv is not None:
+            if record.get('command') != 'review-submit' or record.get('argv_digest') != hashlib.sha256(encode(submit_argv).encode()).hexdigest():
+                raise ValueError('submit request mismatch')
+            if record.get('input_path') and record.get('fingerprint'):
+                raw = input_bytes(record['input_path'])
+                if hashlib.sha256(encode(submit_argv).encode()+b'\0'+raw).hexdigest() != record['fingerprint']:
+                    raise ValueError('submit input changed')
         if binding.get('context_id'):
             if requested_context and requested_context != binding['context_id']:
                 raise ValueError('request/context mismatch')
             context_id = binding['context_id']
         if requested_context and record and not binding.get('context_id') and record.get('context_id') != requested_context:
             raise ValueError('request/context mismatch')
+        if submit_argv is not None and record.get('response') and execution == 'exited':
+            result['submit_receipt'] = record['response']
+            return result
         if binding.get('recovery_receipt'):
             result.update(status='recovered', recovery_receipt=recovery_view(root, conn, sid, binding['recovery_receipt']),
                           next_action='read-recovery-result')
@@ -308,12 +318,12 @@ def state(root, request_id=None, context_id=None):
             last_error=batch.get('last_review_error'))
         if changed or stale:
             result.update(status='evidence_changed', next_action='review-next')
-        elif skipped:
+        elif skipped and not pending:
             result.update(status='stopped', next_action='status')
         elif not pending:
             result.update(status='saved', next_action='review-next')
         else:
-            result['status'] = 'partial' if saved else 'pending'
+            result['status'] = 'partial' if saved or skipped else 'pending'
             if batch.get('executor') == 'child' and batch['status'] in {'dispatching','running','cancelling'}:
                 result['next_action'] = 'observe-review-worker'
             elif execution == 'exited':
@@ -327,7 +337,7 @@ def state(root, request_id=None, context_id=None):
                 result['next_action'] = 'read-request-result' if record.get('response') else 'review-next'
         if batch.get('executor') == 'child' and batch['status'] in {'dispatching','running','cancelling'}:
             result['next_action'] = 'observe-review-worker'
-        if binding.get('claim_receipt') and result['next_action'] != 'observe-review-worker' and result['status'] not in {'evidence_changed','stopped'}:
+        if binding.get('claim_receipt') and result['next_action'] != 'observe-review-worker' and result['status'] != 'evidence_changed':
             if pending and not binding.get('next_context_id'):
                 result.update(receipt=binding['claim_receipt'], next_action='read-request-result')
             elif not pending and binding.get('next_context_id'):
@@ -339,6 +349,9 @@ def state(root, request_id=None, context_id=None):
                     result['next_action'] = 'observe-review-worker'
                 elif following['status'] in {'pending','partial'}:
                     result.update(receipt=binding['claim_receipt'], next_action='read-request-result')
+        if (submit_argv is not None and result['status'] in {'saved','stopped'} and not binding.get('claim_receipt')
+                and context.get('continuation')):
+            result['recovery_receipt'] = recovery_view(root, conn, sid, context['continuation'])
         if batch.get('executor') == 'main' and result['status'] in {'pending','partial','saved'}:
             result['recovery_argv'] = [sys.executable, str(Path(__file__).resolve().parents[1]/'scripts/live_inspect.py'),
                 'review-recover','--task-dir',str(root),'--context-id',context_id,
@@ -427,10 +440,30 @@ def child(argv, request_id, compact):
             phase('input_read', fingerprint=fingerprint)
             record['task_id'] = task['id']
             call_argv = list(argv)
-            if args.request_id:
-                index = call_argv.index('--request-id') if '--request-id' in call_argv else None
-                if index is not None: del call_argv[index:index+2]
-                else: call_argv = [a for a in call_argv if not a.startswith('--request-id=')]
+            for option in ('--request-id','--retry-pending-from'):
+                if option in call_argv:
+                    index = call_argv.index(option)
+                    del call_argv[index:index+2]
+                else:
+                    call_argv = [arg for arg in call_argv if not arg.startswith(option+'=')]
+            if args.retry_pending_from:
+                # The caller can reuse the original draft. Snapshot only the still-open items.
+                draft = json.loads(raw or b'null')
+                if args.command != 'review-submit' or not isinstance(draft, dict) or not draft.get('context_id'):
+                    raise ValueError('bound review draft required')
+                prior = state(root, identifier(args.retry_pending_from), identifier(draft['context_id']))
+                if (prior['execution_status'] != 'exited' or prior['status'] not in {'partial','pending'}
+                        or prior.get('next_action') not in {'repair-review-input','review-submit'}
+                        or prior.get('input_path') != str(Path(input_path).resolve())):
+                    return failure(args.command, 'REQUEST_RECONCILE_REQUIRED', args.retry_pending_from), 1
+                items = draft.get('segments')
+                if not isinstance(items, list):
+                    raise ValueError('batch segments required')
+                draft['segments'] = [item for item in items if isinstance(item, dict)
+                                     and item.get('segment_id') in prior['pending_segment_ids']]
+                if not draft['segments']:
+                    return failure(args.command, 'REQUEST_RECONCILE_REQUIRED', args.retry_pending_from), 1
+                raw = encode(draft).encode()
             if raw is not None:
                 binding_mismatch = False
                 record['input_path'] = str(Path(input_path).expanduser().resolve())
@@ -463,15 +496,19 @@ def child(argv, request_id, compact):
             finally:
                 # Input is retained only in its existing Agent-authored draft.
                 if raw is not None: snapshot.unlink(missing_ok=True)
+            if not envelope.get('ok') and record.get('task_id'):
+                envelope.setdefault('data', {}).setdefault('task_id', record['task_id'])
             data = envelope.get('data', {})
             if args.command == 'review-submit' and data.get('repair_required'):
                 # A repaired draft is a new request; preserve automatic continuation.
                 data['retry_argv'] = retry_command(root, input_path, record['resume_options'])
                 data['retry_command_argv'] = data['retry_argv'][2:]
-                data['repair_instruction'] = '仅修复失败段，然后从当前 Lite 目录用同一 Python 环境执行 retry_command_argv；不要复用原 request-id，不必额外核对已明确失败的请求。'
+                data['repair_instruction'] = '仅修复 retry_segment_ids 列出的片段，跳过已保存及不可重试项；然后从当前 Lite 目录用同一 Python 环境执行 retry_command_argv，不复用原 request-id。'
             contract = data.get('submission_contract', {})
             context = contract.get('template', {}).get('context_id')
             if context: record.setdefault('context_id', context)
+            if args.command == 'review-submit' and not envelope.get('ok'):
+                envelope['error'].setdefault('review_phase', record.get('phase','business_started'))
             phase('business_returned')
             if envelope.get('ok'):
                 from runtime.report_delivery import bounded_output
@@ -520,6 +557,9 @@ def worker(argv, request_id, compact):
         code_name = ('OUT_OF_MEMORY' if is_memory_error(error) else 'REVIEW_STORAGE_UNAVAILABLE' if isinstance(error,sqlite3.Error) else
                      'REVIEW_BINDING_INVALID' if isinstance(error,ValueError) else 'REVIEW_COMMAND_UNAVAILABLE')
         result, code = failure(argv[0], code_name, request_id), 1
+        if argv[0] in {'review-next','review-submit'}:
+            from runtime.bridge import error_facts
+            result['error'].update(error_facts(error))
         from runtime.platform_support import PrivateDirectoryError
         if isinstance(error,PrivateDirectoryError):
             result['error'].update(failure_component='windows_acl',failure_reason=error.reason)
@@ -538,9 +578,60 @@ def worker(argv, request_id, compact):
     return code
 
 
+def reconcile_submit(argv, request_id):
+    """Runs only in the bounded read-only subprocess. Never claim or submit here."""
+    args = arguments(argv)
+    observed = state(Path(args.task_dir).expanduser().resolve(), request_id, submit_argv=argv)
+    status = observed['status']
+    phase_name = observed['phase']
+    if observed['execution_status'] != 'exited':
+        return None, 'unknown', phase_name
+    if 'submit_receipt' in observed:
+        return observed['submit_receipt'], 'receipt', phase_name
+    if status == 'not_committed':
+        result = failure('review-submit', 'REVIEW_COMMAND_TIMEOUT', request_id)
+        result['error'].update(exit_confirmed=True, status=status, next_action=observed['next_action'])
+        if phase_name not in {'cli_started','input_read_started','input_read'}:
+            return None, 'unknown', phase_name
+        return result, status, phase_name
+    if status not in {'saved','partial','pending','stopped','evidence_changed','superseded'}:
+        return None, 'unknown', phase_name
+    data = {key:observed[key] for key in ('task_id','context_id','saved_segment_ids','skipped_segment_ids',
+            'changed_segment_ids','pending_segment_ids','next_action') if key in observed}
+    data.update(request_id=request_id, status=status, saved_count=len(data.get('saved_segment_ids', [])),
+                workflow_complete=False)
+    if observed.get('recovery_receipt'):
+        data['next'] = observed['recovery_receipt']
+    elif observed.get('claim_receipt') and status in {'saved','stopped'}:
+        following = observed.get('next_batch', {})
+        if following.get('status') == 'pending' and following.get('next_action') != 'observe-review-worker':
+            data['next'] = observed['claim_receipt']['data']
+        elif not following and not observed.get('next_context_id'):
+            data['next'] = observed['claim_receipt']['data']
+        elif observed.get('next_context_id'):
+            data.update(next_action='review-state', state_argv=['review-state','--task-dir',args.task_dir,
+                        '--context-id',observed['next_context_id']])
+    if 'next' in data:
+        data.update(continuation_path='next', next_action=data['next'].get('next_action','status'))
+    elif observed.get('retry_command_argv') and status in {'partial','pending'}:
+        data.update(repair_required=True, retry_segment_ids=data['pending_segment_ids'],
+                    retry_command_argv=[*observed['retry_command_argv'],'--retry-pending-from',request_id],
+                    next_action=observed['next_action'],
+                    repair_instruction='仅修正有问题的待判片段，再执行 retry_command_argv；运行时只提交原批次仍待判的片段。')
+    if status == 'pending' or (status == 'evidence_changed' and not data['saved_count']):
+        result = failure('review-submit', 'REVIEW_COMMAND_TIMEOUT', request_id)
+        result['error'].update(data, exit_confirmed=True)
+        return result, status, phase_name
+    return {'ok':True, 'command':'review-submit', 'data':data}, status, phase_name
+
+
 def supervise(argv):
     """The supervisor touches no task files: blocked filesystem calls stay in child."""
     command = argv[0]
+    from runtime.bridge import begin_command, publish_metadata, review_command
+    started = time.monotonic()
+    observation = {}
+    begin_command(command)
     if command == 'review-recover' and any(a in ('-h','--help') for a in argv):
         print('review-recover --task-dir PATH --context-id ID --dispatcher-id ID --request-id ID --takeover\n'
               'Explicit serial takeover; never restarts capture.')
@@ -551,7 +642,10 @@ def supervise(argv):
         return 0
     try: args = arguments(argv)
     except (Exception, SystemExit):
-        print(encode(failure(command, 'REVIEW_ARGUMENT_INVALID'))); return 1
+        result=failure(command, 'REVIEW_ARGUMENT_INVALID')
+        publish_metadata(error_code='REVIEW_ARGUMENT_INVALID')
+        review_command(result)
+        print(encode(result)); return 1
     request_id = args.request_id or uuid.uuid4().hex
     print(encode({'event':'review_execution','command':command,'request_id':request_id,
                   'stage':'supervisor_started','time':time.time()}), file=sys.stderr, flush=True)
@@ -565,35 +659,65 @@ def supervise(argv):
         process = subprocess.Popen([sys.executable, '-c', script, request_id,
             '1' if args.request_id else '0', *argv], cwd=Path(__file__).resolve().parents[1],
             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, env=env, **process_options())
-    except OSError:
-        print(encode(failure(command, 'REVIEW_START_FAILED', request_id))); return 1
+    except OSError as error:
+        result=failure(command, 'REVIEW_START_FAILED', request_id)
+        if command in {'review-next','review-submit'}:
+            from runtime.bridge import error_facts
+            result['error'].update(error_facts(error))
+            observation['review_elapsed_ms'] = round((time.monotonic()-started)*1000)
+        publish_metadata(error_code='REVIEW_START_FAILED')
+        review_command(result, observation)
+        print(encode(result)); return 1
     try:
         output, _ = process.communicate(timeout=budget)
         result = json.loads(output)
         if not isinstance(result, dict) or type(result.get('ok')) is not bool:
             raise ValueError('invalid command response')
     except subprocess.TimeoutExpired:
-        kill_tree(process)
+        try:
+            kill_tree(process)
+        except (OSError, subprocess.SubprocessError):
+            pass  # communicate below still has to confirm exit before reconciliation.
         result = failure(command, 'REVIEW_COMMAND_TIMEOUT', request_id)
         try:
             process.communicate(timeout=2)
             result['error']['exit_confirmed'] = True
         except subprocess.TimeoutExpired:
             result['error']['exit_confirmed'] = False
+        if command == 'review-submit':
+            observation['review_timeout_state'] = 'unknown'
+            if result['error']['exit_confirmed']:
+                probe = ('import sys; from runtime.review_execution import reconcile_submit, encode; '
+                         'print(encode(reconcile_submit(sys.argv[2:],sys.argv[1])))')
+                try:
+                    checked = subprocess.run([sys.executable,'-c',probe,request_id,*argv],
+                        cwd=Path(__file__).resolve().parents[1], env=env, stdout=subprocess.PIPE,
+                        stderr=subprocess.DEVNULL, timeout=3, check=True)
+                    receipt, status, phase_name = json.loads(checked.stdout)
+                    observation.update(review_timeout_state=status, review_phase=phase_name)
+                    if receipt is not None:
+                        result = receipt
+                except (OSError, subprocess.SubprocessError, ValueError):
+                    pass  # Preserve the timeout and the original state query.
+
     except (ValueError, UnicodeError):
         result = failure(command, 'REVIEW_OUTPUT_UNAVAILABLE', request_id)
     except BaseException:
         kill_tree(process)
         process.communicate(timeout=2)
         raise
+    if command == 'review-submit':
+        observation['review_elapsed_ms'] = round((time.monotonic()-started)*1000)
+    review_command(result, observation)
     detail=result.get('error',{})
+    publish_metadata(error_code=detail.get('code') if not result.get('ok') else None)
     if detail.get('failure_component'):
         from runtime.bridge import record_runtime_issue
         record_runtime_issue(detail['failure_component'],detail.get('failure_reason'))
         from runtime.bridge import publish_metadata
         publish_metadata(error_detail=detail.get('error_detail'))
     if command not in {'review-state', 'result-page'} and not result.get('ok'):
-        result['error']['state_argv'] = ['review-state','--task-dir',args.task_dir,'--request-id',request_id]
+        result['error']['state_argv'] = ['review-state','--task-dir',args.task_dir,'--request-id',result['error'].get('request_id',request_id)]
     print(encode({'event':'review_execution','command':command,'request_id':request_id,
                   'stage':'output_ready','time':time.time(),'exit_code':process.poll()}), file=sys.stderr, flush=True)
     print(encode(result), flush=True)

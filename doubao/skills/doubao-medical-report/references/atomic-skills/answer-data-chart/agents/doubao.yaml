@@ -1,0 +1,3 @@
+interface:
+  display_name: "回答中的精确数据图表"
+  short_description: "按可核实数据绘制 SVG 比较、参考区间、分布和跨期变化图，不生成栅格图片。"

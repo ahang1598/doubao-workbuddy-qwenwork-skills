@@ -4,16 +4,16 @@
 
 股本与公司行动不以结构化工具返回值作为终点。先按 `references/equity-evidence-acquisition.md` 保存官方原文件、官方检索结果和文本快照；结构化结果只用于发现候选公告和交叉检查。
 
-先按强制读取完整性协议完整读取 `references/source-tool-priority.md`。用户对某项数据明确指定工具、网站、文件、字段或历史时点口径时，必须先实际调用该指定来源；用户未指定该项目时，再优先定位并调用 `seed_finance_search`。检查实际暴露的参数和返回字段，不臆造 ticker、字段名、供应商或历史快照能力。支持批量时，按“证券身份与公司行动”“报告财务”“市场与资本结构”“预测与宏观参数”分批查询。
+先按强制读取完整性协议完整读取 `references/source-tool-priority.md`。用户对某项数据明确指定工具、网站、文件、字段或历史时点口径时，必须先实际调用该指定来源；用户未指定该项目时，结构化数据优先调用 `seed_finance_lookup`；公告、研报等文本优先调用 `seed_finance_search`，不可用时回退 `general_search`。检查实际暴露的参数和返回字段，不臆造 ticker、字段名、供应商或历史快照能力。支持批量时，按“证券身份与公司行动”“报告财务”“市场与资本结构”“预测与宏观参数”分批查询。
 
-若指定来源或 `seed_finance_search` 不存在、未连接、权限不足、持续失败或缺少字段，先记录实际尝试、`Source unavailable` 或 `Coverage insufficient` 及替代理由，再按能力组合替代工具：
+若指定来源或 `seed_finance_lookup` 不存在、未连接、权限不足、持续失败或缺少字段，先记录实际尝试、`Source unavailable` 或 `Coverage insufficient` 及替代理由，再按能力组合替代工具：
 
 1. 监管申报、交易所公告及公司正式披露检索。
 2. 指定历史日期的股价、汇率、国债收益率和公司行动。
 3. 报表、附注、股本和债务组成项提取。
 4. 可识别供应商、快照日和口径的一致预期。
 
-不因 `seed_finance_search` 缺失而停止，但不得静默替换用户指定来源；必须披露请求来源、实际工具、替代关系和数据等级变化。不得声称接入未授权的 Bloomberg、FactSet、LSEG、Capital IQ 或其他专业数据源。
+不因 `seed_finance_lookup` 缺失而停止，但不得静默替换用户指定来源；必须披露请求来源、实际工具、替代关系和数据等级变化。不得声称接入未授权的 Bloomberg、FactSet、LSEG、Capital IQ 或其他专业数据源。
 
 ## 来源层级
 
@@ -60,7 +60,7 @@
 - `NA`：无法可靠取得。
 - `NM`：无经济意义。
 
-数据来自 `seed_finance_search` 不自动成为 `[R]`；标签取决于上游来源性质。
+数据来自 `seed_finance_lookup` 或 `seed_finance_search` 不自动成为 `[R]`；标签取决于上游来源性质。
 
 ## 来源台账
 

@@ -145,7 +145,7 @@ function beginTelemetry(telemetry, key) {
     }
   } catch {}
 }
-async function reportEvent(key, extra, { toolName, env = process.env, timeout = 3000 }) {
+async function reportEvent(key, extra, { toolName, env = process.env, timeout = 3000, failure }) {
   if (disabled(env) || !ALLOWED.has(key)) return;
   const { account_id, ...eventExtra } = extra;
   extra = eventExtra;
@@ -195,7 +195,7 @@ async function reportEvent(key, extra, { toolName, env = process.env, timeout = 
     // SDK 不可用时尚未开始发送，入口仍应返回 unavailable，而不是 attempted。
     return;
   }
-  return finishTelemetry(telemetry, undefined, [workflowDelivery], remaining());
+  return finishTelemetry(telemetry, failure, [workflowDelivery], remaining());
 }
 
 const reporter = { EVENTS, disabled, createTelemetry, beginTelemetry, finishTelemetry, reportEvent };

@@ -213,6 +213,7 @@ export async function logout(input = {}, { env = process.env } = {}) {
   await withProfileLock(profile, env, async () => {
     await removeStore(profile, "session", env);
     await removeStore(profile, "pending", env);
+    await removeStore(profile, "login", env);
   });
   return { profile, status: "logged_out" };
 }

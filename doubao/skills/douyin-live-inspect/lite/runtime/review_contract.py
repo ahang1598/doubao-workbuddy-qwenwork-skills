@@ -66,8 +66,9 @@ def prepare_input(path, template):
 
 def attach(store, conn, batch, result, snapshot):
     initialize(conn)
-    speech_only = full_live.speech_only_scope(store._task(conn))
-    compact_speech = speech_only and store._task(conn).get('inspection_policy') in {'lite_live_realtime_v1','lite_live_realtime_v2'}
+    task = store._task(conn)
+    speech_only = full_live.speech_only_scope(task)
+    compact_speech = speech_only and task.get('inspection_policy') in {'lite_live_realtime_v1','lite_live_realtime_v2'}
     context_id = batch.get('context_id')
     if not context_id:
         context_id = uuid.uuid4().hex
@@ -103,16 +104,22 @@ def attach(store, conn, batch, result, snapshot):
         template['host_task_id'] = batch.get('host_task_id')
     for segment in result['segments']:
         supplement = segment.get('review_kind') == 'visual_supplement'
+        missing_image = full_live.enabled(task) and task.get('image_inspection') is True and not segment.get('frames')
+        missing_speech = not full_live.speech_can_clear(task, segment)
         rules = [
             {
                 'rule_id': rule['id'],
-                'status': None,
+                'status': ('insufficient' if missing_image and 'image' in rule['modalities'] else None),
                 'reason': '',
                 'events': [],
                 'channels': {
                     channel: (
                         {'status': 'not_checked', 'reason': '画面检测关闭，未检查画面'}
                         if speech_only and channel == 'image'
+                        else {'status': 'insufficient', 'reason': '本段未取得抽检画面，不能排除视觉风险'}
+                        if channel == 'image' and missing_image
+                        else {'status': 'insufficient', 'reason': '本段语音证据不足'}
+                        if channel == 'speech' and missing_speech
                         else {'status': None, 'reason': ''}
                     )
                     for channel in (['image'] if supplement else rule['modalities'])
@@ -154,14 +161,14 @@ def attach(store, conn, batch, result, snapshot):
 
     if store._task(conn).get('rules_mode') == 'dynamic':
         result['rules_load_contract'] = {
-            'command':'rules-load','argv':['rules-load','--task-dir',str(store.root),'--input-file',str(store.root/'rules-input.json'),'--next'], 'task_id':store.task_id,
+            'command':'rules-load','argv':['rules-load','--task-dir',str(store.root),'--input-file',str(store.root/'rules-input.json'),'--next','--limit',str(max(1, len(result['segments'])))], 'task_id':store.task_id,
             'loaded_bundles':store._task(conn).get('loaded_rule_bundles',[]),
             'bindings':[{'segment_id':s['id'],'evidence_revision':s['evidence_revision']} for s in result['segments']],
             'required_fields':['task_id','bundle','segment_id','evidence_revision','reason','evidence_ids','images_viewed'],
-            'instruction':'内容需要专项时追加 finance 或 ecommerce，引用本批 evidence_ids。先把完整 JSON 写入 argv 指定的 --input-file 文件，再执行命令；不要空调用等待 stdin。携带 --next，直接使用返回的下一批合同。'}
+            'instruction':'按 references/rules.md 的适用边界追加 finance 或 ecommerce，引用本批 evidence_ids，reason 说明实际对象和业务行为。仅城市 GDP、产业、企业经营或就业聊天不足以追加 finance；明确证券市场、金融产品或金融业务语境才追加，不要求已违规、收费或成交。已加载专项仍逐片段核对适用性。先把完整 JSON 写入 argv 指定的 --input-file 文件，再执行命令；不要空调用等待 stdin。携带 --next，直接使用返回的下一批合同。'}
 
     output_path = store.root / 'review-input' / (context_id + '.json')
-    output_path.parent.mkdir(mode=0o700, exist_ok=True)
+    output_path.parent.mkdir(mode=0o777 if os.name == 'nt' else 0o700, exist_ok=True)
     draft = prepare_input(output_path, template)
     output_path = Path(draft['input_path'])
     batch['input_path'] = str(output_path)
@@ -188,7 +195,7 @@ def attach(store, conn, batch, result, snapshot):
         **({'submit_shell_command': shlex.join(submit_argv)} if os.name != 'nt' else {}),
         'state_argv': ['review-state', '--task-dir', str(store.root), '--context-id', context_id],
         'recovery_instruction': '结果未知时按 state_argv 核对；遵循运行时返回的 next_action，完整读取结果，不修改绑定。',
-        'instructions': 'Runtime 已在 input_path 写好分行缩进的合法 JSON 模板；先读取文件，再按 segment_id、rule_id 定位并局部编辑语义字段，保留未修改内容和数组/对象闭合符，不整份压成一行重写，不重建绑定字段。保留 context_id 和 segment_id。编辑完成立即提交；JSON 解析失败按 message、line、column 修复原文件，不臆测为截断或重建全部判定。失败仅重交失败段。',
+        'instructions': 'input_path 已写好模板；本回执已包含 template 和完整证据，无需重复读取规则或领取批次。填写各规则及每个渠道的 status、非空 reason；非 hit 的 events 必须为空。语音 can_clear=false 或无图时保留对应渠道 insufficient；有真实命中证据可填 hit。宿主要求先读文件时再读原模板；保留绑定和结构，写入后立即提交，失败仅修复失败段。',
         'decisions': (['hit', 'no_hit', 'insufficient'] if speech_only and all('speech' in r['modalities'] for r in snapshot['rules'])
                       else ['hit', 'no_hit', 'not_applicable', 'insufficient']),
         'channel_decisions': ['hit', 'no_hit', 'not_applicable', 'insufficient'] + (['not_checked'] if speech_only else []),
@@ -198,14 +205,15 @@ def attach(store, conn, batch, result, snapshot):
             'description': '实际图片内容；纯语音事件可省略此字段',
         },
         'event_requirements': (
-            'hit 必须有 events，每个事件使用 evidence_ids 数组（不是 evidence_id），只引用本段可用ID；非hit的events为空。'
+            'hit 必须有 events，每个事件使用 evidence_ids 数组（不是 evidence_id），逐字复制本段 evidence_contract 中的 ID，不按相邻段或编号规律推算；非hit的events为空。speech=hit 引用本段字幕 ID，image=hit 引用本段图片 ID 且图片已列入 images_viewed；两渠道均命中须分别有对应证据。'
             + (
                 '画面检测关闭：保留模板的 image=not_checked；含 speech 的规则顶层与 speech 渠道同结论，纯画面规则顶层为 not_applicable；no_hit 仅表示字幕范围未命中，不得声称画面已通过。'
                 if speech_only
-                else '图片命中必须先填写images_viewed并描述实际画面。无图的image渠道不得no_hit，需要视觉才能排除的最终结论用insufficient；语音足够可hit。'
+                else '实际查看本段图片后填写 images_viewed，图片命中描述实际画面。无图保留 image=insufficient，不能仅因未抽图填 not_applicable；混合规则的 speech=no_hit、image=insufficient 时顶层填 insufficient，语音已证实命中可填 hit。'
             )
         ),
     }
+    from runtime.remediation import enabled as remediation_enabled, contract as remediation_contract
     if compact_speech:
         for segment in result['segments']:
             segment['evidence_contract'].pop('image')
@@ -221,6 +229,15 @@ def attach(store, conn, batch, result, snapshot):
             '（rule_id、status=hit、reason、events）；未命中时 rules=[]。命中引用本段真实 evidence_ids。'
             '运行时补齐其余规则和渠道。保留 task_id、context_id、segment_id；允许序列化模型已完成的判断。'
             '写入 input_path 后从当前 Lite 目录用同一 Python 环境执行 submit_command_argv，直接处理返回的 next。'
+        )
+
+    if remediation_enabled(store._task(conn)):
+        grading = remediation_contract()
+        result['submission_contract']['remediation'] = grading
+        result['submission_contract']['event_template']['remediation'] = grading['template']
+        result['submission_contract']['event_requirements'] += (
+            '每个命中事件必须按 event_template 补齐 remediation 的对象、问题、条件、理由和动作；'
+            '先读 remediation.rules_file，结合当前证据填写，不直接填写 P 等级。'
         )
 
 

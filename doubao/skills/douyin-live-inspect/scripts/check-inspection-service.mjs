@@ -20,6 +20,7 @@ try {
     );
   } else {
     const result = await checkInspectionService({
+      mode: 'formal',
       kind: values.kind,
       profile: values.profile,
       environment: values.environment,

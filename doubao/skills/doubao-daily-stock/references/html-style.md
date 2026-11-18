@@ -81,7 +81,7 @@
 - 不得出现历史覆盖块或改版标记，例如 `REDESIGN OVERRIDES`、`晨报 v2/v3/v4/v5/v7`、`override patch`、`dashboard_template`、`历史样式`、`改版补丁`。
 - 不得生成或引用非本报告组件：`.hero`、`.news-card`、`.timeline`、`.hero-evidence`、`.summary-card`、`.dashboard-card`、`.memo-card` 等。
 - 不得依赖图片改变布局；报告内不使用新闻图片、封面图或图片失败后的 DOM 改写。新闻和信息来源均为文本列表。
-- 不得让模板猜页面结构。所有固定模块、表格、三项价格区间、三行指标状态和 3-5 条风险提示必须直接生成；表格和指标卡缺失数据统一写 `暂无`，或回到取数步骤，不得用其他字段 fallback 拼出不同版式，不得在单元格里写“暂未获取可信信息”这类长句。
+- 不得让模板猜页面结构。所有固定模块、表格、三项价格区间、三行指标状态和 3-5 条风险提示必须直接生成；表格和指标卡缺失数据统一写 `暂无`，不得用其他字段 fallback 拼出不同版式，不得在单元格里写“暂未获取可信信息”这类长句。
 - 不得用运行时 JS 生成报告正文、章节、表格、信息来源或免责声明；当前版本也不需要图表 JS。
 - 不得新增 inline style。唯一例外是价格区间带内 `.zone-range`、`.zone-current`、`.zone-edge` 的 `left` / `width` 动态定位。
 - `@media` 只能用于轻微移动端宽度适配、tab 换行和打印；不得在媒体查询中把 `.two-col`、`.technical-dashboard`、`.report-header` 改回左右分栏或改变模块顺序。

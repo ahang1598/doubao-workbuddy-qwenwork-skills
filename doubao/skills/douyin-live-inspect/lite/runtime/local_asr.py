@@ -31,7 +31,10 @@ class ASRError(RuntimeError):
 class LocalASR:
     def __init__(self, store=None, *, command=None):
         self.store, self.process, self.reader = store, None, None
-        self.command = command or [sys.executable, str(WORKER)]
+        if command is None:
+            from runtime.asr_environment import interpreter
+            command = [interpreter(), str(WORKER)]
+        self.command = command
         self.responses = queue.Queue(maxsize=2)
         self.closed = threading.Event()
         self.close_lock = threading.Lock()

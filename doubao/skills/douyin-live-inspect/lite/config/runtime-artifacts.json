@@ -3,8 +3,66 @@
   "release": "inspect-python-zipformer-1",
   "model": "zipformer-multi-zh-hans-int8-2023-12-13",
   "platforms": {
-    "darwin-arm64": {},
-    "darwin-x64": {},
+    "darwin-arm64": {
+      "ffmpeg": {
+        "version": "8.0.1",
+        "url": "https://lf6-cdn-tos.douyinstatic.com/obj/livesaas/inspect-lite/ffmpeg/ffmpeg-8.0.1-darwin-arm64.zip",
+        "sha256": "804872c84b04438e50e06b48e13e3a6182948139869bf78f5d0d48ab3fc6c4b0",
+        "bytes": 53886034,
+        "unpacked_bytes": 123858400,
+        "max_files": 2,
+        "files": [
+          {
+            "path": "darwin_arm64/ffmpeg",
+            "bytes": 62024672,
+            "sha256": "3b586ff896c0339e8fd574c143aaccac23c80789341e22d4202f8013a133d3a4"
+          },
+          {
+            "path": "darwin_arm64/ffprobe",
+            "bytes": 61833728,
+            "sha256": "67f9128cf2a8c1731a75f63fef1011aeb0222f2562b1402654bcbc6147d58063"
+          }
+        ],
+        "entrypoints": {
+          "ffmpeg": "darwin_arm64/ffmpeg",
+          "ffprobe": "darwin_arm64/ffprobe"
+        },
+        "executables": [
+          "darwin_arm64/ffmpeg",
+          "darwin_arm64/ffprobe"
+        ]
+      }
+    },
+    "darwin-x64": {
+      "ffmpeg": {
+        "version": "8.0.1",
+        "url": "https://lf6-cdn-tos.douyinstatic.com/obj/livesaas/inspect-lite/ffmpeg/ffmpeg-8.0.1-darwin-x64.zip",
+        "sha256": "70fd5b21cb37b6ea97c8b584cf76b3cc6a90179831c9c269811b9716c28605fb",
+        "bytes": 53079896,
+        "unpacked_bytes": 159984856,
+        "max_files": 3,
+        "files": [
+          {
+            "path": "darwin/ffmpeg",
+            "bytes": 80083328,
+            "sha256": "430d60fbf419dab28daee9b679e7929a31ee9bae53f6e42e8ae26b725584290f"
+          },
+          {
+            "path": "darwin/ffprobe",
+            "bytes": 79901528,
+            "sha256": "a4da5b4f4468ed61fd89d1f5d8096b128e7167c26c7c35e38ea6fd21c169f4d6"
+          }
+        ],
+        "entrypoints": {
+          "ffmpeg": "darwin/ffmpeg",
+          "ffprobe": "darwin/ffprobe"
+        },
+        "executables": [
+          "darwin/ffmpeg",
+          "darwin/ffprobe"
+        ]
+      }
+    },
     "linux-x64": {},
     "win32-x64": {
       "ffmpeg": {
@@ -310,6 +368,6 @@
     "loader_protocol": 1,
     "model_manifest_schema": 3,
     "engine": "zipformer_transducer",
-    "sherpa_onnx": "1.13.4"
+    "sherpa_onnx": "1.12.40"
   }
 }

@@ -19,6 +19,7 @@ Requires: websocket-client, requests, ffmpeg, a Chrome running with
 --remote-debugging-port=9222 and a logged-in Douyin session.
 """
 import argparse
+from qc_telemetry import disabled, duration_ms, observe, valid_id
 import json
 import os
 import re
@@ -28,6 +29,7 @@ import time
 
 import requests
 import websocket
+from live_source import LiveSourceError, observe_room, room_input
 
 CDP_BASE = "http://127.0.0.1:9222"
 QUALITY_ORDER = ["_or4", "_hd", "_sd", "_ld"]
@@ -139,15 +141,17 @@ def extract_stream(room_id, wait):
     return unique
 
 
-def record(stream_url, duration, output):
-    cmd = [
-        "ffmpeg", "-y", "-i", stream_url,
-        "-t", str(duration), "-c", "copy", "-bsf:a", "aac_adtstoasc", output,
-    ]
+def record(stream_url, duration, output, referer=None, alternatives=()):
     print(f"[info] recording {duration}s -> {output}", file=sys.stderr)
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    for source in (stream_url, *alternatives):
+        cmd = [
+            "ffmpeg", "-y", *(["-referer", referer] if referer else []), "-i", source,
+            "-t", str(duration), "-c", "copy", "-bsf:a", "aac_adtstoasc", output,
+        ]
+        proc = subprocess.run(cmd, capture_output=True, text=True)
+        if proc.returncode == 0 or "Error opening input" not in proc.stderr:
+            break
     if proc.returncode != 0:
-        print(proc.stderr[-1500:], file=sys.stderr)
         sys.exit(f"[fatal] ffmpeg failed rc={proc.returncode}")
     if not os.path.exists(output) or os.path.getsize(output) < 100000:
         sys.exit("[fatal] output missing or too small; stream may have ended")
@@ -157,28 +161,62 @@ def record(stream_url, duration, output):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--room", required=True, help="Douyin web_rid, e.g. 641012837749")
+    parser.add_argument("--room", required=True, help="Douyin room ID or an official Douyin, Xiaohongshu or Bilibili live room URL")
     parser.add_argument("--duration", type=int, default=300, help="seconds, default 300")
     parser.add_argument("--output", help="output mp4 path")
     parser.add_argument("--wait", type=int, default=22, help="seconds to wait for stream")
+    parser.add_argument("--codec", choices=("auto", "h264", "h265"), default="auto", help="Bilibili source codec")
     parser.add_argument("--extract-only", action="store_true")
     args = parser.parse_args()
 
-    urls = extract_stream(args.room, args.wait)
-    if not urls:
-        sys.exit("[fatal] no FLV stream found — room may be offline or login expired")
+    step = "extract" if args.extract_only else "record"
+    with observe(step, "record_error") as fact:
+        fact["reason"] = "stream_unavailable"
+        try:
+            platform, room_id = room_input(args.room)
+            if args.codec != "auto" and platform != "bilibili":
+                parser.error("--codec is supported for Bilibili rooms only")
+            if platform == "douyin":
+                urls = extract_stream(room_id, args.wait)
+            else:
+                observation = observe_room(args.room, args.wait, args.codec)
+                if observation.get("status") == "not_live":
+                    sys.exit("[fatal] room is offline")
+                _, room_id = room_input(observation["page_url"])
+                urls = observation["media_urls"]
+        except LiveSourceError as exc:
+            sys.exit("[fatal] " + str(exc))
+        except (ValueError, OSError, requests.RequestException, websocket.WebSocketException) as exc:
+            sys.exit("[fatal] unable to resolve live room: " + type(exc).__name__)
+        if not urls:
+            sys.exit("[fatal] no FLV stream found — room may be offline or login expired")
 
-    best, quality = pick_quality(urls)
-    if not best:
-        sys.exit("[fatal] only audio-only streams found")
-    print(f"[ok] found {len(urls)} stream(s), selected quality={quality}", file=sys.stderr)
+        best, quality = pick_quality(urls)
+        if not best:
+            sys.exit("[fatal] only audio-only streams found")
+        print(f"[ok] found {len(urls)} stream(s), selected quality={quality}", file=sys.stderr)
+        del fact["reason"]
+        if args.extract_only:
+            print(best)
+            return
 
-    if args.extract_only:
-        print(best)
-        return
-
-    output = args.output or f"live_{args.room}_{args.duration}s.mp4"
-    record(best, args.duration, output)
+        prefix = "live" if platform == "douyin" else platform
+        output = args.output or f"{prefix}_{room_id}_{args.duration}s.mp4"
+        fact["requested_s"] = max(args.duration, 0)
+        if platform == "douyin":
+            record(best, args.duration, output)
+        elif platform == "bilibili":
+            alternatives = [url for url in dict.fromkeys(urls) if url != best and "only_audio=1" not in url]
+            record(best, args.duration, output, referer=observation["page_url"], alternatives=alternatives)
+        else:
+            record(best, args.duration, output, referer=observation["page_url"])
+        if (not disabled() and valid_id(os.getenv("DOUYIN_QC_FLOW_ID"))
+                and valid_id(os.getenv("DOUYIN_QC_TASK_ID"))):
+            actual = duration_ms(output)
+            if actual:
+                fact["actual_ms"] = actual
+            else:
+                fact.update(outcome="unknown", reason="duration_unverified")
     print(output)
 
 

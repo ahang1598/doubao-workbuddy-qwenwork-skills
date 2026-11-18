@@ -4,7 +4,7 @@
 模型在写作阶段可以用任何稳定编号（例如台账序号），只要满足两点：
   1) 同一来源全文用同一个编号（1:1 映射）；
   2) 文末参考文献含全部被引编号，格式为行首 `[n] `。
-本脚本在拼接后运行，做三件事：
+本脚本在整篇定稿后运行；信息不足时保留原稿继续，不阻止交付。可处理时做三件事：
   a) 抽取正文引用的首次出现顺序，构造 旧编号 -> 新编号 映射；
   b) 重写正文所有 [n]，并把同句相邻多引 [14][8] 排成 [8][14]；
   c) 按新编号重排参考文献条目。
@@ -98,7 +98,7 @@ def renumber_reference_block(reference_block: str, mapping: dict[int, int]) -> s
     return "\n".join(lines)
 
 
-def renumber_report(report_path: Path, check_only: bool = False) -> tuple[bool, int]:
+def _renumber_if_possible(report_path: Path, check_only: bool = False) -> tuple[bool, int]:
     """按首现顺序重排编号。返回 (重排前是否已有序, 来源总数)。"""
     text = read_utf8(report_path)
     body, reference_block, disclaimer_block = split_reference_section(text)
@@ -123,6 +123,15 @@ def renumber_report(report_path: Path, check_only: bool = False) -> tuple[bool, 
     return already_ordered, len(mapping)
 
 
+def renumber_report(report_path: Path, check_only: bool = False) -> tuple[bool, int]:
+    """引用信息完整时重排；引用不完整时原稿不变，返回 (True, 0)。"""
+    try:
+        return _renumber_if_possible(report_path, check_only=check_only)
+    except ValidationError as exc:
+        print(f"[renumber_references] 引用整理已跳过，保留原稿继续: {exc}", file=sys.stderr)
+        return True, 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="按正文首次出现顺序重排引用编号与参考文献。")
     parser.add_argument("--file", type=Path, default=DEFAULT_OUTPUT_PATH)
@@ -135,14 +144,12 @@ def main() -> int:
         print(f"[renumber_references] 失败: {exc}", file=sys.stderr)
         return 1
 
-    if args.check:
-        if already_ordered:
-            print(f"[renumber_references] 检查通过：{count} 个来源已按首现顺序编号")
-            return 0
-        print("[renumber_references] 检查未通过：正文首现顺序不是 [1][2][3]… 递增", file=sys.stderr)
-        return 1
-
-    if already_ordered:
+    if count == 0:
+        print(f"[renumber_references] 未调整引用，原稿保留: {args.file}")
+    elif args.check:
+        state = "已有序" if already_ordered else "可按首现顺序重排"
+        print(f"[renumber_references] {count} 个来源{state}；仅查看，不拦截交付")
+    elif already_ordered:
         print(f"[renumber_references] 编号已符合首现顺序（{count} 个来源），未改动: {args.file}")
     else:
         print(f"[renumber_references] 已按首现顺序重排 {count} 个来源的编号与参考文献: {args.file}")

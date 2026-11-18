@@ -1,4 +1,4 @@
-> ⚠️ **强制前置条件**：本文档共 632 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
+> ⚠️ **强制前置条件**：本文档共 641 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
 
 # Lark Sheet Write Cells
 
@@ -117,6 +117,8 @@ JSON
 
 只有本轮要求新设或修改样式时才接 `+styles-put`；仅补值 / 公式不追加刷样式步骤。`--writes` 的 `cells` 逐格样式字段只在确需改变该属性时携带。
 
+单格写入项也可直接携带 `value` / `formula`，例如 `--sheet-name "明细" --writes '[{"range":"B8","formula":"=SUM(B4:B7)"},{"range":"A10","value":"00123"}]'`。只更新明示的单格，数字、布尔值和文本保持 JSON 类型；`cell_styles` / `border_styles` 等单格属性可同项携带。矩形范围仍用 `cells` 二维数组，不能用单值隐式填满，也不能同时给同一项的 `cells` 和单格内容。`--print-schema --flag-name writes` 展示规范化后的二维 `cells` 结构，单格输入会在校验前转换。
+
 已有输入逐项带 A1 坐标时，也接受 `--cells '[{"cell":"A2","value":"00123"},{"range":"C5","formula":"=SUM(C2:C4)"}]'`：只写明示位置，中间未指定的格子保留。此形态不要同时传 `--range`、`--start-cell`、`--copy-to-range` 或独立公式 flag；每项只给 `cell` / `range` 之一。单值和公式只能指向单格；矩形区间用项内 `cells` / `values` 数组。目标 sheet 取顶层选择器或项内限定坐标（如 `'明细表'!A2`）。沿用 `--writes` 的批量限制与失败后回读规则；在 `+batch-update` 中仍需拆成各自的 `range + cells` 子操作。
 
 💡 **写入公式前先按迁移规则改写**：如果公式来自 Excel 或包含数组场景，先读取并遵循 `references/lark-sheets-formula-translation.md` 的规则完成改写，再把最终公式写入 `formula` 字段。
@@ -179,6 +181,8 @@ JSON
 - **@文档**：同样 `"type":"mention"`，`mention_token` 传文档 token（如 `shtXXX`）。
 
 `mention_type`（类型编号）等可选字段以 `--print-schema` 输出为准。
+
+各段的 `style` 只设置字色、字体、字号、字重、字形与文字线条；背景、对齐、换行和数字格式放在同一单元格的 `cell_styles` 中。`font_line:"underline-line-through"` 表示同时开启下划线和删除线，`"none"` 清除两者。
 
 > ⚠️ `rich_text` 一旦设置会**忽略**同一 cell 的 `value`；它与 `formula` / `multiple_values` 三者只能选其一作为内容字段（可叠加 `cell_styles` / `note` 等）。
 
@@ -317,7 +321,7 @@ _公共四件套 · 系统：`--dry-run`_
 | `--font-size` | float64 | optional | 字体大小（pt/磅，例：10、12、14） |
 | `--font-style` | string | optional | 字体样式（可选值：`normal` / `italic`） |
 | `--font-weight` | string | optional | 字重（可选值：`normal` / `bold`） |
-| `--font-line` | string | optional | 字体线条样式（可选值：`none` / `underline` / `line-through`） |
+| `--font-line` | string | optional | 字体线条样式。传 none 清除下划线和删除线。（可选值：`none` / `underline` / `line-through` / `underline-line-through`） |
 | `--horizontal-alignment` | string | optional | 水平对齐（可选值：`left` / `center` / `right`） |
 | `--vertical-alignment` | string | optional | 垂直对齐（可选值：`top` / `middle` / `bottom`） |
 | `--word-wrap` | string | optional | 换行策略（可选值：`overflow` / `auto-wrap` / `word-clip`） |
@@ -367,6 +371,9 @@ _公共：URL/token（无 sheet 定位） · 系统：`--dry-run`_
 | Flag | Type | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `--sheets` | string + File + Stdin（复合 JSON） | required | Typed 表格协议（pandas-DataFrame-shaped）JSON：顶层 `{"sheets":[...]}`，每个数组项是一张子表 `{name, start_cell?, mode?, header?, allow_overwrite?, columns:["colA","colB",...], data:[[...]], dtypes?:{colA:pandasDtype, ...}, formats?:{colA:numberFormat, ...}}` —— `name` 与外层 `sheets` 数组都不可省。Agents 用 `scripts/lark_sheets_df.py` 的 `df_to_sheet(df, name)` 一行把 DataFrame 转成一项（多子表就 list 拼起来再包 `{"sheets":[...]}`）。`dtypes` 值是 pandas dtype 字符串（`int64`、`float64`、`Int64`、`bool`、`boolean`、`datetime64[ns]`、`object`、...），CLI 端映射成内部 string/number/date/bool —— 省略 `dtypes` 时该列按文本写入（适合原始 CSV-shaped 数据）。`formats[col]` 是 Excel number_format 字符串（如 `#,##0.00`、`0.0%`、`yyyy-mm`）；缺省时 date 列用 `yyyy-mm-dd`，string 列用文本格式 `@`。 |
+| `--range` | string | optional | 兼容单元格矩阵写入：与 --data 或 --values 同时给出时，写入该 A1 范围；不走 typed table 协议（隐藏 flag：不在 `--help` 列出，但可正常传入） |
+| `--data` | string + File + Stdin（简单 JSON） | optional | 兼容单元格矩阵写入：二维 JSON 数组；与 --range 和子表定位一起使用，值和公式按 +cells-set 写入（隐藏 flag：不在 `--help` 列出，但可正常传入） |
+| `--values` | string + File + Stdin（简单 JSON） | optional | 兼容单元格矩阵写入：二维 JSON 数组；与 --range 和子表定位一起使用，值和公式按 +cells-set 写入（隐藏 flag：不在 `--help` 列出，但可正常传入） |
 | `--styles` | string + File + Stdin（复合 JSON） | optional | 类型保真写入后再应用的视觉处理操作 JSON：顶层 `{styles:[...]}`，每项对应一个被写入的子表、含 `name`，并至少给 `cell_styles` / `row_sizes` / `col_sizes` / `cell_merges` 之一。`cell_styles` 用 A1 单元格 range + 扁平样式字段（字段同 +cells-set-style，含 number_format / 颜色 / 对齐 / border_styles）；row/col sizes 用行/列范围 + type/size；merges 用单元格 range + 可选 merge_type。styles 数组的长度/顺序/name 必须与被写入的子表对应（与 --sheets.sheets 一一对应）。完整 cell_styles 字段结构跑 `+table-put --print-schema --flag-name styles`。 |
 
 ## Schemas
@@ -392,10 +399,10 @@ _【维度】行列数必须与 range 完全一致：'A1:C2'→[[_,_,_],[_,_,_]]
 _多区域写入项数组（最多 100 项），整批单次批量提交（fail-fast，失败后先回读再补发）；支持跨 sheet_
 
 **数组项**（类型 object）：
-- `sheet_id` (string?) — 目标子表 reference_id；与 sheet_name 二选一，必须写在每一项里（不认顶层 sheet 定位）
-- `sheet_name` (string?) — 目标子表名；与 sheet_id 二选一，必须写在每一项里
+- `sheet_id` (string?) — 目标子表 reference_id；与 sheet_name 二选一；项内都未写时取顶层 --sheet-id / --sheet-name
+- `sheet_name` (string?) — 目标子表名；与 sheet_id 二选一；项内都未写时取顶层 --sheet-id / --sheet-name
 - `range` (string) — A1 矩形范围，行列维度必须与 cells 严格一致（同 --range）
-- `cells` (array) — 二维单元格数组，结构同 --cells（value / formula / cell_styles / border_styles 等，见 set_cell_…
+- `cells` (array) — 规范化后的二维单元格数组，结构同 --cells；schema 的 required（range、cells）约束的是规范化结构；单格简写可用 value /…
 
 ### `+cells-set-style` `--border-styles`
 
@@ -569,6 +576,8 @@ lark-cli sheets +table-put --url "<表URL>" --sheets - --styles @styles.json < s
 
 每个 sheet 还可带 `"allow_overwrite": false`（遇非空拒写、保护原数据）、`"header": false`（只写数据不写表头）。完整字段跑 `+table-put --print-schema --flag-name sheets`。
 
+`+table-put` 的 typed 落点写在每项 `start_cell`。兼容已有调用的 `--range + --data` 或 `--values` 二维矩阵：必须同时给 `--sheet-id` / `--sheet-name`，且不能与 `--sheets` / `--styles` 混用；CLI 按 `+cells-set` 写入，矩形范围不外溢。裸字符串始终是值，公式格写 `{"formula":"=…"}`。需要表头、类型或 formats 时仍使用 typed `--sheets`，不要混合两种协议。
+
 #### DataFrame → 协议（用 `df_to_sheet` helper）
 
 pandas 的 `df.to_json(orient="split", date_format="iso")` 一步完成所有清洗（NaN→null、Timestamp→ISO 字符串、numpy 标量→原生数字），把 dtypes 拼上即可。本 skill 把这段 5 行 helper 打包成可 import 的 [`scripts/lark_sheets_df.py`](../scripts/lark_sheets_df.py)（含 `df_to_sheet` 和 `sheet_to_df`，写入 / 读回成对）：
@@ -629,4 +638,4 @@ lark-cli sheets +table-put --url "<表URL>" \
 - `Validate`：XOR 公共四件套；`+cells-set` 的 `--cells` 必须能解析为各行等宽的 JSON 二维矩阵（落区按其行列数推断）；`+cells-set-style` 的样式 flag 至少一个非空（或带 `--border-styles`）；`+cells-set-image` 的 `--range` 必须是单 cell（起止 cell 相同）；`+csv-put` 的 `--csv` 必须能按 RFC 4180 解析；`+table-put` 给了 `--styles` 则按子表名 / 顺序 / 数量与 `--sheets.sheets` 对齐校验；防爆参数上限校验。
 - `DryRun`：输出目标 range + 推断尺寸 + 是否覆盖非空 cell 警告，零网络副作用。
 
-===== 全文完（共 632 行）=====
+===== 全文完（共 641 行）=====

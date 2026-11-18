@@ -1,0 +1,4090 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%233384ff'/%3E%3Cstop offset='.52' stop-color='%23014bde'/%3E%3Cstop offset='1' stop-color='%23a945fb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Ctext x='16' y='21' text-anchor='middle' fill='white' font-family='Arial,sans-serif' font-size='14' font-weight='700'%3EAI%3C/text%3E%3C/svg%3E">
+  <title>直播复盘报告</title>
+  <style>
+    :root {
+      --page-bg: #f6f8fa;
+      --card-bg: #ffffff;
+      --text: #0c0d0e;
+      --muted: #737a87;
+      --line: #dde2e9;
+      --blue: #1664ff;
+      --green: #2a814b;
+      --red: #d7312a;
+      --shadow: 0 15px 35px -2px rgba(0, 0, 0, 0.05), 0 5px 15px rgba(0, 0, 0, 0.05);
+      font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--page-bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    button { font: inherit; }
+
+    .header-container {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      padding: 20px 24px;
+      background: #fff;
+      color: #000;
+      box-shadow: 0 1px 0 rgba(12, 13, 14, 0.04);
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      line-height: 24px;
+      font-weight: 500;
+    }
+    .logo-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 800;
+      background: linear-gradient(135deg, #3384ff, #014bde 52%, #a945fb);
+    }
+
+    .report-shell {
+      display: grid;
+      grid-template-columns: 288px minmax(0, 996px);
+      gap: 16px;
+      max-width: 1332px;
+      margin: 16px auto 48px;
+      padding: 0 16px;
+      align-items: start;
+    }
+    .left-rail {
+      position: sticky;
+      top: 80px;
+      display: grid;
+      gap: 16px;
+      align-items: start;
+    }
+    .main-area {
+      display: grid;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .info-container,
+    .playback-container,
+    .score-container,
+    .chart-container,
+    .analysis-container {
+      background: #fff;
+      border: 1px solid #fff;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      font-family: "PingFang SC", sans-serif;
+    }
+
+    .info-container {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 16px;
+    }
+    .info-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 0;
+    }
+    .cover {
+      width: 81px;
+      height: 54px;
+      flex: 0 0 auto;
+      border-radius: 8px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #edf3ff, #f1f0ff);
+      display: grid;
+      place-items: center;
+      color: #1664ff;
+      font-weight: 700;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .cover-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(29, 220, 225, .18), transparent 24%),
+        radial-gradient(circle at 88% 82%, rgba(254, 44, 85, .12), transparent 26%),
+        linear-gradient(135deg, #edf5ff, #f2efff);
+    }
+    .cover-play {
+      color: #1664ff;
+      font-size: 10px;
+      line-height: 1;
+    }
+    .cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .title-container {
+      min-width: 0;
+      flex: 1;
+      margin-left: 8px;
+      min-height: 54px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .live-title {
+      margin: 0;
+      color: #0c0d0e;
+      font-size: 14px;
+      line-height: 20px;
+      font-weight: 600;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .duration {
+      margin: 1px 0 0;
+      color: #8a909b;
+      font-size: 11px;
+      line-height: 16px;
+    }
+    .live-account {
+      margin: 1px 0 0;
+      color: #737a87;
+      font-size: 11px;
+      line-height: 16px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .scene-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+    .scene-tag { display: inline-flex; align-items: center; min-height: 22px; padding: 2px 8px; color: #1454c4; border: 1px solid #d8e4ff; border-radius: 6px; background: #edf4ff; font-size: 11px; line-height: 16px; font-weight: 600; }
+    .info-meta-row { display: flex; align-items: center; flex-wrap: wrap; margin-top: 1px; }
+    .info-meta-row .duration { margin-top: 0; }
+    .info-meta-row .scene-tags { margin-top: 0; padding-left: 8px; }
+    .session-card {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      min-height: 44px;
+      padding: 11px 12px;
+      border-radius: 8px;
+      background: #f6f8fa;
+    }
+    .session-title {
+      color: #42464e;
+      font-size: 12px;
+      line-height: 20px;
+      font-weight: 600;
+    }
+    .session-time {
+      min-width: 0;
+      color: rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 12px;
+      line-height: 20px;
+      text-align: right;
+    }
+
+    .playback-container {
+      padding: 12px;
+    }
+    .playback-title {
+      margin: 0;
+      padding-top: 8px;
+      color: #0c0d0e;
+      font-size: 16px;
+      line-height: 16px;
+      font-weight: 600;
+    }
+    .video-player {
+      position: relative;
+      margin-top: 16px;
+      width: 100%;
+      height: 235px;
+      border-radius: 8px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 40%, rgba(255,255,255,0.18), transparent 30%),
+        linear-gradient(135deg, #171a22, #3a4152);
+      display: grid;
+      place-items: center;
+    }
+    .basic-player-host,
+    #byte-player-container,
+    .playback-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .playback-video {
+      object-fit: cover;
+      background: #000;
+    }
+    .video-player.portrait .playback-video {
+      object-fit: contain;
+    }
+    .playback-empty {
+      position: relative;
+      z-index: 1;
+      padding: 0 16px;
+      color: rgba(255,255,255,0.82);
+      font-size: 12px;
+      text-align: center;
+    }
+    .playback-panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 44px;
+      border-bottom: 0;
+    }
+    .playback-panel-title .playback-title { padding-top: 0; }
+    .playback-secure-chip {
+      padding: 3px 8px;
+      color: #315bba;
+      border: 1px solid #d8e4ff;
+      border-radius: 6px;
+      background: #f4f7ff;
+      font-size: 11px;
+      line-height: 18px;
+    }
+    .playback-playhead-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 12px 2px 4px;
+    }
+    .playback-current-time {
+      flex: 0 0 auto;
+      color: #1664ff;
+      font: 700 11px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .playback-current-caption {
+      overflow: hidden;
+      color: #737a87;
+      font-size: 11px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .playback-timeline { position: relative; height: 42px; }
+    .playback-timeline-track {
+      position: absolute;
+      top: 19px;
+      right: 2px;
+      left: 2px;
+      height: 4px;
+      border-radius: 99px;
+      background: #e2e6ef;
+    }
+    .playback-timeline-segment {
+      position: absolute;
+      z-index: 2;
+      top: 17px;
+      height: 8px;
+      min-width: 4px;
+      padding: 0;
+      cursor: pointer;
+      border: 0;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #69c982, #2a814b);
+    }
+    .playback-timeline-segment.problem { background: linear-gradient(90deg, #e85f58, #d7312a); }
+    .playback-timeline-segment.active { transform: scaleY(1.25); }
+    .playback-timeline-segment:focus-visible { outline: 2px solid #1664ff; outline-offset: 2px; }
+    .playback-playhead {
+      position: absolute;
+      z-index: 3;
+      top: 9px;
+      bottom: 7px;
+      width: 2px;
+      pointer-events: none;
+      background: #333847;
+    }
+    .playback-playhead::before {
+      position: absolute;
+      top: -1px;
+      left: -3px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #333847;
+      content: "";
+    }
+    .playback-timeline-legend { display: flex; gap: 12px; color: #737a87; font-size: 10px; }
+    .playback-timeline-legend span { display: flex; align-items: center; gap: 5px; }
+    .playback-timeline-legend i { width: 11px; height: 3px; border-radius: 99px; }
+    .playback-legend-highlight { background: #2a814b; }
+    .playback-legend-problem { background: #d7312a; }
+    .playback-legend-playhead { background: #333847; }
+    .video-player.portrait {
+      height: 235px !important;
+      aspect-ratio: 16 / 9;
+      max-height: none;
+    }
+    .play-button {
+      width: 50px;
+      height: 50px;
+      border: 0;
+      border-radius: 50%;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+    }
+
+    .diagnosis-card {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      min-height: 398px;
+      padding: 52px 16px 16px;
+      color: #fff;
+      background: linear-gradient(175.45deg, #6f65ff -5.19%, #a6beff 103.12%);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .diagnosis-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 70% 8%, rgba(255,255,255,0.28), transparent 22%),
+        radial-gradient(circle at 16% 30%, rgba(255,255,255,0.12), transparent 18%);
+      pointer-events: none;
+    }
+    .section-title {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      color: inherit;
+      font-size: 16px;
+      line-height: 16px;
+      font-weight: 600;
+    }
+    .diagnosis-card > .section-title {
+      position: absolute;
+      left: 20px;
+      top: 20px;
+    }
+    .score-section {
+      position: relative;
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 192px;
+      min-height: 330px;
+      padding: 20px 16px;
+      color: #000;
+      background: #fff;
+      border-radius: 8px;
+    }
+    .score-title {
+      width: 132px;
+      margin: 0;
+      color: #1664ff;
+      font-size: 20px;
+      line-height: 28px;
+      font-weight: 600;
+      text-align: center;
+    }
+    .score-badge {
+      margin-top: 8px;
+      max-width: 150px;
+      padding: 0 8px;
+      border-radius: 4px;
+      background: #ffecec;
+      color: #d7312a;
+      font-size: 12px;
+      line-height: 20px;
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+    .grade-medal {
+      margin: 20px 0;
+      width: 124px;
+      height: 128px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 64px;
+      font-weight: 900;
+      background:
+        linear-gradient(120deg, rgba(255,255,255,0.26), rgba(255,255,255,0) 38%),
+        linear-gradient(142deg, #ffcfba, #d6906a);
+      clip-path: polygon(50% 0, 92% 24%, 92% 76%, 50% 100%, 8% 76%, 8% 24%);
+    }
+    .view-details {
+      width: auto;
+      min-height: auto;
+      margin-top: auto;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: #737a87;
+      font-size: 12px;
+      line-height: 20px;
+      text-align: center;
+      cursor: default;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .view-details-wrap {
+      position: relative;
+      margin-top: auto;
+      display: flex;
+      justify-content: center;
+    }
+    .score-radar-popover {
+      position: absolute;
+      left: calc(100% + 14px);
+      bottom: -18px;
+      z-index: 20;
+      width: 310px;
+      min-height: 286px;
+      padding: 16px 18px 14px;
+      transform: translateX(8px);
+      border: 1px solid #e5e8ef;
+      border-radius: 8px;
+      background: #fff;
+      color: #737a87;
+      box-shadow: 0 18px 42px rgba(31, 35, 41, 0.16);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease;
+    }
+    .score-radar-popover::after {
+      content: "";
+      position: absolute;
+      left: -8px;
+      bottom: 21px;
+      width: 14px;
+      height: 14px;
+      transform: rotate(45deg);
+      border-left: 1px solid #e5e8ef;
+      border-bottom: 1px solid #e5e8ef;
+      background: #fff;
+    }
+    .view-details-wrap:hover .score-radar-popover,
+    .view-details-wrap:focus-within .score-radar-popover {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+    }
+    .radar-title {
+      margin: 0 0 8px;
+      text-align: center;
+      color: #737a87;
+      font-size: 16px;
+      line-height: 24px;
+      font-weight: 500;
+    }
+    .radar-score {
+      margin-left: 6px;
+      color: #737a87;
+      font-size: 18px;
+    }
+    .radar-chart {
+      display: block;
+      width: 100%;
+      height: 210px;
+    }
+    .radar-axis-label,
+    .radar-value-label {
+      fill: #737a87;
+      font-size: 12px;
+    }
+    .radar-value-live { fill: #1664ff; }
+    .radar-value-industry { fill: #00a889; }
+    .radar-grid-line {
+      fill: none;
+      stroke: #e5e8ef;
+      stroke-width: 1;
+      stroke-dasharray: 5 4;
+    }
+    .radar-axis-line {
+      stroke: #e5e8ef;
+      stroke-width: 1;
+    }
+    .radarPolygonLive {
+      fill: rgba(22, 100, 255, 0.16);
+      stroke: #1664ff;
+      stroke-width: 1.5;
+    }
+    .radarPolygonIndustry {
+      fill: rgba(0, 168, 137, 0.12);
+      stroke: #00a889;
+      stroke-width: 1.5;
+    }
+    .radar-legend {
+      display: flex;
+      justify-content: center;
+      gap: 34px;
+      color: #42464e;
+      font-size: 13px;
+      line-height: 20px;
+    }
+    .radar-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .radar-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      background: #1664ff;
+    }
+    .radar-legend-dot.industry { background: #00a889; }
+    .problem-highlight {
+      color: #d7312a;
+      font-weight: 600;
+    }
+    .diagnosis-section {
+      position: relative;
+      z-index: 1;
+      width: calc(100% - 208px);
+      min-height: 330px;
+      overflow: hidden;
+      background: #fff;
+      border-radius: 8px;
+      color: #000;
+    }
+    .summary-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 68px;
+      padding: 12px 16px;
+      background: #fafbfc;
+      border-radius: 8px 8px 0 0;
+      font-size: 15px;
+      line-height: 24px;
+      font-weight: 500;
+    }
+    .summary-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #ffecec;
+      color: #d7312a;
+      flex: 0 0 auto;
+    }
+    .critical-text { color: #d7312a; }
+    .good-text { color: #2a814b; }
+    .diagnosis-list {
+      padding: 16px 20px 22px;
+    }
+    .diagnosis-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px 44px;
+    }
+    .diagnosis-item {
+      min-width: 0;
+    }
+    .item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    .category {
+      color: #0c0d0e;
+      font-size: 14px;
+      line-height: 22px;
+      font-weight: 600;
+      min-width: 0;
+    }
+    .category-primary {
+      color: #0c0d0e;
+      font-size: 14px;
+      line-height: 22px;
+      font-weight: 600;
+    }
+    .category-separator {
+      margin: 0 8px;
+      color: #c7ccd6;
+      font-weight: 400;
+    }
+    .category-action {
+      color: #737a87;
+      font-size: 13px;
+      line-height: 20px;
+      font-weight: 500;
+    }
+    .status-tag {
+      flex: 0 0 auto;
+      padding: 0 6px;
+      border: 1px solid #ffa3a0;
+      border-radius: 4px;
+      background: #fff;
+      color: #ee3f38;
+      font-size: 12px;
+      line-height: 18px;
+    }
+    .status-tag.good {
+      border-color: #7ccd94;
+      color: #309256;
+    }
+    .item-description {
+      color: #737a87;
+      font-size: 13px;
+      line-height: 20px;
+    }
+    .diagnosis-description-line {
+      margin: 0 0 6px;
+    }
+    .diagnosis-description-line:last-child {
+      margin-bottom: 0;
+    }
+
+    .score-container {
+      padding: 20px;
+    }
+    .block-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      color: #0c0d0e;
+      font-size: 16px;
+      line-height: 16px;
+      font-weight: 600;
+    }
+    .score-content {
+      margin-top: 16px;
+    }
+    .data-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 17px 0;
+      width: 100%;
+      color: #737a87;
+    }
+    .data-item {
+      width: 20%;
+      min-width: 150px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .data-title {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      width: 100%;
+      font-size: 14px;
+      line-height: 22px;
+      font-weight: 500;
+    }
+    .metric-info-icon {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      border: 1.5px solid #737a87;
+      border-radius: 50%;
+      color: #737a87;
+      font-size: 10px;
+      line-height: 14px;
+      font-weight: 600;
+      cursor: default;
+    }
+    .metric-tooltip {
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 8px);
+      z-index: 30;
+      width: max-content;
+      max-width: 240px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      font-size: 12px;
+      line-height: 18px;
+      font-weight: 400;
+      white-space: normal;
+      word-break: break-word;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-50%);
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+      pointer-events: none;
+    }
+    .metric-tooltip::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: rgba(0,0,0,0.85);
+    }
+    .metric-info-icon:hover .metric-tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+    .data-value {
+      margin: 0;
+      color: #0c0d0e;
+      font-family: "Barlow", "PingFang SC", sans-serif;
+      font-size: 24px;
+      line-height: 34px;
+      font-weight: 700;
+    }
+    .unit {
+      margin-left: 4px;
+      color: #737a87;
+      font-size: 14px;
+      line-height: 22px;
+      font-weight: 500;
+    }
+    .sub-text {
+      margin: 0;
+      color: #737a87;
+      font-size: 12px;
+      line-height: 20px;
+      font-weight: 400;
+    }
+
+    .chart-container {
+      height: 436px;
+      padding: 12px 16px 16px;
+      position: relative;
+    }
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      min-height: 32px;
+    }
+    .chart-echarts {
+      width: 100%;
+      height: 330px;
+      margin-top: -30px;
+      display: block;
+    }
+    .chart-empty {
+      height: 330px;
+      display: grid;
+      place-items: center;
+    }
+    .chart-pop-card {
+      color: #737a87;
+      font-size: 12px;
+      line-height: 20px;
+    }
+    .chart-pop-card-time {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 4px;
+      color: #737a87;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .chart-pop-card-time-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 12px;
+      height: 12px;
+      border: 1px solid #c7ccd6;
+      border-radius: 50%;
+      font-size: 9px;
+      line-height: 12px;
+    }
+    .chart-pop-card-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .chart-pop-card-thumb {
+      position: relative;
+      width: 60px;
+      height: 60px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #f6f7f9;
+      flex: 0 0 auto;
+    }
+    .chart-pop-card-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .chart-pop-card-type {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 18px;
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 18px;
+    }
+    .chart-pop-card-info {
+      margin-left: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+    .chart-pop-card-title {
+      width: 168px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #0c0d0e;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .chart-pop-card-count,
+    .chart-pop-card-price {
+      color: #737a87;
+      font-size: 12px;
+    }
+    .chart-pop-card-highlight {
+      margin-right: 4px;
+      color: #fe2c55;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .chart-pop-card-strike {
+      color: #737a87;
+      font-size: 12px;
+      text-decoration: line-through;
+    }
+    .chart-moment-tooltip {
+      display: flex;
+      width: 420px;
+      min-height: 220px;
+      overflow: hidden;
+      border-radius: 8px;
+      border: 0.5px solid #fff;
+      background: #fff;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05), 0 15px 35px -2px rgba(0,0,0,0.05);
+      white-space: normal;
+    }
+    .chart-moment-thumb {
+      width: 124px;
+      flex: 0 0 124px;
+      overflow: hidden;
+      border-radius: 8px 0 0 8px;
+      background: #f6f7f9;
+    }
+    .chart-moment-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .chart-moment-content {
+      display: flex;
+      min-width: 0;
+      flex: 1;
+      flex-direction: column;
+      padding: 12px;
+      color: #0c0d0e;
+      font-size: 12px;
+      line-height: 20px;
+    }
+    .chart-moment-title {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #42464e;
+      font-weight: 500;
+    }
+    .chart-moment-icon {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid #737a87;
+      font-size: 10px;
+    }
+    .chart-moment-info {
+      width: 100%;
+      margin-top: 4px;
+      border-radius: 8px;
+      padding: 6px 8px;
+      background: linear-gradient(90deg, #e1f6e6 0%, #fff 100%);
+      color: #2a814b;
+      font-weight: 500;
+      font-size: 12px;
+      line-height: 18px;
+      white-space: normal;
+      overflow: visible;
+      word-break: break-word;
+      cursor: pointer;
+    }
+    .chart-moment-info-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    .chart-moment-info-wrapper:hover .chart-moment-tip {
+      opacity: 1;
+      visibility: visible;
+    }
+    .chart-moment-tip {
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 8px);
+      z-index: 40;
+      width: max-content;
+      max-width: 240px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      font-size: 12px;
+      line-height: 18px;
+      font-weight: 400;
+      white-space: normal;
+      word-break: break-word;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-50%);
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+      pointer-events: none;
+    }
+    .chart-moment-tip::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: rgba(0,0,0,0.85);
+    }
+    .chart-moment-tooltip.problem .chart-moment-info {
+      background: linear-gradient(90deg, #ffeded 0%, #fff 125.53%);
+      color: #d7312a;
+    }
+    .chart-moment-time {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 8px;
+      color: #0c0d0e;
+      line-height: 20px;
+    }
+    .chart-moment-time span {
+      margin-left: 12px;
+      color: #737a87;
+    }
+    .chart-moment-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+    .chart-moment-action-btn {
+      flex: 1;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid #6ca7ff;
+      background: #fff;
+      color: #1664ff;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .analysis-container {
+      overflow: hidden;
+    }
+    .fixed-area {
+      position: relative;
+      padding: 20px 20px 16px;
+      background: #fff;
+      border-radius: 12px 12px 0 0;
+      overflow: hidden;
+    }
+    .fixed-area::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 80px;
+      background: linear-gradient(360deg, rgba(241,249,255,0) 0%, #edf3ff 100%);
+    }
+    .analysis-head,
+    .analysis-form {
+      position: relative;
+      z-index: 1;
+    }
+    .analysis-head {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding-bottom: 16px;
+      color: #0c0d0e;
+      font-size: 16px;
+      line-height: 16px;
+      font-weight: 600;
+    }
+    .analysis-form {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .radio-tabs {
+      display: inline-flex;
+      gap: 2px;
+      padding: 3px;
+      background: #f6f8fa;
+      border-radius: 4px;
+    }
+    .tab-button {
+      min-height: 28px;
+      border: 0;
+      border-radius: 4px;
+      padding: 3px 12px;
+      background: transparent;
+      color: #42464e;
+      font-size: 13px;
+      line-height: 22px;
+      cursor: pointer;
+    }
+    .tab-button.active {
+      background: #fff;
+      color: #1664ff;
+      font-weight: 500;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .search-box {
+      min-width: 220px;
+      height: 38px;
+      border: 1px solid #d7dce5;
+      border-radius: 7px;
+      padding: 0 10px;
+      color: #7d8592;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+      background: #fff;
+      cursor: text;
+      transition: border-color .16s ease, box-shadow .16s ease;
+    }
+    .search-box:focus-within { border-color: #7da6ff; box-shadow: 0 0 0 3px rgba(22,100,255,.1); }
+    .search-box-icon { position: relative; flex: 0 0 auto; width: 14px; height: 14px; }
+    .search-box-icon::before { position: absolute; top: 1px; left: 1px; width: 7px; height: 7px; border: 1.7px solid currentColor; border-radius: 50%; content: ""; }
+    .search-box-icon::after { position: absolute; top: 9px; left: 9px; width: 5px; height: 1.7px; transform: rotate(45deg); transform-origin: left center; border-radius: 2px; background: currentColor; content: ""; }
+    .search-box-input { min-width: 0; width: 100%; height: 100%; padding: 0; color: #20242b; border: 0; outline: 0; background: transparent; font: inherit; }
+    .search-box-input::placeholder { color: #a4a9b2; }
+    .search-box-clear { display: grid; place-items: center; flex: 0 0 auto; width: 22px; height: 22px; padding: 0; color: #8a919d; border: 0; border-radius: 50%; background: #f0f2f5; cursor: pointer; font-size: 16px; line-height: 1; }
+    .search-box-clear:hover { color: #3f4652; background: #e5e8ed; }
+    .analysis-content {
+      padding: 0 20px 20px;
+      padding-left: 20px;
+    }
+    .timeline {
+      position: relative;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      top: 10px;
+      bottom: 0;
+      left: 4px;
+      width: 1px;
+      background-image: linear-gradient(to bottom, #dde2e9 0%, #dde2e9 50%, transparent 50%);
+      background-size: 1px 8px;
+      background-repeat: repeat-y;
+    }
+    .timeline-step {
+      position: relative;
+      padding-bottom: 13px;
+      padding-left: 1px;
+    }
+    .dotWrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: #737a87;
+      font-size: 12px;
+      line-height: 20px;
+      white-space: nowrap;
+    }
+    .timeline-time-button {
+      padding: 0;
+      color: inherit;
+      background: transparent;
+      border: 0;
+      font: inherit;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .timeline-time-button:hover { color: inherit; text-decoration: none; }
+    .timeline-time-button:focus-visible { outline: 2px solid rgba(22,100,255,.25); outline-offset: 3px; border-radius: 3px; }
+    .dot {
+      width: 6px;
+      height: 6px;
+      margin-top: 7px;
+      border-radius: 50%;
+      background: #dde2e9;
+      box-shadow: 0 0 0 4px #fff;
+    }
+    .timelineItem {
+      position: relative;
+      padding-left: 22px;
+      margin-bottom: 13px;
+    }
+    .timelineItem:hover .aiAnalysisBtn {
+      opacity: 1;
+    }
+    .itemContent{
+      color: #0c0d0e;
+      font-size: 13px;
+      line-height: 22px;
+      margin: 0;
+    }
+    .timelineTitle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+    .titleLeft {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .timelineTitleText {
+      color: #0c0d0e;
+      font-size: 14px;
+      line-height: 22px;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .aiAnalysisBtn {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 28px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #0063ff 0%, #5147ff 50%, #7e1eff 100%);
+      color: #fff;
+      font-size: 12px;
+      line-height: 20px;
+      font-weight: 500;
+      opacity: 0;
+      cursor: pointer;
+      transition: opacity 0.3s ease-in-out;
+    }
+    .aiAnalysisBtn:disabled {
+      opacity: 1;
+      cursor: not-allowed;
+    }
+    .segment-review-button {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px 7px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      color: #1664ff;
+      font-size: 11px;
+      line-height: 20px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .segment-review-button:focus-visible {
+      outline: 2px solid rgba(22,100,255,.25);
+      outline-offset: 2px;
+    }
+    .tags {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      line-height: 18px;
+      font-weight: 500;
+      border: 1px solid #dde2e9;
+      background: #f6f8fa;
+      color: #42464e;
+    }
+    .tag.blue {
+      background: #EBF1FF;
+      border-color: #97BCFF;
+      color: #1664FF;
+    }
+    .tag.green {
+      background: #E1F6E6;
+      border-color: #7CCD94;
+      color: #2A814B;
+    }
+    .tag.red {
+      background: #FFECEC;
+      border-color: #FFA3A0;
+      color: #D7312A;
+    }
+    .momentDetailButton {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      margin-left: 3px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font-size: 12px;
+      line-height: 16px;
+      cursor: pointer;
+    }
+    .momentDetailButton:hover {
+      color: inherit;
+      opacity: 0.8;
+    }
+    .tagDetailIcon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      font-size: 14px;
+      line-height: 14px;
+      transform-origin: center;
+      transition: transform .16s ease;
+    }
+    .tagDetailIcon.expanded {
+      transform: rotate(90deg);
+    }
+    .interaction-icons {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .interaction-icon {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      max-width: 168px;
+      height: 26px;
+      padding: 0 8px 0 4px;
+      border-radius: 6px;
+      background: #f6f8fa;
+      color: #42464e;
+      font-size: 12px;
+      line-height: 24px;
+      white-space: nowrap;
+    }
+    .interaction-icon-symbol {
+      display: inline-grid;
+      place-items: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      background: #ebf1ff;
+      color: #1664ff;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .interaction-icon.coupon .interaction-icon-symbol {
+      background: #fff4e8;
+      color: #d46b08;
+    }
+    .interaction-icon.lottery .interaction-icon-symbol {
+      background: #f3edff;
+      color: #722ed1;
+    }
+    .interaction-icon.red_packet .interaction-icon-symbol {
+      background: #ffecec;
+      color: #d7312a;
+    }
+    .interaction-icon-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .product-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .product-card {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      background: #f2f2f2;
+      overflow: hidden;
+      color: #42464e;
+    }
+    .product-card-image {
+      width: 48px;
+      height: 48px;
+      display: block;
+      object-fit: cover;
+      background: #edf0f5;
+    }
+    .product-card-body {
+      display: none;
+    }
+    .product-card-title {
+      color: #0c0d0e;
+      font-size: 13px;
+      line-height: 20px;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .product-card-tag {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 15px;
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+      text-align: center;
+      font-size: 11px;
+      line-height: 15px;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .product-card-meta {
+      margin-top: 4px;
+      color: #737a87;
+      font-size: 11px;
+      line-height: 16px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .moment-detail {
+      margin-top: 8px;
+      border-radius: 8px;
+      padding: 12px 16px;
+      background: #f5f8ff;
+      color: #42464e;
+      font-size: 12px;
+      line-height: 20px;
+    }
+    .moment-detail-title {
+      margin: 0 0 4px;
+      color: #0c0d0e;
+      font-weight: 500;
+    }
+    .moment-detail p {
+      margin: 4px 0 0;
+    }
+    .moment-detail-suggestion { color: #596170; }
+    .moment-frame-images { display: flex; gap: 10px; margin-top: 12px; overflow-x: auto; }
+    .moment-frame-image { width: 168px; height: 104px; flex: 0 0 168px; object-fit: cover; border: 1px solid #dde2e9; border-radius: 8px; background: #f3f6fb; }
+    .comment-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 11px 16px;
+      border-radius: 8px;
+      background: #f7f8fa;
+      color: #737a87;
+      font-size: 12px;
+      line-height: 20px;
+    }
+    .comment-label {
+      color: #737a87;
+      font-size: 12px;
+      line-height: 20px;
+      font-weight: 400;
+    }
+    .comment-separator {
+      width: 1px;
+      height: 8px;
+      background: #ccced0;
+      color: transparent;
+    }
+    .comment-word {
+      color: #42464e;
+      font-size: 12px;
+      line-height: 20px;
+      font-weight: 500;
+    }
+    .comment-empty {
+      color: #a4a9b2;
+    }
+    .aiAnalyze {
+      width: 100%;
+      margin: 8px 0;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: #f1f0ff;
+      color: #0c0d0e;
+      font-size: 14px;
+      line-height: 22px;
+      font-weight: 500;
+    }
+    .aiAnalyzeHeader,
+    .aiAnalyzeLoading {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .aiAnalyzeHeader {
+      justify-content: space-between;
+    }
+    .aiAnalyzeTitle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .aiAnalyzeDesc {
+      margin-top: 4px;
+      color: #42464e;
+      font-size: 13px;
+      line-height: 22px;
+      font-weight: 400;
+      white-space: normal;
+      word-break: break-word;
+    }
+    .aiAnalyzeFold {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: #737a87;
+      font-size: 16px;
+      line-height: 20px;
+      cursor: pointer;
+    }
+    .empty {
+      color: #a4a9b2;
+      padding: 24px 0;
+    }
+    .emptyTimeline {
+      position: relative;
+      min-height: 220px;
+      display: grid;
+      place-items: center;
+      padding: 24px 0;
+    }
+    .emptyTimelineText {
+      color: #A4A9B2;
+      font-size: 16px;
+      line-height: 24px;
+      font-weight: 500;
+    }
+    .timelineEnd {
+      padding: 10px 0 2px 22px;
+      text-align: center;
+      color: #999;
+      font-size: 12px;
+      line-height: 20px;
+    }
+
+    .ecommerce-review-card {
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid #eef1f5;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+    .ecommerce-conclusion-card {
+      grid-column: 1 / -1;
+      order: -1;
+      overflow: hidden;
+      padding: 14px;
+      border-radius: 12px;
+      background: linear-gradient(110deg, #6967ff 0%, #8184ff 55%, #91adff 100%);
+      box-shadow: 0 10px 28px rgba(93, 95, 225, .14);
+    }
+    .ecommerce-conclusion-head { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 4px; color: #fff; }
+    .ecommerce-conclusion-head span { font-size: 17px; }
+    .ecommerce-conclusion-head h2 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 600; }
+    .ecommerce-conclusion-body { display: flex; align-items: center; min-height: 112px; padding: 24px 30px; border-radius: 9px; background: #fff; }
+    .ecommerce-conclusion-body .ecommerce-review-conclusion { max-width: none; font-size: 15px; line-height: 1.7; font-weight: 600; }
+    .ecommerce-insights-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 24px; }
+    .ecommerce-insights-header h2 { margin: 0; color: #0c0d0e; font-size: 17px; line-height: 24px; font-weight: 650; }
+    .ecommerce-insights-header span { color: #737a87; font-size: 12px; }
+    .ecommerce-review-hero {
+      padding: 28px 32px 26px;
+      background: linear-gradient(135deg, #edf4ff 0%, #f8faff 58%, #fff 100%);
+      border-bottom: 1px solid #e8eef8;
+    }
+    .ecommerce-review-kicker {
+      margin: 0 0 10px;
+      color: #1664ff;
+      font-size: 13px;
+      line-height: 20px;
+      font-weight: 600;
+      letter-spacing: .06em;
+    }
+    .ecommerce-review-conclusion {
+      max-width: 820px;
+      margin: 0;
+      color: #0c0d0e;
+      font-size: 20px;
+      line-height: 1.45;
+      font-weight: 650;
+    }
+    .ecommerce-review-summary {
+      max-width: 860px;
+      margin: 12px 0 0;
+      color: #596170;
+      font-size: 14px;
+      line-height: 1.75;
+    }
+    .ecommerce-review-body { padding: 28px 32px 32px; }
+    .ecommerce-section + .ecommerce-section { margin-top: 30px; }
+    .ecommerce-section-heading {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 14px;
+      color: #16181d;
+      font-size: 17px;
+      line-height: 24px;
+      font-weight: 650;
+    }
+    .ecommerce-section-heading::before {
+      content: "";
+      width: 4px;
+      height: 16px;
+      border-radius: 4px;
+      background: #1664ff;
+    }
+    .ecommerce-stage-table {
+      overflow: hidden;
+      border: 1px solid #e8ebf0;
+      border-radius: 10px;
+    }
+    .ecommerce-stage-row {
+      display: grid;
+      grid-template-columns: 116px minmax(160px, .8fr) minmax(260px, 1.7fr);
+      gap: 20px;
+      padding: 15px 18px;
+      color: #42464e;
+      font-size: 14px;
+      line-height: 1.65;
+      border-top: 1px solid #edf0f4;
+    }
+    .ecommerce-stage-row:first-child { border-top: 0; }
+    .ecommerce-stage-row.header {
+      padding-top: 11px;
+      padding-bottom: 11px;
+      color: #737a87;
+      font-size: 12px;
+      line-height: 18px;
+      font-weight: 600;
+      background: #f7f8fa;
+    }
+    .ecommerce-stage-time { color: #1664ff; font-variant-numeric: tabular-nums; }
+    .ecommerce-stage-title { color: #202329; font-weight: 600; }
+    .ecommerce-findings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .ecommerce-finding-panel {
+      padding: 18px;
+      border: 1px solid #e8ebf0;
+      border-radius: 10px;
+      background: #fbfcfd;
+    }
+    .ecommerce-finding-panel.highlight { border-top: 3px solid #22a06b; }
+    .ecommerce-finding-panel.problem { border-top: 3px solid #e5484d; }
+    .ecommerce-panel-title { margin: 0 0 12px; color: #202329; font-size: 15px; line-height: 22px; font-weight: 650; }
+    .ecommerce-finding-list, .ecommerce-action-list { margin: 0; padding: 0; list-style: none; }
+    .ecommerce-finding-item + .ecommerce-finding-item { margin-top: 14px; padding-top: 14px; border-top: 1px solid #edf0f4; }
+    .ecommerce-finding-name { color: #202329; font-size: 14px; line-height: 21px; font-weight: 600; }
+    .ecommerce-finding-time { margin-right: 8px; color: #737a87; font-size: 12px; font-weight: 500; }
+    .ecommerce-finding-reason { margin: 5px 0 0; color: #596170; font-size: 13px; line-height: 1.65; }
+    .ecommerce-empty { margin: 0; color: #8a909b; font-size: 13px; line-height: 1.65; }
+    .ecommerce-structure { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; }
+    .ecommerce-structure-step { padding: 7px 11px; color: #1454c4; font-size: 13px; line-height: 19px; font-weight: 550; background: #edf4ff; border-radius: 7px; }
+    .ecommerce-structure-arrow { color: #a4a9b2; }
+    .ecommerce-action-item { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; color: #42464e; font-size: 14px; line-height: 1.7; }
+    .ecommerce-action-item + .ecommerce-action-item { margin-top: 10px; }
+    .ecommerce-action-index { width: 24px; height: 24px; display: grid; place-items: center; color: #1664ff; font-size: 12px; font-weight: 650; background: #edf4ff; border-radius: 50%; }
+    .ecommerce-scope-note { margin: 26px 0 0; padding: 13px 15px; color: #737a87; font-size: 12px; line-height: 1.7; background: #f7f8fa; border-radius: 8px; }
+
+    .report-shell { grid-template-columns: 420px minmax(0, 1fr); }
+    .left-rail { position: sticky; top: 80px; grid-template-columns: 1fr; }
+    .info-container { height: auto; padding: 16px; }
+    .info-container .info-top { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: center; }
+    .info-container .cover { width: 96px; height: 64px; justify-content: center; padding: 0; border-radius: 10px; }
+    .info-container .title-container { min-height: 64px; margin: 0; }
+    .info-container .live-title { font-size: 16px; line-height: 22px; }
+    .info-container .session-card { margin-top: 14px; }
+    @media (max-width: 1100px) {
+      .report-shell {
+        grid-template-columns: 1fr;
+        max-width: 900px;
+      }
+      .left-rail {
+        position: static;
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .info-container,
+      .playback-container {
+        height: auto;
+      }
+      .info-container {
+        padding: 20px;
+      }
+      .info-container .info-top {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+      }
+      .info-container .cover {
+        width: 100%;
+        height: 52px;
+        justify-content: flex-start;
+        padding: 0 16px;
+        gap: 8px;
+        border-radius: 10px;
+        font-size: 13px;
+      }
+      .info-container .cover-play {
+        font-size: 11px;
+      }
+      .info-container .title-container {
+        min-height: 0;
+        margin: 13px 0 0;
+      }
+      .info-container .live-title {
+        font-size: 16px;
+        line-height: 22px;
+      }
+      .info-container .live-account,
+      .info-container .duration {
+        font-size: 12px;
+        line-height: 18px;
+      }
+      .info-container .live-account {
+        margin-top: 8px;
+      }
+      .info-container .duration {
+        margin-top: 6px;
+      }
+      .info-container .session-card {
+        margin-top: auto;
+      }
+      .playback-container {
+        width: 100%;
+        display: block;
+      }
+      .video-player,
+      .video-player.portrait {
+        height: 280px;
+        max-height: 280px;
+        aspect-ratio: auto !important;
+      }
+      .playback-video,
+      .video-player.portrait .playback-video {
+        object-fit: contain;
+      }
+      .diagnosis-card {
+        flex-direction: column;
+        gap: 16px;
+      }
+      .score-section,
+      .diagnosis-section {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .header-container { padding: 16px; }
+      .report-shell { padding: 0 12px; }
+      .left-rail { grid-template-columns: 1fr; gap: 16px; }
+      .info-container,
+      .playback-container { height: auto; }
+      .info-container .session-card { margin-top: 16px; }
+      .playback-container { width: min(100%, 420px); justify-self: center; display: block; }
+      .video-player { flex: none; height: 200px; }
+      .video-player.portrait { height: 235px !important; aspect-ratio: 9 / 16 !important; }
+      .diagnosis-row { grid-template-columns: 1fr; }
+      .data-item { width: 50%; min-width: 0; }
+      .timeline-item { grid-template-columns: 1fr; gap: 8px; }
+      .search-box { width: 100%; margin-left: 0; }
+      .ecommerce-review-hero, .ecommerce-review-body { padding: 22px 18px; }
+      .ecommerce-review-conclusion { font-size: 18px; }
+      .ecommerce-findings-grid { grid-template-columns: 1fr; }
+      .ecommerce-stage-row { grid-template-columns: 1fr; gap: 4px; padding: 14px; }
+      .ecommerce-stage-row.header { display: none; }
+    }
+    @media (max-width: 1100px) {
+      .info-container { height: auto; padding: 16px; }
+      .info-container .info-top { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: center; }
+      .info-container .cover { width: 96px; height: 64px; justify-content: center; padding: 0; border-radius: 10px; }
+      .info-container .title-container { min-height: 64px; margin: 0; }
+      .info-container .live-title { font-size: 16px; line-height: 22px; }
+      .info-container .live-account { margin-top: 3px; }
+      .info-container .duration { margin-top: 5px; }
+      .info-container .info-meta-row { display: block; margin-top: 0; }
+      .info-container .scene-tags { margin-top: 5px; padding-left: 0; }
+      .info-container .session-card { margin-top: 14px; }
+    }
+    @media (max-width: 430px) {
+      .info-container .info-top { grid-template-columns: 72px minmax(0, 1fr); gap: 10px; }
+      .info-container .cover { width: 72px; height: 54px; font-size: 11px; }
+      .info-container .title-container { min-height: 54px; }
+      .info-container .live-title { font-size: 15px; line-height: 21px; }
+      .info-container .session-card { align-items: flex-start; flex-direction: column; }
+      .info-container .session-time { text-align: left; white-space: normal; }
+    }
+    .score-container { padding: 24px 28px; }
+    .score-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 16px; }
+    .score-header .block-title { font-size: 17px; line-height: 24px; }
+    .score-header-note { color: #737a87; font-size: 12px; }
+    .score-content { margin-top: 0; }
+    .data-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; color: #737a87; }
+    .data-item { position: relative; width: auto; min-width: 0; min-height: 112px; padding: 16px 20px; }
+    .data-item:not(:last-child)::after { position: absolute; top: 18px; right: 0; bottom: 18px; width: 1px; background: #eceef2; content: ""; }
+    .data-title { color: #4e5665; font-size: 14px; line-height: 22px; }
+    .data-value { margin-top: 8px; font-size: 28px; line-height: 34px; }
+    @media (max-width: 640px) {
+      .score-container { padding: 20px; }
+      .data-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .data-item { width: auto; }
+      .data-item:nth-child(2n)::after { display: none; }
+    }
+    @media (max-width: 430px) {
+      .score-header { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .data-grid { grid-template-columns: 1fr; }
+      .data-item::after { display: none; }
+    }
+    @media (max-width: 640px) {
+      .video-player,
+      .video-player.portrait { height: 180px; max-height: 180px; aspect-ratio: auto !important; }
+      .playback-video,
+      .video-player.portrait .playback-video { object-fit: contain; }
+    }
+    @media (max-width: 430px) {
+      .video-player,
+      .video-player.portrait { height: 160px; max-height: 160px; }
+    }
+  .score-evidence { margin-top: 10px; padding: 12px; border-radius: 8px; background: #f6f8fa; font-size: 13px; }
+.score-evidence summary { color: #1664ff; cursor: pointer; }
+.score-evidence p { margin-top: 8px; }
+.score-evidence button:not(:disabled) { color: #1664ff; }
+</style>
+  <script crossorigin src="https://mediaservice-fe.volccdn.com/obj/vcloud-fe/livesaas-live-report/static/js/lib-polyfill.224a66878f.js"></script>
+  <script crossorigin src="https://mediaservice-fe.volccdn.com/obj/vcloud-fe/livesaas-live-report/static/js/lib-react.daed7a9021.js"></script>
+  <script crossorigin src="https://mediaservice-fe.volccdn.com/obj/vcloud-fe/livesaas-live-report/static/js/lib-router.ea7d8b0268.js"></script>
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+</head>
+<body>
+  <script id="report-data" type="application/json">__REVIEW_REPORT_JSON__</script>
+  <div id="live-report-root"></div>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script>
+    (function () {
+      const e = React.createElement;
+      const fallback = {
+        live: { title: "直播复盘", duration_text: "--", time_range: "--" },
+        diagnosis: { summary: "暂无诊断结果", risk_keywords: [], grade: "D", grade_label: "待生成", items: [] },
+        metrics: [],
+        curve: { legend: [], points: [] },
+        content: { tabs: ["全部", "商品讲解", "高光时刻", "违规片段", "AI分析片段", "问题时刻"], segments: [] },
+        display_flags: { live_score: true, full_curve: true, highlight_moment: true, content_analysis: true },
+        modules: {}
+      };
+
+      function readReportData() {
+        const node = document.getElementById("report-data");
+        const raw = node ? node.textContent.trim() : "";
+        if (!raw || raw.slice(0, 2) === "__") return fallback;
+	        try {
+	          const source = JSON.parse(raw);
+	          const parsed = Object.assign({}, fallback, source, source.view_model || {});
+	          parsed.interactionData = parsed.interactionData || parsed.interaction_data || {};
+          parsed.lineData = parsed.lineData || parsed.line_data || {};
+          parsed.highlightsData = parsed.highlightsData || parsed.highlights_data || {};
+          parsed.baseStartTime = parsed.baseStartTime || parsed.base_start_time || 0;
+          parsed.playbackInfo = parsed.playbackInfo || parsed.playback_info || {};
+          parsed.display_flags = Object.assign({}, fallback.display_flags, parsed.display_flags || parsed.displayFlags || {});
+          return parsed;
+        } catch (error) {
+          console.warn("Invalid review report data", error);
+          return fallback;
+        }
+      }
+
+      function displayEnabled(data, key) {
+        const flags = (data && (data.display_flags || data.displayFlags)) || {};
+        if (!Object.prototype.hasOwnProperty.call(flags, key)) return true;
+        const value = flags[key];
+        return value !== false && value !== "false" && value !== 0 && value !== "0";
+      }
+
+      function safeArray(value) {
+        return Array.isArray(value) ? value : [];
+      }
+
+      function normalizeMaybeArray(value) {
+        if (!value) return [];
+        return Array.isArray(value) ? value : [value];
+      }
+
+      function firstText() {
+        for (let i = 0; i < arguments.length; i += 1) {
+          const value = arguments[i];
+          if (value !== undefined && value !== null && String(value).trim() !== "") return String(value);
+        }
+        return "";
+      }
+
+      function escapeHtml(value) {
+        return firstText(value, "").replace(/[&<>"']/g, function (char) {
+          return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" })[char];
+        });
+      }
+
+      function formatNumber(value) {
+        if (value === undefined || value === null || value === "") return "--";
+        if (typeof value === "number") return value.toLocaleString("zh-CN");
+        return String(value);
+      }
+
+      function formatRelativeTime(seconds) {
+        const total = Math.max(0, Math.floor(Number(seconds) || 0));
+        const hours = Math.floor(total / 3600);
+        const mins = Math.floor((total % 3600) / 60);
+        const secs = total % 60;
+        return [hours, mins, secs].map(v => String(v).padStart(2, "0")).join(":");
+      }
+
+      function normalizeChartOffsetSeconds(timestamp, startTimestamp) {
+        const current = Number(timestamp || 0);
+        const start = Number(startTimestamp || 0);
+        const offset = Math.max(0, current - start);
+        return offset > 86400 ? offset / 1000 : offset;
+      }
+
+      function Header(props) {
+        return e("header", { className: "header-container" },
+          e("div", { className: "header-left" },
+            e("span", { className: "logo-dot" }, "AI"),
+            e("span", null, firstText(props && props.title, "直播内容复盘"))
+          )
+        );
+      }
+
+      function isLiveReview(live) {
+        const reviewType = firstText(live.review_type, live.reviewType, live.ReviewType, "live").toLowerCase();
+        return reviewType !== "video" && reviewType !== "vod";
+      }
+
+      function sceneLabel(live) {
+        return firstText(live.scenario_name, live.scenarioName, live.ScenarioName, "");
+      }
+
+      function Info(props) {
+        const live = props.live || {};
+        const isLive = isLiveReview(live);
+        return e("section", { className: "info-container" },
+          e("div", { className: "info-top" },
+            e("div", { className: "cover" + (live.cover_url ? "" : " cover-placeholder") }, live.cover_url
+              ? e("img", { src: live.cover_url, alt: "" })
+              : [e("span", { className: "cover-play", key: "play" }, "▶"), e("span", { key: "label" }, isLive ? "直播复盘" : firstText(live.cover_label, "视频"))]),
+            e("div", { className: "title-container" },
+              e("p", { className: "live-title" }, firstText(live.title, live.subtitle, "直播复盘")),
+              firstText(live.account_name, live.accountName, "") ? e("p", { className: "live-account", title: firstText(live.account_name, live.accountName, "") }, "@" + firstText(live.account_name, live.accountName, "")) : null,
+              e("div", { className: "info-meta-row" },
+                e("p", { className: "duration" }, (isLive ? "直播时长：" : "时长：") + firstText(live.duration_text, "--")),
+                sceneLabel(live) ? e("div", { className: "scene-tags" }, e("span", { className: "scene-tag" }, sceneLabel(live))) : null
+              )
+            )
+          ),
+          isLive ? e("div", { className: "session-card" },
+            e("div", { className: "session-time" }, firstText(live.time_range, "--"))
+          ) : null
+        );
+      }
+
+      function Playback(props) {
+        const live = props.live || {};
+        const playbackInfo = props.playbackInfo || live.playbackInfo || {};
+        const playUrl = firstText(playbackInfo.PlayUrl, playbackInfo.play_url, live.play_url, "");
+        const format = firstText(playbackInfo.Format, playbackInfo.format, "hls");
+        const poster = firstText(playbackInfo.CoverImage, playbackInfo.cover_image, live.cover_url, "");
+        const videoRef = React.useRef(null);
+        const [videoShape, setVideoShape] = React.useState({ portrait: !!live.is_portrait, ratio: "" });
+        const [playbackState, setPlaybackState] = React.useState({ current: 0, duration: 0 });
+        const sourceSegments = safeArray(props.content && props.content.segments).length
+          ? safeArray(props.content && props.content.segments)
+          : safeArray(props.modules && props.modules.content_analysis && props.modules.content_analysis.semantic_segments);
+        const timeInSeconds = function (value, duration) {
+          const raw = Math.max(0, Number(value || 0));
+          return duration > 0 && raw > duration * 2 ? raw / 1000 : raw;
+        };
+        const formatPlaybackTime = function (seconds) {
+          const total = Math.max(0, Math.floor(Number(seconds || 0)));
+          const hours = Math.floor(total / 3600);
+          const minutes = Math.floor((total % 3600) / 60);
+          const secs = total % 60;
+          return (hours ? String(hours).padStart(2, "0") + ":" : "") + String(minutes).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
+        };
+        const timelineSegments = sourceSegments.map(function (segment, index) {
+          const type = segmentMomentType(segment);
+          if (!type) return null;
+          const start = timeInSeconds(firstNumber(segment.start_time, segment.StartTime, segment.start_ms, segment.StartMS), playbackState.duration);
+          const end = timeInSeconds(firstNumber(segment.end_time, segment.EndTime, segment.end_ms, segment.EndMS), playbackState.duration);
+          return { key: firstText(segment.id, segment.segment_id, segment.SegmentID, index), start: start, end: Math.max(start, end), type: type, title: firstText(segment.title, segment.Title, type === "problem" ? "问题时刻" : "高光时刻") };
+        }).filter(Boolean);
+        const activeSegment = timelineSegments.find(function (segment) { return playbackState.current >= segment.start && playbackState.current <= segment.end; });
+        const onLoadedMetadata = function (event) {
+          const video = event.currentTarget;
+          const width = Number(video.videoWidth || 0);
+          const height = Number(video.videoHeight || 0);
+          if (width && height) setVideoShape({ portrait: height > width, ratio: width + " / " + height });
+          setPlaybackState({ current: Number(video.currentTime || 0), duration: Number(video.duration || 0) });
+        };
+        const seekPlayback = function (seconds) {
+          if (!videoRef.current) return;
+          videoRef.current.currentTime = seconds;
+          videoRef.current.play().catch(function () {});
+        };
+        React.useEffect(function () {
+          const handleSeekRequest = function (event) {
+            if (!videoRef.current) return;
+            const seconds = Number.isFinite(event?.detail?.time_ms) ? event.detail.time_ms / 1000 : timeInSeconds(event && event.detail && event.detail.time, Number(videoRef.current.duration || playbackState.duration || 0));
+            seekPlayback(seconds);
+            const player = document.querySelector(".playback-container");
+            if (player) player.scrollIntoView({ behavior: "smooth", block: "start" });
+          };
+          window.addEventListener("review:seek", handleSeekRequest);
+          return function () { window.removeEventListener("review:seek", handleSeekRequest); };
+        }, [playbackState.duration]);
+        const duration = playbackState.duration || Math.max(0, ...timelineSegments.map(function (segment) { return segment.end; }));
+        return e("section", { className: "playback-container" },
+          e("div", { className: "playback-panel-title" },
+            e("p", { className: "playback-title" }, "直播回放"),
+            e("span", { className: "playback-secure-chip" }, "安全播放")
+          ),
+          e("div", { className: "video-player" + (videoShape.portrait ? " portrait" : ""), style: videoShape.ratio ? { aspectRatio: videoShape.ratio } : undefined },
+            e("div", { className: "basic-player-host", "data-format": format, "data-vid": firstText(live.vid, live.Vid, "") },
+              e("div", { id: "byte-player-container" },
+                playUrl
+                  ? e("video", { ref: videoRef, className: "playback-video", controls: true, preload: "metadata", poster: poster || undefined, src: playUrl, onLoadedMetadata: onLoadedMetadata, onTimeUpdate: function (event) { setPlaybackState({ current: Number(event.currentTarget.currentTime || 0), duration: Number(event.currentTarget.duration || playbackState.duration || 0) }); } })
+                  : e("div", { className: "playback-empty" }, firstText(live.vid, live.Vid) ? "缺少 PlayUrl，离线报告无法仅凭 VID 拉取点播地址" : "暂无直播回放")
+              )
+            )
+          ),
+          e("div", { className: "playback-playhead-row" },
+            e("span", { className: "playback-current-time" }, formatPlaybackTime(playbackState.current)),
+            e("span", { className: "playback-current-caption" }, activeSegment ? activeSegment.title : "点击下方时间点定位重点片段")
+          ),
+          e("div", { className: "playback-timeline", "aria-label": "直播重点片段时间轴" },
+            e("div", { className: "playback-timeline-track" }),
+            timelineSegments.map(function (segment) {
+              const left = duration ? Math.min(100, segment.start / duration * 100) : 0;
+              const width = duration ? Math.max(.8, Math.min(100 - left, (segment.end - segment.start) / duration * 100)) : .8;
+              return e("button", { key: segment.key, type: "button", className: "playback-timeline-segment " + (segment.type === "problem" || segment.type === "violation" ? "problem" : "highlight") + (activeSegment && activeSegment.key === segment.key ? " active" : ""), style: { left: left + "%", width: width + "%" }, title: formatPlaybackTime(segment.start) + " " + segment.title, onClick: function () {
+                seekPlayback(segment.start);
+                window.dispatchEvent(new CustomEvent("review:focus-segment", { detail: { key: segment.key, type: segment.type } }));
+              } });
+            }),
+            e("span", { className: "playback-playhead", style: { left: (duration ? Math.min(100, playbackState.current / duration * 100) : 0) + "%" } })
+          ),
+          e("div", { className: "playback-timeline-legend" },
+            e("span", null, e("i", { className: "playback-legend-highlight" }), "高光片段"),
+            e("span", null, e("i", { className: "playback-legend-problem" }), "问题片段"),
+            e("span", null, e("i", { className: "playback-legend-playhead" }), "当前进度")
+          )
+        );
+      }
+
+      function dimensionLabel(code) {
+        const labels = {
+          audience_retention: "观众留存",
+          interaction_atmosphere: "互动氛围",
+          content_planning: "内容策划",
+          live_content: "内容策划",
+          conversion_effect: "转化效果",
+          host_performance: "主播表现",
+          AudienceRetentionRating: "观众留存",
+          InteractionAtmosphereRating: "互动氛围",
+          ContentPlanningRating: "内容策划",
+          ConversionEffectRating: "转化效果",
+          HostPerformanceRating: "主播表现"
+        };
+        return labels[code] || code || "维度评分";
+      }
+
+      function categoryTitle(item, actions) {
+        const category = firstText(item && item.title, "维度评分");
+        const actionTitle = firstText(actions && actions[0] && actions[0].title, "");
+        if (!actionTitle) return e("span", { className: "category-primary" }, category);
+        return e(React.Fragment, null,
+          e("span", { className: "category-primary" }, category),
+          e("span", { className: "category-separator" }, "|"),
+          e("span", { className: "category-action" }, actionTitle)
+        );
+      }
+
+      function diagnosisDescription(item, actions) {
+        const actionContent = firstText(actions && actions[0] && actions[0].content, "");
+        return firstText(actionContent, item && item.evaluation, "--");
+      }
+
+      function splitDiagnosisDescription(text) {
+        const value = String(text || "").trim();
+        if (!value) return [];
+        const lines = value.split(/\n+/).map(item => item.trim()).filter(Boolean);
+        if (lines.length > 1) return lines.slice(0, 2);
+        const matches = value.match(/(?:^|\s)(?:[12][\.、)]\s*)[^12]+?(?=(?:\s[12][\.、)]\s*)|$)/g);
+        if (matches && matches.length > 1) {
+          return matches.map(item => item.trim()).filter(Boolean).slice(0, 2);
+        }
+        return [value];
+      }
+
+      function renderDiagnosisDescription(text) {
+        const lines = splitDiagnosisDescription(text);
+        if (lines.length <= 1) return firstText(lines[0], "--");
+        return lines.map((line, index) => e("p", { className: "diagnosis-description-line", key: index }, line));
+      }
+
+      function dimensionStatusLabel(item) {
+        const explicit = firstText(item.status_label, item.StatusLabel, item.label, item.Label, item.tag, item.Tag, "");
+        if (explicit) return explicit;
+        const score = Number(item.score);
+        if (!Number.isFinite(score)) return "待生成";
+        return score >= 70 ? "继续保持" : "需要提升";
+      }
+
+      function normalizeDimensionScores(reviewScore) {
+        if (!reviewScore) return [];
+        const arrayScores = safeArray(reviewScore.dimension_scores || reviewScore.DimensionScores);
+        if (arrayScores.length) {
+          return arrayScores.map(item => {
+            const normalized = {
+              title: dimensionLabel(firstText(item.dimension_code, item.DimensionCode, item.name, item.Name)),
+              score: firstNumber(item.score, item.Score),
+              industryAvgScore: firstNumber(item.industry_avg_score, item.AvgIndustryScore, item.avg_industry_score),
+              evaluation: firstText(item.evaluation, item.Evaluation, item.summary, item.Summary, item.detail, item.Detail, "--")
+            };
+            normalized.status_label = dimensionStatusLabel(Object.assign({}, item, normalized));
+            normalized.suggestions = normalizeDimensionActionSuggestions(item, normalized.title);
+            return normalized;
+          });
+        }
+        const objectScores = reviewScore.DimensionScores || reviewScore.dimension_scores || {};
+        return Object.keys(objectScores).map(key => {
+          const item = objectScores[key] || {};
+          const normalized = {
+            title: dimensionLabel(key),
+            score: firstNumber(item.score, item.Score),
+            industryAvgScore: firstNumber(item.industry_avg_score, item.AvgIndustryScore, item.avg_industry_score),
+            evaluation: firstText(item.evaluation, item.Evaluation, item.summary, item.Summary, item.detail, item.Detail, "--")
+          };
+          normalized.status_label = dimensionStatusLabel(Object.assign({}, item, normalized));
+          normalized.suggestions = normalizeDimensionActionSuggestions(item, normalized.title);
+          return normalized;
+        });
+      }
+
+      function normalizeDimensionActionSuggestions(item, dimension) {
+        const sources = []
+          .concat(normalizeMaybeArray(item.dimension_action || item.DimensionAction))
+          .concat(normalizeMaybeArray(item.dimension_actions || item.DimensionActions))
+          .concat(normalizeMaybeArray(item.suggestions || item.Suggestions))
+          .concat(normalizeMaybeArray(item.actions || item.Actions));
+        return sources.map(action => ({
+          dimension: dimension,
+          title: firstText(action.suggestion_title, action.SuggestionTitle, action.title, action.Title, ""),
+          content: firstText(action.content, action.Content, action.detail, action.Detail, "")
+        })).filter(action => action.title || action.content);
+      }
+
+      function normalizeActionSuggestions(actionPlan) {
+        const suggestions = safeArray(
+          actionPlan.detailed_suggestions ||
+          actionPlan.DetailedSuggestions ||
+          actionPlan.suggestions ||
+          actionPlan.Suggestions
+        );
+        return suggestions.map(item => ({
+          dimension: dimensionLabel(firstText(item.related_dimension, item.RelatedDimension, item.dimension, item.Dimension)),
+          title: firstText(item.suggestion_title, item.SuggestionTitle, item.title, item.Title, ""),
+          content: firstText(item.content, item.Content, item.detail, item.Detail, "")
+        })).filter(item => item.dimension && (item.title || item.content));
+      }
+
+      function suggestionsByDimension(actionPlan) {
+        return normalizeActionSuggestions(actionPlan).reduce((grouped, item) => {
+          if (!grouped[item.dimension]) grouped[item.dimension] = [];
+          grouped[item.dimension].push(item);
+          return grouped;
+        }, {});
+      }
+
+      function legacyReviewActionPlan(reviewScore, modules) {
+        return reviewScore.action_plan || reviewScore.ActionPlan || modules.action_plan || modules.ActionPlan || {};
+      }
+
+      function scoreDiagnosisSummary(items) {
+        if (!items.length) return "直播评分模块暂无结果。";
+        const bads = diagnosisProblemItems(items);
+        const focus = bads.length ? bads.map(item => item.title).join("、") : items.map(item => item.title).slice(0, 3).join("、");
+        return "本场直播共诊断出 " + (bads.length || items.length) + " 处，其中" + focus + (bads.length ? "需要关注，建议及时优化！" : "表现较稳，建议持续保持。");
+      }
+
+      function diagnosisProblemItems(items) {
+        return safeArray(items).filter(item => {
+          const score = Number(item.score);
+          const industry = Number(item.industryAvgScore);
+          const label = firstText(item.status_label, "");
+          return label.indexOf("提升") >= 0 || label.indexOf("风险") >= 0 || (Number.isFinite(score) && score < 70) || (Number.isFinite(score) && Number.isFinite(industry) && score < industry);
+        });
+      }
+
+      function DiagnosisSummaryTitle(props) {
+        const items = safeArray(props.items);
+        if (!items.length) return e("span", null, "直播评分模块暂无结果。");
+        const problems = diagnosisProblemItems(items);
+        if (!problems.length) {
+          return e("span", null, "本场直播表现较稳，建议持续保持。");
+        }
+        const names = problems.map(item => firstText(item.title, "维度评分"));
+        return e("span", null,
+          "本场直播共诊断出 " + problems.length + " 处，其中",
+          names.map((name, index) => e(React.Fragment, { key: name + index },
+            index ? "、" : "",
+            e("span", { className: "problem-highlight" }, name)
+          )),
+          "需要关注，建议及时优化！"
+        );
+      }
+
+      function radarDimensionRows(items) {
+        const preferred = ["内容策划", "转化效果", "观众留存", "互动氛围", "主播表现"];
+        const byTitle = {};
+        safeArray(items).forEach(item => { byTitle[firstText(item.title, "")] = item; });
+        return preferred.map(title => {
+          const item = byTitle[title] || {};
+          return {
+            title: title,
+            score: Number.isFinite(Number(item.score)) ? Number(item.score) : 0,
+            industry: Number.isFinite(Number(item.industryAvgScore)) ? Number(item.industryAvgScore) : 70
+          };
+        });
+      }
+
+      function radarPoint(row, index, total, radius, center, valueKey) {
+        const angle = -Math.PI / 2 + index * Math.PI * 2 / total;
+        const value = Math.max(0, Math.min(100, Number(row[valueKey]) || 0));
+        const r = radius * value / 100;
+        return {
+          x: center + Math.cos(angle) * r,
+          y: center + Math.sin(angle) * r,
+          angle: angle,
+          value: value
+        };
+      }
+
+      function radarLabelPoint(index, total, radius, center) {
+        const angle = -Math.PI / 2 + index * Math.PI * 2 / total;
+        return { x: center + Math.cos(angle) * radius, y: center + Math.sin(angle) * radius, angle: angle };
+      }
+
+      function RadarChart(props) {
+        const rows = radarDimensionRows(props.items);
+        const center = 105;
+        const radius = 68;
+        const total = rows.length;
+        const rings = [20, 40, 60, 80, 100].map(value => {
+          const r = radius * value / 100;
+          return Array.from({ length: total }).map((_, index) => {
+            const point = radarLabelPoint(index, total, r, center);
+            return point.x.toFixed(1) + "," + point.y.toFixed(1);
+          }).join(" ");
+        });
+        const livePoints = rows.map((row, index) => radarPoint(row, index, total, radius, center, "score"));
+        const industryPoints = rows.map((row, index) => radarPoint(row, index, total, radius, center, "industry"));
+        return e("svg", { className: "radar-chart", viewBox: "0 0 210 210", role: "img", "aria-label": "维度评分雷达图" },
+          rings.map((points, index) => e("polygon", { key: "ring-" + index, className: "radar-grid-line", points: points })),
+          rows.map((row, index) => {
+            const end = radarLabelPoint(index, total, radius, center);
+            return e("line", { key: "axis-" + index, className: "radar-axis-line", x1: center, y1: center, x2: end.x, y2: end.y });
+          }),
+          e("polygon", { className: "radarPolygonIndustry", points: industryPoints.map(point => point.x.toFixed(1) + "," + point.y.toFixed(1)).join(" ") }),
+          e("polygon", { className: "radarPolygonLive", points: livePoints.map(point => point.x.toFixed(1) + "," + point.y.toFixed(1)).join(" ") }),
+          rows.map((row, index) => {
+            const label = radarLabelPoint(index, total, radius + 26, center);
+            const anchor = Math.abs(Math.cos(label.angle)) < 0.2 ? "middle" : (Math.cos(label.angle) > 0 ? "start" : "end");
+            return e("text", { key: "label-" + index, className: "radar-axis-label", x: label.x, y: label.y + 4, textAnchor: anchor }, row.title);
+          }),
+          livePoints.map((point, index) => e("text", { key: "live-value-" + index, className: "radar-value-label radar-value-live", x: point.x, y: point.y - 4, textAnchor: "middle" }, rows[index].score)),
+          industryPoints.map((point, index) => e("text", { key: "industry-value-" + index, className: "radar-value-label radar-value-industry", x: point.x, y: point.y + 11, textAnchor: "middle" }, rows[index].industry))
+        );
+      }
+
+      function DimensionScoreIcon() {
+        return e("svg", { width: 14, height: 14, fill: "none", xmlns: "http://www.w3.org/2000/svg", "aria-hidden": "true" },
+          e("path", { d: "M7 5.25v2.188m0 0L4.727 8.75M7 7.437L9.274 8.75", stroke: "#737A87", strokeWidth: 0.875 }),
+          e("circle", { cx: 7, cy: 3.5, r: 1.75, stroke: "#737A87", strokeWidth: 0.875 }),
+          e("circle", { cx: 3.5, cy: 9.625, r: 1.75, stroke: "#737A87", strokeWidth: 0.875 }),
+          e("circle", { cx: 10.5, cy: 9.625, r: 1.75, stroke: "#737A87", strokeWidth: 0.875 })
+        );
+      }
+
+      function ScoreRadarPopover(props) {
+        return e("div", { className: "score-radar-popover", role: "tooltip" },
+          e("p", { className: "radar-title" }, "综合评分", e("span", { className: "radar-score" }, firstNumber(props.totalScore, 0))),
+          e(RadarChart, { items: props.items }),
+          e("div", { className: "radar-legend" },
+            e("span", { className: "radar-legend-item" }, e("span", { className: "radar-legend-dot" }), "本场直播"),
+            e("span", { className: "radar-legend-item" }, e("span", { className: "radar-legend-dot industry" }), "行业均值")
+          )
+        );
+      }
+
+      function Diagnosis(props) {
+        if (props.enabled === false) return null;
+        const modules = props.modules || {};
+        const reviewScore = modules.review_score || modules.ReviewScore || {};
+        const actionSuggestions = suggestionsByDimension(legacyReviewActionPlan(reviewScore, modules));
+        const items = normalizeDimensionScores(reviewScore).slice(0, 6);
+        const bads = diagnosisProblemItems(items);
+        return e("section", { className: "diagnosis-card" },
+          e("h2", { className: "section-title" }, "✦ 直播诊断"),
+          e("div", { className: "score-section" },
+            e("p", { className: "score-title" }, "直播评分"),
+            e("div", { className: "score-badge" }, firstText(reviewScore.total_comment, reviewScore.TotalComment, "待生成")),
+            e("div", { className: "grade-medal" }, firstText(reviewScore.total_grade, reviewScore.TotalGrade, "--").slice(0, 2)),
+            e("div", { className: "view-details-wrap" },
+              e("button", { className: "view-details", type: "button" }, e("span", null, "查看维度评分"), e(DimensionScoreIcon)),
+              e(ScoreRadarPopover, { items: items, totalScore: firstNumber(reviewScore.total_score, reviewScore.TotalScore, 0) })
+            )
+          ),
+          e("div", { className: "diagnosis-section" },
+            e("div", { className: "summary-header" },
+              e("span", { className: "summary-icon" }, bads.length ? "!" : "✓"),
+              e("div", null, e(DiagnosisSummaryTitle, { items: items }))
+            ),
+            e("div", { className: "diagnosis-list" },
+              e("div", { className: "diagnosis-row" },
+                items.length ? items.map((item, index) => {
+                  const label = dimensionStatusLabel(item);
+                  const good = label === "继续保持" || label === "表现优秀";
+                  const actions = (safeArray(item.suggestions).length ? safeArray(item.suggestions) : safeArray(actionSuggestions[firstText(item.title, "")])).slice(0, 1);
+                  return e("article", { className: "diagnosis-item", key: index },
+                    e("div", { className: "item-header" },
+                      e("span", { className: "category" }, categoryTitle(item, actions)),
+                      e("span", { className: "status-tag" + (good ? " good" : "") }, label)
+                    ),
+                    e("div", { className: "item-description" }, renderDiagnosisDescription(diagnosisDescription(item, actions)))
+                  );
+                }) : e("div", { className: "empty" }, "暂无可展示的诊断建议")
+              )
+            )
+          )
+        );
+      }
+
+      function Score(props) {
+        const defaults = [
+          { label: "直播时长", value: 0, unit: "", sub_label: "行业平均值 120 分钟" },
+          { label: "语速", value: 0, unit: "字/分钟", sub_label: "行业优秀值200字/分钟" },
+          { label: "断句长短", value: 0, unit: "字/句", sub_label: "行业优秀值50字/句" },
+          { label: "人均观看时长", value: "00:00:00", unit: "", sub_label: "人均访问 00:00:00" },
+          { label: "累计观看人数", value: 0, unit: "人", sub_label: "累计访问 0 人" },
+          { label: "观看人数峰值", value: 0, unit: "人", sub_label: "访问峰值 0 人" },
+          { label: "人均邀请人数", value: 0, unit: "人", sub_label: "邀请次数 0 次" },
+          { label: "点赞率", value: 0, unit: "%", sub_label: "点赞次数 0 次" },
+          { label: "聊天率", value: 0, unit: "%", sub_label: "聊天次数 0 次" },
+          { label: "商品点击率", value: 0, unit: "%", sub_label: "商品点击 0 次" }
+        ];
+        const metrics = safeArray(props.metrics).length ? safeArray(props.metrics) : defaults;
+        const normalizedMetrics = metrics.slice(0, 10).map(metric => normalizeMetricItem(metric));
+        return e("section", { className: "score-container" },
+          e("div", { className: "score-header" },
+            e("h2", { className: "block-title" }, "直播数据")
+          ),
+          e("div", { className: "score-content" },
+            e("div", { className: "data-grid" },
+              normalizedMetrics.map((metric, index) =>
+                e("div", { className: "data-item", key: index },
+                  e("div", { className: "data-title" },
+                    e("span", null, metric.label),
+                    e("span", { className: "metric-info-icon" }, "i",
+                      e("span", { className: "metric-tooltip" }, metricTooltipText(metric))
+                    )
+                  ),
+                  e("p", { className: "data-value" },
+                    metricDisplayValue(metric),
+                    metric.unit ? e("span", { className: "unit" }, metric.unit) : null
+                  ),
+                  e("p", { className: "sub-text" }, metricReferenceText(metric))
+                )
+              )
+            )
+          )
+        );
+      }
+
+      function metricNumber(value) {
+        if (typeof value === "number") return value;
+        const text = firstText(value, "");
+        if (!text || text === "--") return NaN;
+        const parsed = Number(String(text).replace(/,/g, ""));
+        return Number.isFinite(parsed) ? parsed : NaN;
+      }
+
+      function formatDuration(totalSeconds) {
+        const seconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        return [h, m, s].map(part => String(part).padStart(2, "0")).join(":");
+      }
+
+      function metricDisplayValue(metric) {
+        if (metric.kind === "duration") return formatDuration(metric.seconds);
+        return formatNumber(metric.value);
+      }
+
+      function metricReferenceText(metric) {
+        return firstText(metric.reference, metric.sub_label, metric.subtitle, "");
+      }
+
+      function metricTooltipText(metric) {
+        const tips = {
+          "直播时长": "显示直播间当前场次的直播实际时长",
+          "语速": "显示直播间当前场次每分钟语速",
+          "断句长短": "显示直播间当前场次平均断句长度",
+          "人均观看时长": "显示直播间当前场次观众人均观看时长（播放器观看）",
+          "累计观看人数": "显示直播间当前场次累计观看总人数（播放器观看）",
+          "观看人数峰值": "显示直播间当前场次观看人数峰值（播放器观看）",
+          "人均邀请人数": "显示直播间当前场次人均邀请人数（邀请人数/观看人数）",
+          "点赞率": "显示直播间当前场次点赞率（点赞人数/观看人数）",
+          "聊天率": "显示直播间当前场次聊天率（聊天人数/观看人数）",
+          "商品点击率": "显示直播间当前场次商品点击率（商品点击人数/观看人数）"
+        };
+        return firstText(metric.tooltip, metric.Tooltip, tips[metric.label], metric.label);
+      }
+
+      function normalizeMetricItem(metric) {
+        const label = firstText(metric.label, metric.name, "--");
+        const value = metric.value;
+        const unit = firstText(metric.unit, "");
+        const refValue = metric.reference_value || metric.ReferenceValue || metric.industry_value || metric.IndustryValue;
+        const refText = firstText(metric.reference, metric.Reference, metric.sub_label, metric.subtitle, "");
+        const numberValue = metricNumber(value);
+        if (label === "直播时长") {
+          const seconds = Number.isFinite(numberValue) ? (numberValue > 300 ? numberValue : numberValue * 60) : 0;
+          return { label: label, value: value, unit: "", kind: "duration", seconds: seconds, reference: firstText(refText.replace("--", "120"), "行业平均值 120 分钟") };
+        }
+        if (label === "人均观看时长") {
+          return { label: label, value: value, unit: "", reference: firstText(refText.replace("--", "00:00:00"), "人均访问 00:00:00") };
+        }
+        if (label === "累计观看人数") {
+          return { label: label, value: value, unit: "人", reference: firstText(refText.replace("--", "0"), "累计访问 0 人") };
+        }
+        if (label === "观看人数峰值") {
+          return { label: label, value: value, unit: "人", reference: firstText(refText.replace("--", "0"), "访问峰值 0 人") };
+        }
+        if (label === "人均邀请人数") {
+          return { label: label, value: value, unit: "人", reference: firstText(refText.replace("--", "0"), "邀请次数 0 次") };
+        }
+        if (label === "点赞率") {
+          return { label: label, value: value, unit: "%", reference: firstText(refText.replace("--", "0"), "点赞次数 0 次") };
+        }
+        if (label === "聊天率") {
+          return { label: label, value: value, unit: "%", reference: firstText(refText.replace("--", "0"), "聊天次数 0 次") };
+        }
+        if (label === "商品点击率") {
+          return { label: label, value: value, unit: "%", reference: firstText(refText.replace("--", "0"), "商品点击 0 次") };
+        }
+        if (label === "语速") {
+          return { label: label, value: value, unit: firstText(unit, "字/分钟"), reference: firstText(refText.replace("--", firstText(refValue, "200")), "行业优秀值200字/分钟") };
+        }
+        if (label === "断句长短") {
+          return { label: label, value: value, unit: firstText(unit, "字/句"), reference: firstText(refText.replace("--", firstText(refValue, "50")), "行业优秀值50字/句") };
+        }
+        return { label: label, value: value, unit: unit, reference: refText };
+      }
+
+      function firstNumber() {
+        for (let i = 0; i < arguments.length; i += 1) {
+          const value = arguments[i];
+          if (value !== undefined && value !== null && value !== "") return Number(value || 0);
+        }
+        return 0;
+      }
+
+      function normalizeCurvePoint(point, index) {
+        return {
+          TimeStamp: firstNumber(point.timestamp, point.TimeStamp, point.window_start_time, point.WindowStartTime, index * 60),
+          OnlineUV: firstNumber(point.value, point.y, point.OnlineUV, point.online_user_count, point.OnlineUserCount),
+          EnterUV: firstNumber(point.EnterUV, point.enter_user_count, point.EnterUserCount),
+          ViewUV: firstNumber(point.ViewUV, point.visit_user_count, point.VisitUserCount),
+          InviteUV: firstNumber(point.InviteUV, point.invite_user_count, point.InviteUserCount),
+          ThumbUpCount: firstNumber(point.ThumbUpCount, point.like_count, point.LikeCount),
+          CommentCount: firstNumber(point.CommentCount, point.comment_count, point.ChatCount, point.chat_count),
+          EffectiveCommentCount: firstNumber(point.EffectiveCommentCount, point.effective_comment_count),
+          ProductClickCount: firstNumber(point.ProductClickCount, point.product_click_count, point.ProductClickCount)
+        };
+      }
+
+      function normalizeLineData(lineData, curve) {
+        const dataSet = safeArray(lineData && lineData.DataSet);
+        if (dataSet.length) {
+          return dataSet.map(normalizeCurvePoint).sort((a, b) => Number(a.TimeStamp || 0) - Number(b.TimeStamp || 0));
+        }
+        return safeArray(curve && curve.points).map(normalizeCurvePoint);
+      }
+
+      function normalizeInteractionTool(raw, fallbackTitle) {
+        const item = raw || {};
+        const sendTime = firstNumber(item.SendTime, item.send_time, item.start_time, item.StartTime, item.timestamp, item.TimeStamp);
+        if (!sendTime) return null;
+        return {
+          SendTime: sendTime,
+          Title: firstText(item.Title, item.title, item.Name, item.name, fallbackTitle, "互动工具"),
+          Name: firstText(item.Name, item.name, fallbackTitle, "互动工具"),
+          InteractionType: firstText(item.InteractionType, item.interaction_type, item.type, fallbackTitle, "互动"),
+          ParticipateUserCount: firstNumber(item.ParticipateUserCount, item.participate_user_count, item.user_count, item.UserCount),
+          SendCount: firstNumber(item.SendCount, item.send_count, item.count, item.Count)
+        };
+      }
+
+      function normalizeInteractionData(source) {
+        const data = source || {};
+        const tools = [];
+        safeArray(data.InteractTools).concat(safeArray(data.interact_tools)).forEach(function (item) {
+          const normalized = normalizeInteractionTool(item, "互动工具");
+          if (normalized) tools.push(normalized);
+        });
+        [
+          ["red_packet_records", "红包福利"],
+          ["RedPacketRecords", "红包福利"],
+          ["coupon_records", "优惠券"],
+          ["CouponRecords", "优惠券"],
+          ["quiz_records", "问答互动"],
+          ["QuizRecords", "问答互动"],
+          ["vote_records", "投票互动"],
+          ["VoteRecords", "投票互动"],
+          ["award_records", "抽奖互动"],
+          ["AwardRecords", "抽奖互动"],
+          ["check_in_records", "签到互动"],
+          ["CheckInRecords", "签到互动"],
+          ["announcement_records", "公告互动"],
+          ["AnnouncementRecords", "公告互动"],
+          ["short_answer_records", "短答互动"],
+          ["ShortAnswerRecords", "短答互动"],
+          ["questionnaire_records", "问卷互动"],
+          ["QuestionnaireRecords", "问卷互动"]
+        ].forEach(function (entry) {
+          safeArray(data[entry[0]]).forEach(function (item) {
+            const normalized = normalizeInteractionTool(item, entry[1]);
+            if (normalized) tools.push(normalized);
+          });
+        });
+        return Object.assign({}, data, {
+          Products: safeArray(data.Products).concat(safeArray(data.products)),
+          InteractTools: tools
+        });
+      }
+
+      function segmentMomentType(seg) {
+        const labels = collectSegmentLabels(seg);
+        if (labels.indexOf("问题时刻") >= 0 || labels.indexOf("4") >= 0 || String(seg.tag_code || seg.TagCode || "") === "4") return "problem";
+        if (labels.indexOf("违规片段") >= 0 || labels.indexOf("3") >= 0 || String(seg.tag_code || seg.TagCode || "") === "3") return "violation";
+        if (labels.indexOf("高光时刻") >= 0 || labels.indexOf("2") >= 0 || String(seg.tag_code || seg.TagCode || "") === "2") return "highlight";
+        return "";
+      }
+
+      function segmentMomentReason(seg, type) {
+        const reasons = seg.label_reasons || seg.LabelReasons || {};
+        return type === "problem"
+          ? firstText(reasons["4"], reasons[4], seg.problem_reason, seg.ProblemReason, seg.analysis, seg.Analysis, seg.summary, seg.Summary, "")
+          : firstText(reasons["2"], reasons[2], seg.highlight_reason, seg.HighlightReason, seg.analysis, seg.Analysis, seg.summary, seg.Summary, "");
+      }
+
+      function collectContentMomentEvents(content, modules, nearestIndex) {
+        const contentSegments = safeArray(content && content.segments);
+        const moduleSegments = safeArray(modules && modules.content_analysis && modules.content_analysis.semantic_segments);
+        const segments = contentSegments.length ? contentSegments : moduleSegments;
+        return segments.map(function (seg) {
+          const type = segmentMomentType(seg);
+          if (!type) return null;
+          const start = nearestIndex(firstNumber(seg.start_time, seg.StartTime, seg.start_ms, seg.StartMS));
+          const end = nearestIndex(firstNumber(seg.end_time, seg.EndTime, seg.end_ms, seg.EndMS));
+          if (start < 0 || end < 0) return null;
+          return {
+            start: Math.min(start, end),
+            end: Math.max(start, end),
+            type: type,
+            title: firstText(seg.title, seg.Title, type === "problem" ? "问题时刻" : type === "violation" ? "违规片段" : "高光时刻"),
+            reason: segmentMomentReason(seg, type)
+          };
+        }).filter(Boolean);
+      }
+
+      function collectContentProductEvents(content, modules, nearestIndex) {
+        const contentSegments = safeArray(content && content.segments);
+        const moduleSegments = safeArray(modules && modules.content_analysis && modules.content_analysis.semantic_segments);
+        const segments = contentSegments.length ? contentSegments : moduleSegments;
+        return segments.map(function (seg) {
+          const labels = segmentLabelSet(seg);
+          if (!labels["商品讲解"] && !labels["1"]) return null;
+          const start = nearestIndex(firstNumber(seg.start_time, seg.StartTime, seg.start_ms, seg.StartMS));
+          const end = nearestIndex(firstNumber(seg.end_time, seg.EndTime, seg.end_ms, seg.EndMS));
+          if (start < 0 || end < 0) return null;
+          return {
+            start: Math.min(start, end),
+            end: Math.max(start, end),
+            payload: {
+              Kind: "product_segment",
+              Title: firstText(seg.title, seg.Title, seg.tag, seg.Tag, "商品讲解"),
+              Summary: firstText(seg.summary, seg.Summary, seg.analysis, seg.Analysis, ""),
+              StartTime: firstNumber(seg.start_time, seg.StartTime, seg.start_ms, seg.StartMS),
+              EndTime: firstNumber(seg.end_time, seg.EndTime, seg.end_ms, seg.EndMS)
+            }
+          };
+        }).filter(Boolean);
+      }
+
+      function collectLegacyHighlightEvents(highlightsData, nearestIndex) {
+        return highlightsData.map(function (highlight) {
+          const start = nearestIndex(highlight.StartTime);
+          const end = nearestIndex(highlight.EndTime);
+          if (start < 0 || end < 0) return null;
+          const rawType = Number(highlight.Type);
+          return {
+            start: Math.min(start, end),
+            end: Math.max(start, end),
+            type: rawType === 2 || rawType === 4 ? "problem" : "highlight",
+            title: firstText(highlight.Title, rawType === 2 || rawType === 4 ? "问题时刻" : "高光时刻"),
+            reason: firstText(highlight.Reason, highlight.Summary, ""),
+            image: firstText(safeArray(highlight.FrameImages)[0], "")
+          };
+        }).filter(Boolean);
+      }
+
+      function normalizeMomentEvents(content, modules, highlightsData, nearestIndex) {
+        const contentMoments = collectContentMomentEvents(content, modules, nearestIndex);
+        if (contentMoments.length) return contentMoments;
+        return collectLegacyHighlightEvents(highlightsData, nearestIndex);
+      }
+
+      function nearestSlotEvent(slotIndex, events, isRange) {
+        const rows = safeArray(events);
+        if (!rows.length) return null;
+        if (isRange) {
+          const matched = rows.find(event => slotIndex >= Number(event.start || 0) && slotIndex <= Number(event.end || event.start || 0));
+          if (matched) return matched;
+        } else {
+          const exact = rows.find(event => Number(event.index) === Number(slotIndex));
+          if (exact) return exact;
+        }
+        return rows.reduce((best, event) => {
+          const target = isRange ? Number(event.start || 0) : Number(event.index || 0);
+          const bestTarget = isRange ? Number(best.start || 0) : Number(best.index || 0);
+          return Math.abs(target - slotIndex) < Math.abs(bestTarget - slotIndex) ? event : best;
+        }, rows[0]);
+      }
+
+      function chartTooltipShell(body, minWidth) {
+        return '<div class="chart-tooltip-card" style="min-width:' + (minWidth || 220) + 'px;padding:16px 18px;border-radius:16px;background:#fff;box-shadow:0 16px 42px rgba(31,35,41,0.16);border:1px solid rgba(234,237,241,0.9);color:#737A87;font-size:13px;line-height:20px;">' + body + '</div>';
+      }
+
+      function chartTooltipPosition(pos, params, dom) {
+        if (!dom) return pos;
+        const seriesName = Array.isArray(params) ? firstText(params[0] && params[0].seriesName, "") : firstText(params.seriesName, "");
+        const isHoverItem = seriesName === "互动" || seriesName === "商品";
+        const isMomentItem = seriesName === "时刻" || seriesName === "slot-hover-moment";
+        const offsetHalfWidth = dom.offsetWidth / 2;
+        const offsetHeight = isHoverItem || isMomentItem ? dom.offsetHeight : dom.offsetHeight / 2;
+        const momentLift = isMomentItem ? 96 : 10;
+        const tooltipY = Math.max(8, pos[1] - offsetHeight - momentLift);
+        const chartWidth = 994;
+        if (pos[0] > chartWidth - dom.offsetWidth && !isHoverItem) {
+          return [pos[0] - dom.offsetWidth - 10, tooltipY];
+        }
+        return [pos[0] + (isHoverItem ? -offsetHalfWidth : 10), tooltipY];
+      }
+
+      function chartLineTooltipHtml(params, seriesConfig) {
+        const rows = safeArray(params).filter(param => ["商品", "互动", "时刻", "slot-hover-product", "slot-hover-interaction", "slot-hover-moment"].indexOf(param.seriesName) < 0);
+        const time = firstText(rows[0] && rows[0].axisValue, "--");
+        const seriesDataMap = {};
+        safeArray(seriesConfig).forEach(config => { seriesDataMap[config.name] = safeArray(config.data); });
+        const countSeries = ["点赞次数", "聊天次数", "商品点击"];
+        let result = '<div style="margin-bottom:8px;font-weight:400;font-size:12px;color:#737A87;">' + time + '</div>';
+        rows.forEach(function (param) {
+          const seriesData = seriesDataMap[param.seriesName] || [];
+          const maxValue = seriesData.length ? Math.max.apply(null, seriesData) : NaN;
+          const isPeak = Number(param.value) === maxValue;
+          const unit = countSeries.indexOf(param.seriesName) >= 0 ? "次" : "人";
+          result += '<div style="display:flex;align-items:center;margin-bottom:4px;">'
+            + '<span style="display:inline-block;width:10px;height:10px;background:' + param.color + ';border-radius:2px;margin-right:8px;"></span>'
+            + '<span style="color:#737A87;margin-right:5px;">' + param.seriesName + ':</span>'
+            + '<div style="display:flex;padding-left:24px;min-width:120px;">'
+            + '<span style="color:#42464E;font-weight:400;">' + formatNumber(param.value) + '/' + unit + '</span>'
+            + (isPeak ? '<span style="color:#42464E;font-weight:400;margin-left:4px;">（峰值）</span>' : '')
+            + '</div></div>';
+        });
+        return result;
+      }
+
+      function chartMarkPointLabelPosition(maxIndex, total) {
+        if (maxIndex <= 2) return "right";
+        if (maxIndex >= Math.max(0, total - 3)) return "left";
+        return "top";
+      }
+
+      function chartMarkPointLabelOffset(maxIndex, total, seriesIndex) {
+        const laneOffset = (seriesIndex % 3 - 1) * 18;
+        if (maxIndex <= 2) return [8, laneOffset];
+        if (maxIndex >= Math.max(0, total - 3)) return [-8, laneOffset];
+        return [0, -8 - (seriesIndex % 2) * 14];
+      }
+
+      function chartMarkPointData(config, seriesIndex) {
+        const data = safeArray(config.data);
+        if (!data.length) return { data: [] };
+        let maxIndex = 0;
+        let maxValue = Number(data[0] || 0);
+        data.forEach(function (value, index) {
+          const numeric = Number(value || 0);
+          if (numeric > maxValue) {
+            maxValue = numeric;
+            maxIndex = index;
+          }
+        });
+        return {
+          symbolSize: [4, 10],
+          symbol: "path://M2,0 A2,2,0,0,1,4,2 L4,8 A2,2,0,0,1,2,10 A2,2,0,0,1,0,8 L0,2 A2,2,0,0,1,2,0 Z",
+          data: [{
+            coord: [maxIndex, maxValue],
+            value: maxValue,
+            name: "最大值",
+            label: {
+              show: true,
+              position: chartMarkPointLabelPosition(maxIndex, data.length),
+              offset: chartMarkPointLabelOffset(maxIndex, data.length, seriesIndex),
+              distance: 6,
+              fontSize: 12,
+              fontWeight: 500,
+              color: "#737A87",
+              formatter: config.markPointLabel
+            }
+          }]
+        };
+      }
+
+      function chartMetricRowsHtml(params) {
+        const rows = safeArray(params).filter(param => ["在线人数", "进场人数", "访问人数"].indexOf(param.seriesName) >= 0);
+        const timeLabel = firstText(rows[0] && rows[0].axisValue, "--");
+        let body = '<div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:#737A87;">' + timeLabel + '<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border:1px solid #C7CCD6;border-radius:50%;font-size:10px;">›</span></div>';
+        rows.forEach(function (param) {
+          body += '<div style="display:grid;grid-template-columns:16px 92px 1fr;align-items:center;gap:8px;margin-top:8px;">'
+            + '<span style="width:10px;height:10px;border-radius:3px;background:' + param.color + ';"></span>'
+            + '<span style="color:#737A87;">' + param.seriesName + '</span>'
+            + '<span style="justify-self:end;color:#42464E;font-weight:500;">' + formatNumber(param.value) + '/人</span>'
+            + '</div>';
+        });
+        return chartTooltipShell(body, 220);
+      }
+
+      function chartInteractionLabels(type, joinCount, winCount) {
+        const value = Number(type);
+        let countLabel = "点击次数";
+        let secondLabel = "";
+        let secondValue = "";
+        if (value === 2) countLabel = "签到次数";
+        if ([3, 4, 6, 7, 8, 9].indexOf(value) >= 0) countLabel = "参与人数";
+        if (value === 5) countLabel = "领取数量";
+        if (value === 10) countLabel = "查看人数";
+        if ([3, 4].indexOf(value) >= 0) {
+          secondLabel = "中奖人数";
+          secondValue = formatNumber(winCount || 0);
+        }
+        if ([8, 9].indexOf(value) >= 0) {
+          secondLabel = "答题正确";
+          secondValue = formatNumber(winCount || 0);
+        }
+        return { countLabel: countLabel, secondLabel: secondLabel, secondValue: secondValue };
+      }
+
+      function chartToolTypeLabel(type, fallback) {
+        const labels = { 2: "签到", 3: "抽奖", 4: "红包", 5: "卡券", 6: "问卷", 7: "投票", 8: "简答", 9: "答题", 10: "公告" };
+        return labels[Number(type)] || fallback || "商品";
+      }
+
+      function chartDefaultThumb(label) {
+        return '<div style="width:100%;height:100%;display:grid;place-items:center;color:#737A87;background:#f6f7f9;">' + label + '</div>';
+      }
+
+      function chartPopCardTooltipHtml(item, time, index) {
+        const type = Number(item.type || 1);
+        const isProduct = type === 2;
+        const typeLabel = isProduct ? "商品" : chartToolTypeLabel(item.interactionType, "互动");
+        const coverImage = firstText(item.coverImage, "");
+        const countLabel = firstText(item.countLabel, isProduct ? "点击次数" : "参与人数");
+        const countValue = firstText(item.countText, formatNumber(item.count || 0));
+        const secondInfo = firstText(item.price, "");
+        return '<div class="chart-pop-card">'
+          + (time ? '<div id="tooltipTimeBack" class="chart-pop-card-time">' + escapeHtml(time) + (index === 0 ? '<span class="chart-pop-card-time-arrow">›</span>' : '') + '</div>' : '')
+          + '<div class="chart-pop-card-content">'
+          + '<div class="chart-pop-card-thumb">' + (coverImage ? '<img src="' + escapeHtml(coverImage) + '" alt="' + escapeHtml(firstText(item.title, typeLabel)) + '" />' : chartDefaultThumb(typeLabel)) + '<span class="chart-pop-card-type">' + escapeHtml(typeLabel) + '</span></div>'
+          + '<div class="chart-pop-card-info">'
+          + '<div class="chart-pop-card-title" title="' + escapeHtml(firstText(item.title, "")) + '">' + escapeHtml(firstText(item.title, typeLabel)) + '</div>'
+          + '<div class="chart-pop-card-count">' + escapeHtml(countLabel) + ': ' + escapeHtml(countValue) + '</div>'
+          + (secondInfo ? '<div class="chart-pop-card-price">' + escapeHtml(secondInfo) + '</div>' : '')
+          + (item.highlight ? '<div><span class="chart-pop-card-highlight">' + escapeHtml(item.highlight) + '</span>' + (item.strikethrough ? '<span class="chart-pop-card-strike">' + escapeHtml(item.strikethrough) + '</span>' : '') + '</div>' : '')
+          + '</div></div></div>';
+      }
+
+      function chartEventsAtSameIndex(events, slotIndex) {
+        return safeArray(events).filter(event => Number(event.index) === Number(slotIndex));
+      }
+
+      function parseTimeLabelSeconds(label) {
+        const parts = String(label || "").split(":").map(part => Number(part || 0));
+        if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+        if (parts.length === 2) return parts[0] * 60 + parts[1];
+        return Number(parts[0] || 0);
+      }
+
+      function formatDurationZh(seconds) {
+        const total = Math.max(0, Math.round(Number(seconds) || 0));
+        const minutes = Math.floor(total / 60);
+        const remain = total % 60;
+        return minutes ? minutes + "分" + String(remain).padStart(2, "0") + "秒" : remain + "秒";
+      }
+
+      function momentRangeText(event, timeData) {
+        return firstText(timeData && timeData[event.start], "--") + "~" + firstText(timeData && timeData[event.end], timeData && timeData[event.start], "--");
+      }
+
+      function momentDurationText(event, timeData) {
+        const start = parseTimeLabelSeconds(timeData && timeData[event.start]);
+        const end = parseTimeLabelSeconds(timeData && timeData[event.end]);
+        return formatDurationZh(Math.max(0, end - start));
+      }
+
+      function chartSlotTooltipHtml(kind, event, timeLabel, timeData) {
+        if (!event) {
+          return '';
+        }
+        if (kind === "商品") {
+          const product = event.payload || {};
+          if (product.Kind === "product_segment") {
+            const durationMS = firstNumber(product.EndTime) - firstNumber(product.StartTime);
+            return chartPopCardTooltipHtml({
+              type: 2,
+              title: firstText(product.Title, "商品讲解"),
+              countLabel: "讲解时长",
+              countText: formatDurationZh(Math.max(0, durationMS / 1000)),
+              coverImage: ""
+            }, timeLabel, 0);
+          }
+          return chartPopCardTooltipHtml({
+            type: 2,
+            title: firstText(product.Title, product.Name, product.ProductName, "商品"),
+            count: firstNumber(product.ClickCount, product.click_count, 0),
+            highlight: firstText(product.Highlight, product.highlight, ""),
+            strikethrough: firstText(product.Strikethrough, product.strikethrough, ""),
+            coverImage: firstText(product.CoverImage, product.ImageUrl, product.image_url, product.cover_url, "")
+          }, timeLabel, 0);
+        }
+        if (kind === "互动") {
+          const interaction = event.payload || {};
+          const labels = chartInteractionLabels(interaction.Type, interaction.JoinCount, interaction.WinCount);
+          return chartPopCardTooltipHtml({
+            type: 1,
+            title: firstText(interaction.Title, interaction.Name, "互动工具"),
+            count: firstNumber(interaction.JoinCount, interaction.join_count, 0),
+            countLabel: labels.countLabel,
+            price: labels.secondLabel ? labels.secondLabel + ": " + labels.secondValue : "",
+            interactionType: interaction.Type
+          }, timeLabel, 0);
+        }
+        return chartMomentTooltipHtml(event, timeData);
+      }
+
+      function chartMomentTooltipHtml(event, timeData) {
+        const typeText = event.type === "problem" ? "问题时刻" : event.type === "violation" ? "违规片段" : "高光时刻";
+        const detailLabel = event.type === "problem" ? "问题详情" : "高光详情";
+        const durationLabel = event.type === "problem" ? "问题时长" : "高光时长";
+        const image = firstText(event.image, event.coverImage, event.frameImage, "");
+        const reason = firstText(event.reason, event.title, "该段直播互动效果较好，建议复盘话术节奏。");
+        const tooltipOpen = event.type === "problem" ? '<div class="chart-moment-tooltip problem">' : '<div class="chart-moment-tooltip">';
+        return tooltipOpen
+          + '<div class="chart-moment-thumb">' + (image ? '<img id="moment-tooltip-image" src="' + escapeHtml(image) + '" alt="thumbnail" />' : chartDefaultThumb("时刻")) + '</div>'
+          + '<div class="chart-moment-content">'
+          + '<div class="chart-moment-title"><span class="chart-moment-icon">↗</span><span>' + escapeHtml(typeText) + '</span></div>'
+          + '<div class="chart-moment-info-wrapper"><div class="chart-moment-info">' + escapeHtml(reason) + '</div><div class="chart-moment-tip">' + escapeHtml(reason) + '</div></div>'
+          + '<div class="chart-moment-time">'
+          + '<div>起始时间<span id="timeSeek">' + escapeHtml(momentRangeText(event, timeData)) + ' ›</span></div>'
+          + '<div>' + escapeHtml(durationLabel) + '<span>' + escapeHtml(momentDurationText(event, timeData)) + '</span></div>'
+          + '</div>'
+          + '<div class="chart-moment-actions"><button id="contentDetail" type="button" class="chart-moment-action-btn">' + escapeHtml(detailLabel) + '</button><button id="contentAnalyze" type="button" class="chart-moment-action-btn">AI内容分析</button></div>'
+          + '</div></div>';
+      }
+
+      function slotHoverSeries(name, lane, kind, timeData, events, isRange) {
+        return {
+          name: name,
+          type: "custom",
+          xAxisIndex: 1,
+          yAxisIndex: 1,
+          z: 20,
+          renderItem: function (params, api) {
+            const slotIndex = api.value(0);
+            const center = api.coord([slotIndex, lane]);
+            const width = Math.max(8, api.size([1, 0])[0]);
+            return {
+              type: "rect",
+              shape: { x: center[0] - width / 2, y: center[1] - 14, width: width, height: 28 },
+              style: { fill: "rgba(255,255,255,0.001)" },
+              emphasis: { style: { fill: "rgba(56,123,255,0.08)" } },
+              extra: '<div class="slot-hover-band"></div>'
+            };
+          },
+          data: timeData.map((_, index) => ({ value: [index, lane], slotIndex: index })),
+          tooltip: {
+            trigger: "item",
+            enterable: true,
+            confine: true,
+            hideDelay: 500,
+            borderRadius: 8,
+            position: chartTooltipPosition,
+            formatter: function (params) {
+              const slotIndex = params.data && Number(params.data.slotIndex);
+              const event = nearestSlotEvent(slotIndex, events, isRange);
+              return chartSlotTooltipHtml(kind, event, timeData[slotIndex] || "--", timeData);
+            }
+          }
+        };
+      }
+
+      function bindChartTooltipActions() {
+        const detailBtn = document.getElementById("contentDetail");
+        const analyzeBtn = document.getElementById("contentAnalyze");
+        const timeSeekBtn = document.getElementById("timeSeek");
+        const tooltipTimeBack = document.getElementById("tooltipTimeBack");
+        [detailBtn, analyzeBtn, timeSeekBtn, tooltipTimeBack].forEach(function (node) {
+          if (!node || node.getAttribute("data-bound") === "1") return;
+          node.setAttribute("data-bound", "1");
+        });
+      }
+
+      function scrollToAnalysis() {
+        const analysis = document.querySelector(".analysis-container");
+        if (analysis && analysis.scrollIntoView) analysis.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function clickAnalysisTab(label) {
+        const buttons = Array.prototype.slice.call(document.querySelectorAll(".tab-button"));
+        const target = buttons.find(function (button) { return firstText(button.textContent, "").trim() === label; });
+        if (target && typeof target.click === "function") target.click();
+      }
+
+      function handleChartDetailClick() {
+        scrollToAnalysis();
+      }
+
+      function handleChartAnalyzeClick() {
+        scrollToAnalysis();
+        setTimeout(function () { clickAnalysisTab("AI分析片段"); }, 120);
+      }
+
+      function handleChartTooltipDocumentClick(event) {
+        const target = event.target && event.target.closest ? event.target.closest("#contentDetail,#contentAnalyze,#timeSeek,#tooltipTimeBack") : null;
+        if (!target) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (target.id === "contentAnalyze") {
+          handleChartAnalyzeClick();
+          return;
+        }
+        handleChartDetailClick();
+      }
+
+      if (!window.__liveReportChartTooltipClickBound) {
+        window.__liveReportChartTooltipClickBound = true;
+        document.addEventListener("click", handleChartTooltipDocumentClick, true);
+      }
+
+      function LiveChart(props) {
+        if (props.enabled === false) return null;
+        const chartRef = React.useRef(null);
+        const chartInsRef = React.useRef(null);
+        const lineRows = React.useMemo(() => normalizeLineData(props.lineData, props.curve), [props.lineData, props.curve]);
+
+        React.useEffect(() => {
+          if (!chartRef.current || !window.echarts || !lineRows.length) return undefined;
+          if (!chartInsRef.current) chartInsRef.current = echarts.init(chartRef.current);
+
+          const startTimestamp = Number(lineRows[0].TimeStamp || 0);
+          const timeData = lineRows.map(item => formatRelativeTime(normalizeChartOffsetSeconds(item.TimeStamp, startTimestamp)));
+          const baseStartTime = Number(props.baseStartTime || startTimestamp || 0);
+          const interactionData = normalizeInteractionData(props.interactionData);
+          const productData = safeArray(interactionData.Products);
+          const interactionToolsData = safeArray(interactionData.InteractTools);
+          const highlightsData = safeArray(props.highlightsData && props.highlightsData.Highlights);
+          const nearestIndex = function (sendTime) {
+            if (!lineRows.length) return -1;
+            const rawTime = Number(sendTime || 0);
+            const absoluteTime = rawTime > startTimestamp ? rawTime : baseStartTime + rawTime;
+            let bestIndex = 0;
+            let bestDistance = Math.abs(Number(lineRows[0].TimeStamp || 0) - absoluteTime);
+            lineRows.forEach(function (row, index) {
+              const distance = Math.abs(Number(row.TimeStamp || 0) - absoluteTime);
+              if (distance < bestDistance) {
+                bestDistance = distance;
+                bestIndex = index;
+              }
+            });
+            return bestIndex;
+          };
+          const productCardEvents = productData.map(product => {
+            const index = nearestIndex(product.SendTime);
+            return { index: index, start: index, end: index, payload: product };
+          }).filter(event => event.index >= 0);
+          const productSegmentEvents = collectContentProductEvents(props.content, props.modules, nearestIndex);
+          const productEvents = productSegmentEvents.length ? productSegmentEvents : productCardEvents;
+          const interactionEvents = interactionToolsData.map(interaction => ({ index: nearestIndex(interaction.SendTime), payload: interaction })).filter(event => event.index >= 0);
+          const momentEvents = props.showHighlights === false ? [] : normalizeMomentEvents(props.content, props.modules, highlightsData, nearestIndex);
+          const seriesConfig = [
+            { name: "在线人数", data: lineRows.map(item => Number(item.OnlineUV || 0)), color: "#1664FF", markPointLabel: "最大在线人数" },
+            { name: "进场人数", data: lineRows.map(item => Number(item.EnterUV || 0)), color: "#009488", markPointLabel: "最大进场人数" },
+            { name: "访问人数", data: lineRows.map(item => Number(item.ViewUV || 0)), color: "#FF8A00", markPointLabel: "最大访问人数" },
+            { name: "邀请人数", data: lineRows.map(item => Number(item.InviteUV || 0)), color: "#00B42A", markPointLabel: "最大邀请人数" },
+            { name: "点赞次数", data: lineRows.map(item => Number(item.ThumbUpCount || 0)), color: "#F53F3F", markPointLabel: "最大点赞次数" },
+            { name: "聊天次数", data: lineRows.map(item => Number(item.CommentCount || 0)), color: "#722ED1", markPointLabel: "最大聊天次数" },
+            { name: "商品点击", data: lineRows.map(item => Number(item.ProductClickCount || 0)), color: "#F7BA1E", markPointLabel: "最大商品点击" }
+          ];
+
+          chartInsRef.current.setOption({
+            tooltip: {
+              trigger: "axis",
+              enterable: true,
+              confine: true,
+              hideDelay: 300,
+              transitionDuration: 0.2,
+              borderRadius: 8,
+              backgroundColor: "#fff",
+              borderColor: "#EAEDF1",
+              borderWidth: 0.5,
+              textStyle: { color: "#737A87", fontSize: 12 },
+              axisPointer: { type: "line", lineStyle: { color: "#999", width: 1, type: "solid" }, label: { backgroundColor: "#6a7985" } },
+              position: chartTooltipPosition,
+              formatter: function (params) {
+                return chartLineTooltipHtml(params, seriesConfig);
+              }
+            },
+            legend: {
+              data: seriesConfig.map(item => item.name),
+              right: 8,
+              top: 0,
+              icon: "roundRect",
+              itemWidth: 10,
+              itemHeight: 10,
+              selected: {
+                "在线人数": true,
+                "进场人数": true,
+                "访问人数": false,
+                "邀请人数": false,
+                "点赞次数": false,
+                "聊天次数": false,
+                "商品点击": false
+              }
+            },
+            dataZoom: [{
+              show: true,
+              realtime: true,
+              moveHandleSize: 0,
+              height: 18,
+              right: "3%",
+              bottom: "3%",
+              left: "4%",
+              handleSize: 24,
+              xAxisIndex: [0, 1]
+            }],
+            grid: [
+              { left: "4%", right: "3%", top: "18%", height: "42%", containLabel: false },
+              { left: "4%", right: "3%", top: "65%", height: "20%", containLabel: false }
+            ],
+            xAxis: [
+              {
+                type: "category",
+                boundaryGap: false,
+                data: timeData,
+                gridIndex: 0,
+                axisLabel: { interval: "auto", fontSize: 11, hideOverlap: true }
+              },
+              {
+                type: "category",
+                boundaryGap: false,
+                data: timeData,
+                gridIndex: 1,
+                axisLabel: { show: false },
+                axisTick: { show: false },
+                axisLine: { show: false },
+                axisPointer: { show: false }
+              }
+            ],
+            yAxis: [
+              {
+                type: "value",
+                gridIndex: 0,
+                splitLine: { lineStyle: { color: "#eaedf1", width: 0.5, type: "dashed" } }
+              },
+              {
+                type: "value",
+                gridIndex: 1,
+                min: 1,
+                max: 4,
+                interval: 1,
+                axisLabel: {
+                  show: true,
+                  fontSize: 11,
+                  color: "#666",
+                  formatter: function (value) {
+                    return ({ 1: "时刻", 2: "互动", 3: "商品" })[value] || "";
+                  }
+                },
+                splitLine: { show: true, lineStyle: { color: "#dde2e9", width: 1, type: "dashed" } },
+                axisTick: { show: false },
+                axisLine: { show: false }
+              }
+            ],
+            series: seriesConfig.map((config, configIndex) => ({
+              name: config.name,
+              type: "line",
+              smooth: true,
+              symbolSize: 8,
+              showSymbol: false,
+              xAxisIndex: 0,
+              yAxisIndex: 0,
+              data: config.data,
+              color: config.color,
+              markPoint: chartMarkPointData(config, configIndex)
+            })).concat([
+              {
+                name: "商品",
+                type: "custom",
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                renderItem: function (params, api) {
+                  const event = productEvents[params.dataIndex];
+                  if (!event) return null;
+                  const start = api.coord([Number(event.start || event.index || 0), 3]);
+                  const end = api.coord([Number(event.end || event.start || event.index || 0), 3]);
+                  const height = 8;
+                  return {
+                    type: "rect",
+                    shape: { x: start[0], y: start[1] - height / 2, width: Math.max(end[0] - start[0], 8), height: height, r: height / 2 },
+                    style: { fill: "#387BFF" }
+                  };
+                },
+                data: productEvents.map((event, index) => ({ value: [event.start || event.index || 0, 3], productIndex: index })),
+                tooltip: {
+                  trigger: "item",
+                  enterable: true,
+                  confine: true,
+                  hideDelay: 500,
+                  borderRadius: 8,
+                  position: chartTooltipPosition,
+                  formatter: function (params) {
+                    const event = productEvents[params.dataIndex] || {};
+                    const slotIndex = params.value && params.value[0];
+                    return chartSlotTooltipHtml("商品", event, timeData[slotIndex] || "--", timeData);
+                  }
+                }
+              },
+              {
+                name: "互动",
+                type: "scatter",
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                symbolSize: 10,
+                itemStyle: { color: "#FF832B" },
+                data: interactionEvents.map(event => [event.index, 2]),
+                tooltip: {
+                  trigger: "item",
+                  enterable: true,
+                  confine: true,
+                  hideDelay: 500,
+                  borderRadius: 8,
+                  position: chartTooltipPosition,
+                  formatter: function (params) {
+                    const slotIndex = params.value && params.value[0];
+                    const interactionsAtSameTime = chartEventsAtSameIndex(interactionEvents, slotIndex).map(event => event.payload || {});
+                    if (!interactionsAtSameTime.length) return "";
+                    return interactionsAtSameTime.sort((a, b) => Number(a.SendTime || 0) - Number(b.SendTime || 0)).map(function (interaction, idx) {
+                      const labels = chartInteractionLabels(interaction.Type, interaction.JoinCount, interaction.WinCount);
+                      const relativeTime = Number(interaction.SendTime || 0) > baseStartTime ? Number(interaction.SendTime || 0) - baseStartTime : Number(interaction.SendTime || 0);
+                      return chartPopCardTooltipHtml({
+                        type: 1,
+                        title: firstText(interaction.Title, interaction.Name, "互动工具"),
+                        count: firstNumber(interaction.JoinCount, interaction.join_count, 0),
+                        countLabel: labels.countLabel,
+                        price: labels.secondLabel ? labels.secondLabel + ": " + labels.secondValue : "",
+                        interactionType: interaction.Type
+                      }, formatRelativeTime(relativeTime), idx);
+                    }).join('<div style="height:1px;background-color:#EAEDF1;margin:12px 0;"></div>');
+                  }
+                }
+              },
+              {
+                name: "时刻",
+                type: "custom",
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                renderItem: function (params, api) {
+                  const event = momentEvents[params.dataIndex];
+                  if (!event) return null;
+                  const start = api.coord([event.start, 1]);
+                  const end = api.coord([event.end, 1]);
+                  const height = 8;
+                  return {
+                    type: "rect",
+                    shape: { x: start[0], y: start[1] - height / 2, width: Math.max(end[0] - start[0], 6), height: height, r: height / 2 },
+                    style: { fill: event.type === "problem" ? "#FF706D" : "#5CAE77" }
+                  };
+                },
+                data: momentEvents.map((event, index) => ({ value: [event.start, 1], momentIndex: index })),
+                tooltip: {
+                  trigger: "item",
+                  enterable: true,
+                  confine: true,
+                  hideDelay: 500,
+                  padding: 0,
+                  borderRadius: 8,
+                  position: chartTooltipPosition,
+                  formatter: function (params) {
+                    const event = momentEvents[params.dataIndex] || {};
+                    return chartMomentTooltipHtml(event, timeData);
+                  }
+                }
+              },
+              slotHoverSeries("slot-hover-product", 3, "商品", timeData, productEvents, true),
+              slotHoverSeries("slot-hover-interaction", 2, "互动", timeData, interactionEvents, false),
+              slotHoverSeries("slot-hover-moment", 1, "时刻", timeData, momentEvents, true)
+            ])
+          }, true);
+
+          chartInsRef.current.off("showTip");
+          chartInsRef.current.on("showTip", function () {
+            setTimeout(bindChartTooltipActions, 0);
+          });
+
+          const resize = function () { if (chartInsRef.current) chartInsRef.current.resize(); };
+          window.addEventListener("resize", resize);
+          return function () {
+            window.removeEventListener("resize", resize);
+          };
+        }, [lineRows]);
+
+        return e("section", { className: "chart-container" },
+          e("div", { className: "chart-head" },
+            e("h2", { className: "block-title" }, "全场曲线")
+          ),
+          lineRows.length
+            ? e("div", { className: "chart-echarts", ref: chartRef, role: "img", "aria-label": "全场曲线" })
+            : e("div", { className: "empty chart-empty" }, window.echarts ? "暂无曲线数据" : "ECharts 加载中")
+        );
+      }
+
+      function tagClass(tag) {
+        if (tag === "商品讲解" || tag === "车型讲解") return "blue";
+        if (tag === "高光时刻") return "green";
+        if (tag === "违规片段") return "red";
+        if (tag === "问题时刻") return "red";
+        return "";
+      }
+
+      function renderSegmentTag(tag, detailControl) {
+        const kind = tagClass(tag);
+        const children = detailControl ? [tag, detailControl] : [tag];
+        if (kind === "blue") return e("span", { className: "tag blue", key: tag }, children);
+        if (kind === "green") return e("span", { className: "tag green", key: tag }, children);
+        if (kind === "red") return e("span", { className: "tag red", key: tag }, children);
+        return e("span", { className: "tag", key: tag }, children);
+      }
+
+      function segmentLabelName(label) {
+        const value = String(label);
+        if (value === "1") return "商品讲解";
+        if (value === "2") return "高光时刻";
+        if (value === "3") return "违规片段";
+        if (value === "4") return "问题时刻";
+        return value;
+      }
+
+      function rawSegmentProducts(seg) {
+        return normalizeMaybeArray(seg.related_products || seg.RelatedProducts || seg.products || seg.Products)
+          .concat(safeArray(seg.ProductNameList || seg.product_name_list));
+      }
+
+      function segmentHasRealProduct(seg) {
+        return rawSegmentProducts(seg).some(product => {
+          const title = typeof product === "string"
+            ? product
+            : firstText(product.title, product.Title, product.name, product.Name, product.product_name, product.ProductName, "");
+          return !!title && title !== "商品" && title !== "产品";
+        });
+      }
+
+      function segmentProductEvidenceText(seg) {
+        return [
+          firstText(seg.title, seg.Title, ""),
+          firstText(seg.summary, seg.Summary, ""),
+          firstText(seg.text, seg.Text, seg.content, seg.Content, "")
+        ].join(" ");
+      }
+
+      function segmentHasProductEvidence(seg) {
+        if (segmentHasRealProduct(seg)) return true;
+        const text = segmentProductEvidenceText(seg);
+        const productObjects = ["这款", "这件", "这一盒", "每一盒", "包装", "代言人", "海参原浆", "海参滴丸", "海参胶囊", "冻干粉", "牡蛎", "酶解"];
+        const productInfo = ["价格", "多少钱", "优惠", "福利", "买一送一", "送双", "名额", "购买", "下单", "链接", "规格", "原料", "成分", "营养", "功效", "适用", "服用", "使用", "吃法", "工艺", "技术", "脱腥", "售后", "质保"];
+        return hasAnyTerm(text, productObjects) && hasAnyTerm(text, productInfo);
+      }
+
+      function fallbackSegmentTag(seg) {
+        const text = segmentProductEvidenceText(seg);
+        if (hasAnyTerm(text, ["访谈", "采访", "董事长", "创始人", "企业", "央视", "媒体", "荣誉", "认可", "背书"])) return "品牌背书";
+        if (hasAnyTerm(text, ["欢迎", "互动", "评论", "点赞", "签到", "公屏"])) return "互动承接";
+        return "内容讲解";
+      }
+
+      function collectSegmentLabels(seg) {
+        const displayLabels = safeArray(seg.display_labels || seg.DisplayLabels);
+        if (displayLabels.length) return displayLabels.concat(displayLabels.map(String));
+        const tags = safeArray(seg.tags || seg.Tags);
+        const labels = safeArray(seg.labels || seg.Labels);
+        const tagCode = firstText(seg.tag_code, seg.TagCode, "");
+        const primaryTag = firstText(seg.tag, seg.Tag, tagCode ? segmentLabelName(tagCode) : "", tags[0], "");
+        const collected = (primaryTag ? [primaryTag] : []).concat(tags).concat(labels.map(segmentLabelName)).concat(labels.map(String));
+        const normalized = uniqueSegmentLabels(collected);
+        if ((normalized.indexOf("商品讲解") >= 0 || normalized.indexOf("1") >= 0) && !segmentHasProductEvidence(seg)) {
+          const corrected = normalized.filter(label => label !== "商品讲解" && label !== "1");
+          return corrected.length ? corrected : [fallbackSegmentTag(seg)];
+        }
+        return collected;
+      }
+
+      function uniqueSegmentLabels(labels) {
+        const seen = {};
+        return safeArray(labels).map(label => segmentLabelName(label)).filter(label => {
+          const key = String(label || "");
+          if (!key || seen[key]) return false;
+          seen[key] = true;
+          return true;
+        });
+      }
+
+      function isMomentLabel(label) {
+        return label === "高光时刻" || label === "违规片段" || label === "问题时刻";
+      }
+
+      function visibleSegmentLabels(labels) {
+        const normalized = uniqueSegmentLabels(labels);
+        const moments = normalized.filter(isMomentLabel);
+        const rest = normalized.filter(label => !isMomentLabel(label));
+        if (!moments.length) return normalized.slice(0, 4);
+        if (!rest.length) return moments.slice(0, 4);
+        return [rest[0]].concat(moments).concat(rest.slice(1)).slice(0, 4);
+      }
+
+      function segmentLabelSet(seg) {
+        return uniqueSegmentLabels(collectSegmentLabels(seg)).reduce((set, label) => {
+          set[String(label)] = true;
+          return set;
+        }, {});
+      }
+
+      function hasMomentDetail(seg) {
+        const labels = segmentLabelSet(seg);
+        return !!(labels["高光时刻"] || labels["2"] || labels["违规片段"] || labels["3"] || labels["问题时刻"] || labels["4"]);
+      }
+
+      function momentDetailTitle(seg) {
+        const detail = seg.moment_detail || seg.MomentDetail || {};
+        if (firstText(detail.heading, detail.Heading, "")) return firstText(detail.heading, detail.Heading);
+        const labels = segmentLabelSet(seg);
+        if (labels["问题时刻"] || labels["4"]) return "问题时刻详情";
+        if (labels["违规片段"] || labels["3"]) return "违规片段详情";
+        return "高光时刻详情";
+      }
+
+      function momentDetailBody(seg) {
+        const detail = seg.moment_detail || seg.MomentDetail || {};
+        const momentData = seg.momentData || seg.moment_data || seg.MomentData || {};
+        if (firstText(detail.reason, detail.Reason, detail.body, detail.Body, detail.content, detail.Content, "")) return firstText(detail.reason, detail.Reason, detail.body, detail.Body, detail.content, detail.Content);
+        const reasons = seg.label_reasons || seg.LabelReasons || {};
+        const labels = segmentLabelSet(seg);
+        const reason = labels["问题时刻"] || labels["4"]
+          ? firstText(reasons["4"], reasons[4], seg.problem_reason, seg.ProblemReason, "")
+          : labels["违规片段"] || labels["3"]
+          ? firstText(reasons["3"], reasons[3], seg.violation_reason, seg.ViolationReason, "")
+          : firstText(reasons["2"], reasons[2], seg.highlight_reason, seg.HighlightReason, "");
+        return firstText(reason, momentData.reason, momentData.Reason, seg.analysis, seg.Analysis, seg.summary, seg.Summary, "");
+      }
+
+      function momentDetailSuggestion(seg) {
+        const detail = seg.moment_detail || seg.MomentDetail || {};
+        const momentData = seg.momentData || seg.moment_data || seg.MomentData || {};
+        return firstText(detail.suggestion, detail.Suggestion, momentData.suggestion, momentData.Suggestion, seg.suggestion, seg.Suggestion, "");
+      }
+
+      function renderMomentDetail(seg) {
+        const detail = seg.moment_detail || seg.MomentDetail || {};
+        const labels = segmentLabelSet(seg);
+        const problem = !!(labels["问题时刻"] || labels["4"] || labels["违规片段"] || labels["3"]);
+        const body = momentDetailBody(seg);
+        const suggestion = momentDetailSuggestion(seg);
+        const detailTitle = firstText(detail.title, detail.Title, "");
+        const heading = momentDetailTitle(seg) + (detailTitle ? "：" + detailTitle : "");
+        return e("div", { className: "moment-detail" },
+          e("p", { className: "moment-detail-title" }, heading),
+          e("p", null, body ? (problem ? "问题说明：" : "高光说明：") + body : "该片段被标记为重点时刻，可结合原话、评论热词和曲线变化进一步复盘。"),
+          suggestion ? e("p", { className: "moment-detail-suggestion" }, (problem ? "优化建议：" : "复用建议：") + suggestion) : null
+        );
+      }
+
+      function renderMomentImages(seg) {
+        const images = safeArray(seg.frame_images || seg.FrameImages).map(function (item) {
+          return firstText(typeof item === "string" ? item : item && (item.url || item.URL || item.ImageURL), "");
+        }).filter(Boolean).slice(0, 4);
+        if (!images.length) return null;
+        return e("div", { className: "moment-frame-images", "aria-label": "时刻截图" }, images.map(function (url, index) {
+          return e("a", { href: url, target: "_blank", rel: "noopener noreferrer", key: url + index },
+            e("img", { className: "moment-frame-image", src: url, alt: "问题时刻截图 " + (index + 1), loading: "lazy", referrerPolicy: "no-referrer" })
+          );
+        }));
+      }
+
+      function interactionKind(value, title) {
+        const raw = String(value || "").toLowerCase();
+        const text = String(title || "");
+        if (raw === "1" || raw.indexOf("product") >= 0 || text.indexOf("商品") >= 0) return "product";
+        if (raw.indexOf("coupon") >= 0 || text.indexOf("券") >= 0 || text.indexOf("优惠") >= 0 || text.indexOf("卡券") >= 0) return "coupon";
+        if (raw.indexOf("red") >= 0 || text.indexOf("红包") >= 0) return "red_packet";
+        if (raw === "2" || raw.indexOf("lottery") >= 0 || raw.indexOf("award") >= 0 || text.indexOf("抽奖") >= 0) return "lottery";
+        return "interaction";
+      }
+
+      function interactionIcon(kind) {
+        if (kind === "product") return "商";
+        if (kind === "coupon") return "券";
+        if (kind === "lottery") return "奖";
+        if (kind === "red_packet") return "包";
+        return "互";
+      }
+
+      function addInteractionRef(items, seen, kind, title) {
+        const name = firstText(title, kind === "product" ? "商品讲解" : "互动");
+        const key = kind + ":" + name;
+        if (seen[key]) return;
+        seen[key] = true;
+        items.push({ kind: kind, title: name });
+      }
+
+      function normalizeSegmentInteractions(seg) {
+        const display = safeArray(seg.interactions_display || seg.InteractionsDisplay);
+        if (display.length) return display.slice(0, 6);
+        const items = [];
+        const seen = {};
+        safeArray(seg.interactions || seg.Interactions || seg.InteractionRefs || seg.interaction_refs).forEach(interaction => {
+          const title = typeof interaction === "string" ? interaction : firstText(interaction.title, interaction.Title, interaction.name, interaction.Name);
+          const type = typeof interaction === "string" ? "" : firstText(interaction.kind, interaction.Kind, interaction.type, interaction.Type, interaction.event_type, interaction.EventType);
+          const kind = interactionKind(type, title);
+          if (kind !== "product") addInteractionRef(items, seen, kind, title);
+        });
+        safeArray(seg.InteractiveNameList || seg.interactive_name_list).forEach(title => {
+          addInteractionRef(items, seen, interactionKind("", title), title);
+        });
+        return items.slice(0, 6);
+      }
+
+      function defaultProductImage() {
+        return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent('<svg width="224" height="176" viewBox="0 0 224 176" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="224" height="176" rx="20" fill="#F3F6FB"/><rect x="54" y="42" width="116" height="92" rx="16" fill="#E6ECF5"/><path d="M82 118L102 94L119 110L133 88L153 118H82Z" fill="#C7D2E3"/><circle cx="93" cy="72" r="10" fill="#B8C4D6"/><text x="112" y="151" text-anchor="middle" font-size="20" fill="#737A87" font-family="Arial, sans-serif">商品</text></svg>');
+      }
+
+      function collectSegmentProducts(seg, automotive) {
+        const display = safeArray(seg.products_display || seg.ProductsDisplay);
+        if (display.length && !automotive) return display.slice(0, 4);
+        const products = [];
+        const addProduct = product => {
+          const isText = typeof product === "string";
+          const title = isText ? product : firstText(product.title, product.Title, product.name, product.Name, product.product_name, product.ProductName, "商品");
+          const image = isText ? "" : firstText(product.image, product.Image, product.image_url, product.ImageUrl, product.cover_url, product.CoverUrl, product.pic_url, product.PicUrl, "");
+          const meta = isText ? "" : firstText(product.price_text, product.PriceText, product.price, product.Price, product.click_text, product.ClickText, "");
+          if (!automotive || image) products.push({ title: title, image: image || defaultProductImage(), meta: meta });
+        };
+        rawSegmentProducts(seg).forEach(addProduct);
+        if (!products.length) {
+          const labels = segmentLabelSet(seg);
+          if (!automotive && (labels["商品讲解"] || labels["1"]) && segmentHasProductEvidence(seg)) products.push({ title: "商品", image: defaultProductImage(), placeholder: true });
+        }
+	        return products.slice(0, 4);
+	      }
+
+      function normalizeCommentWord(word) {
+        return String(word || "").replace(/～/g, "~").replace(/\s+/g, " ").trim();
+      }
+
+      function hasAnyTerm(text, terms) {
+        return terms.some(term => text.indexOf(term) >= 0);
+      }
+
+      function isBracketEmojiOnly(text) {
+        if (!text || text.indexOf("[") < 0 || text.indexOf("]") < 0) return false;
+        const stripped = text.replace(/\[[^\]]+\]/g, "").replace(/[~!！,，.。\s]/g, "");
+        return stripped === "";
+      }
+
+      function commentWordValue(word) {
+        const text = normalizeCommentWord(word);
+        const high = ["多少钱", "价格", "怎么买", "购买", "下单", "链接", "优惠", "福利", "名额", "库存", "有货", "声音", "信号", "卡", "看不清", "听不清", "贵", "不信", "能不能", "可以吃", "痛风", "甲亢", "海参", "原浆", "买一送一", "送双不送单", "1660", "500个名额"];
+        const medium = ["合理", "理解", "感谢", "大气", "好产品", "好用", "要要要", "我要", "报名"];
+        const low = ["早上好", "上午好", "晚上好", "老师好", "主播好", "赵总好", "欢迎", "欢迊", "签到", "打卡", "立即参与", "分钟到了", "666", "点赞", "赞"];
+        if (hasAnyTerm(text, high)) return 2;
+        if (hasAnyTerm(text, medium)) return 1;
+        if (hasAnyTerm(text, low)) return -1;
+        return 0;
+      }
+
+      function isLowValueCommentWord(word) {
+        const text = normalizeCommentWord(word);
+        if (!text) return true;
+        if (commentWordValue(text) > 0) return false;
+        if (commentWordValue(text) < 0) return true;
+        if (isBracketEmojiOnly(text)) return true;
+        return !/[\u4e00-\u9fa5a-zA-Z]/.test(text);
+      }
+
+      function commentWordScore(item) {
+        let score = Math.max(1, Number(item.count || 1));
+        const value = commentWordValue(item.word);
+        if (value === 2) score *= 8;
+        if (value === 1) score *= 3;
+        if (value === -1) score = Math.max(1, score / 4);
+        return score;
+      }
+
+      function collectSegmentHotWords(seg) {
+        const display = safeArray(seg.hot_comments_display || seg.HotCommentsDisplay);
+        if (display.length) {
+          return display.map(word => ({
+            word: normalizeCommentWord(firstText(word.word, word.Word, word.name, word.Name, word.text, word.Text, word)),
+            count: firstText(word.count, word.Count, word.freq, word.Freq, word.times, word.Times, word.weight, word.Weight, "")
+          })).filter(item => item.word).slice(0, 8);
+        }
+        return safeArray(
+          seg.hot_words ||
+          seg.HotWords ||
+          seg.hot_comments ||
+          seg.HotComments ||
+          seg.comment_hot_words ||
+          seg.CommentHotWords ||
+          seg.comments_hot_words ||
+          seg.CommentsHotWords
+        ).map(word => ({
+          word: normalizeCommentWord(firstText(word.word, word.Word, word.name, word.Name, word.text, word.Text, word)),
+          count: firstText(word.count, word.Count, word.freq, word.Freq, word.times, word.Times, word.weight, word.Weight, "")
+        })).filter(item => item.word && !isLowValueCommentWord(item.word))
+          .sort((a, b) => {
+            const scoreDiff = commentWordScore(b) - commentWordScore(a);
+            if (scoreDiff) return scoreDiff;
+            return Number(b.count || 0) - Number(a.count || 0);
+          })
+          .slice(0, 8);
+      }
+
+      function hasSegmentComments(seg) {
+        if (collectSegmentHotWords(seg).length) return true;
+        if (safeArray(seg.comments || seg.Comments || seg.comment_list || seg.CommentList).length) return true;
+        if (firstText(seg.comment_summary, seg.CommentSummary, seg.comment_text, seg.CommentText, "")) return true;
+        const count = firstNumber(
+          seg.comment_count,
+          seg.CommentCount,
+          seg.chat_count,
+          seg.ChatCount,
+          seg.effective_comment_count,
+          seg.EffectiveCommentCount
+        );
+        return Number.isFinite(count) && count > 0;
+      }
+
+      function renderCommentHotWords(words, hasComments) {
+        if (!hasComments) return null;
+        return e("div", { className: "comment-section" },
+          e("span", { className: "comment-label" }, "大家都在说"),
+          e("span", { className: "comment-separator" }, "|"),
+          words.length
+            ? words.map((item, index) => e(React.Fragment, { key: item.word + index },
+              index ? "、" : "",
+              e("span", { className: "comment-word" }, "“" + item.word + "”"),
+              item.count ? item.count + "次" : ""
+            ))
+            : e("span", { className: "comment-empty" }, "暂无高频评论词")
+        );
+      }
+
+      function renderProductCards(products) {
+        if (!products.length) return null;
+        return e("div", { className: "product-cards", "aria-label": "相关商品" },
+          products.map((product, index) =>
+            e("div", { className: "product-card", key: product.title + index },
+              e("img", { className: "product-card-image", src: product.image || defaultProductImage(), alt: product.title }),
+              e("div", { className: "product-card-tag" }, product.title || "商品")
+            )
+          )
+        );
+      }
+
+      function renderInteractionIcons(interactions) {
+        if (!interactions.length) return null;
+        return e("div", { className: "interaction-icons", "aria-label": "相关互动" },
+          interactions.map((item, interactionIndex) =>
+            e("span", { className: "interaction-icon " + item.kind, key: item.kind + interactionIndex + item.title, title: item.title },
+              e("span", { className: "interaction-icon-symbol" }, interactionIcon(item.kind)),
+              e("span", { className: "interaction-icon-name" }, item.title)
+            )
+          )
+        );
+      }
+
+      function initialAIAnalysis(seg) {
+        const suggestion = firstText(
+          seg.ai_analysis && seg.ai_analysis.suggestion,
+          seg.AIAnalysis && seg.AIAnalysis.Suggestion,
+          seg.aiAnalysis && seg.aiAnalysis.suggestion,
+          seg.suggestion,
+          seg.Suggestion,
+          ""
+        );
+        if (!suggestion) return null;
+        return { isAnalyzing: false, suggestion: suggestion };
+      }
+
+      async function requestLegacyConsoleAPI(props, method, params) {
+        if (window.Apis && typeof window.Apis.request === "function") {
+          const result = await window.Apis.request(method, params);
+          const error = Array.isArray(result) ? result[1] : null;
+          if (error) throw error;
+          return Array.isArray(result) ? result[0] : result;
+        }
+        if (typeof fetch !== "function") {
+          throw new Error("当前页面缺少 fetch，无法调用 AI 分析接口");
+        }
+        const apiConfig = props.legacyConsoleAPI || props.legacy_console_api || {};
+        const endpoint = firstText(apiConfig[method], apiConfig[method.replace(/[A-Z]/g, function (m) { return "_" + m.toLowerCase(); }).replace(/^_/, "")], "/api/" + method);
+        const response = await fetch(endpoint, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ Param: params, param: params })
+        });
+        if (!response.ok) {
+          throw new Error("AI 分析接口调用失败：" + response.status);
+        }
+        const data = await response.json();
+        const baseResp = data && (data.BaseResp || data.base_resp || data.baseResp);
+        const statusCode = firstNumber(baseResp && baseResp.StatusCode, baseResp && baseResp.status_code, 0);
+        if (statusCode) {
+          throw new Error(firstText(baseResp && baseResp.StatusMessage, baseResp && baseResp.status_message, "AI 分析接口调用失败"));
+        }
+        return data && (data.Body || data.body || data);
+      }
+
+      async function requestAIAnalysisSuggestion(props, segmentId, seg) {
+        const accountId = firstText(props.accountId, props.AccountId, props.account_id, props.live && props.live.account_id, "");
+        const reviewTaskId = firstText(props.reviewTaskId, props.ReviewTaskID, props.review_task_id, "");
+        if (!reviewTaskId || !segmentId) {
+          throw new Error("缺少 ReviewTaskID 或 SegmentId，无法调用 AI 分析接口");
+        }
+        const generateParams = {
+          ReviewTaskID: reviewTaskId,
+          SegmentId: Number(segmentId)
+        };
+        if (accountId) generateParams.AccountId = Number(accountId);
+        const generated = await requestLegacyConsoleAPI(props, "GenerateActivityContentAnalysisSuggestionConsole", generateParams);
+        const generatedBody = generated && (generated.Body || generated.body || generated);
+        const generatedSuggestion = firstText(generatedBody && generatedBody.Suggestion, generatedBody && generatedBody.suggestion, "");
+        if (generatedSuggestion) return generatedSuggestion;
+        for (let attempt = 0; attempt < 60; attempt += 1) {
+          const getParams = {
+            ReviewTaskID: reviewTaskId,
+            SegmentId: Number(segmentId)
+          };
+          if (accountId) getParams.AccountId = Number(accountId);
+          const data = await requestLegacyConsoleAPI(props, "GetActivityContentAnalysisSuggestionConsole", getParams);
+          const body = data && (data.Body || data.body || data);
+          const suggestion = firstText(body && body.Suggestion, body && body.suggestion, "");
+          if (suggestion) return suggestion;
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+        throw new Error("AI analysis timeout");
+      }
+
+      async function requestContentAnalysisSegments(props) {
+        const accountId = firstText(props.accountId, props.AccountId, props.account_id, props.live && props.live.account_id, "");
+        const reviewTaskId = firstText(props.reviewTaskId, props.ReviewTaskID, props.review_task_id, "");
+        if (!reviewTaskId || !accountId) return [];
+        const data = await requestLegacyConsoleAPI(props, "SearchActivityContentAnalysisConsole", {
+          AccountId: Number(accountId),
+          ReviewTaskID: reviewTaskId,
+          PageNumber: 1,
+          PageSize: 100
+        });
+        const body = data && (data.Body || data.body || data);
+        return safeArray(body && (body.Segments || body.segments));
+      }
+
+      function segmentMatchesTab(seg, tab) {
+        if (!tab || tab === "全部") return true;
+        const labels = collectSegmentLabels(seg);
+        if (tab === "商品讲解") return labels.indexOf("商品讲解") >= 0 || labels.indexOf("1") >= 0;
+        if (tab === "高光时刻") return labels.indexOf("高光时刻") >= 0 || labels.indexOf("2") >= 0;
+        if (tab === "违规片段") return labels.indexOf("违规片段") >= 0 || labels.indexOf("3") >= 0;
+        if (tab === "AI分析片段") return labels.indexOf("AI分析片段") >= 0 || labels.indexOf("5") >= 0 || !!initialAIAnalysis(seg) || firstNumber(seg.AIStatus, seg.ai_status, seg.AiStatus, 0) === 1;
+        if (tab === "问题时刻") return labels.indexOf("问题时刻") >= 0 || labels.indexOf("4") >= 0;
+        return labels.indexOf(tab) >= 0;
+      }
+
+      function emptyAnalysisText(tab) {
+        if (tab === "商品讲解") return "暂无商品讲解片段";
+        if (tab === "高光时刻") return "暂无高光时刻片段";
+        if (tab === "违规片段") return "暂无违规片段";
+        if (tab === "问题时刻") return "暂无问题时刻片段";
+        return "暂无内容分析片段";
+      }
+
+      function Analysis(props) {
+        const showContentAnalysis = props.showContentAnalysis !== false;
+        const showHighlights = props.showHighlights !== false;
+        if (!showContentAnalysis && !showHighlights) return null;
+        const content = props.content || {};
+        const [activeTab, setActiveTab] = React.useState("全部");
+        const [searchQuery, setSearchQuery] = React.useState("");
+        const [expandedMomentIds, setExpandedMomentIds] = React.useState({});
+        const [aiAnalysisMap, setAIAnalysisMap] = React.useState({});
+        const [apiSegments, setApiSegments] = React.useState([]);
+        const [analyzingMap, setAnalyzingMap] = React.useState({});
+        const [foldedAIMap, setFoldedAIMap] = React.useState({});
+        const automotive = sceneLabel(props.live || {}) === "汽车";
+        const defaultTabs = showContentAnalysis && showHighlights
+          ? ["全部", "商品讲解", "高光时刻", "违规片段", "AI分析片段", "问题时刻"]
+          : showContentAnalysis
+            ? ["全部", "商品讲解", "违规片段", "AI分析片段", "问题时刻"]
+            : ["全部", "高光时刻"];
+        const tabs = (safeArray(content.tabs).length ? safeArray(content.tabs) : defaultTabs).filter(function (tab) {
+          if (tab === "高光时刻") return showHighlights;
+          if (tab === "商品讲解" || tab === "违规片段" || tab === "AI分析片段" || tab === "问题时刻") return showContentAnalysis;
+          return true;
+        });
+        const staticSegments = safeArray(content.segments).length
+          ? safeArray(content.segments)
+          : safeArray(props.modules && props.modules.content_analysis && props.modules.content_analysis.semantic_segments);
+        const segments = apiSegments.length ? apiSegments : staticSegments;
+        const normalizedSearch = searchQuery.trim().toLocaleLowerCase();
+        const visibleSegments = segments.filter(function (seg) {
+          if (!segmentMatchesTab(seg, activeTab)) return false;
+          return !normalizedSearch || JSON.stringify(seg).toLocaleLowerCase().includes(normalizedSearch);
+        });
+        React.useEffect(function () {
+          let cancelled = false;
+          requestContentAnalysisSegments(props).then(function (items) {
+            if (!cancelled && items.length) setApiSegments(items);
+          }).catch(function (error) {
+            console.warn("content analysis fetch failed", error);
+          });
+          return function () { cancelled = true; };
+        }, []);
+        React.useEffect(function () {
+          const handleFocusSegment = function (event) {
+            const detail = event && event.detail || {};
+            const segmentKey = firstText(detail.key, "");
+            if (!segmentKey) return;
+            setSearchQuery("");
+            setActiveTab(detail.type === "problem" || detail.type === "violation" ? "问题时刻" : "高光时刻");
+            setExpandedMomentIds(function (prev) {
+              const next = Object.assign({}, prev);
+              next[segmentKey] = true;
+              return next;
+            });
+            window.setTimeout(function () {
+              const target = Array.from(document.querySelectorAll("[data-segment-key]")).find(function (node) { return node.dataset.segmentKey === segmentKey; });
+              if (target) target.scrollIntoView({ behavior: "smooth", block: "center" });
+            }, 0);
+          };
+          window.addEventListener("review:focus-segment", handleFocusSegment);
+          return function () { window.removeEventListener("review:focus-segment", handleFocusSegment); };
+        }, []);
+        function renderAIAnalysis(seg, segmentKey) {
+          const analysis = aiAnalysisMap[segmentKey] || initialAIAnalysis(seg);
+          const isAnalyzing = !!analyzingMap[segmentKey] || !!(analysis && analysis.isAnalyzing);
+          if (!analysis && !isAnalyzing) return null;
+          if (isAnalyzing) {
+            return e("div", { className: "aiAnalyze" },
+              e("div", { className: "aiAnalyzeLoading" },
+                e("span", null, "✦"),
+                e("span", null, "AI分析中...")
+              )
+            );
+          }
+          const folded = !!foldedAIMap[segmentKey];
+          const hasError = !!(analysis && analysis.error);
+          return e("div", { className: "aiAnalyze" },
+            e("div", { className: "aiAnalyzeHeader" },
+              e("div", { className: "aiAnalyzeTitle" },
+                e("span", null, "✦"),
+                e("span", null, hasError ? "AI分析失败" : "AI分析建议")
+              ),
+              e("button", {
+                className: "aiAnalyzeFold",
+                type: "button",
+                onClick: function () {
+                  setFoldedAIMap(function (prev) {
+                    const next = Object.assign({}, prev);
+                    next[segmentKey] = !next[segmentKey];
+                    return next;
+                  });
+                }
+              }, folded ? "⌄" : "⌃")
+            ),
+            !folded && analysis && (analysis.suggestion || analysis.error) ? e("div", { className: "aiAnalyzeDesc" }, firstText(analysis.suggestion, analysis.error)) : null
+          );
+        }
+        function handleAIAnalysis(seg, segmentKey) {
+          setAnalyzingMap(function (prev) {
+            const next = Object.assign({}, prev);
+            next[segmentKey] = true;
+            return next;
+          });
+          setAIAnalysisMap(function (prev) {
+            const next = Object.assign({}, prev);
+            next[segmentKey] = { isAnalyzing: true, suggestion: "" };
+            return next;
+          });
+          requestAIAnalysisSuggestion(props, segmentKey, seg).then(function (suggestion) {
+            setAIAnalysisMap(function (prev) {
+              const next = Object.assign({}, prev);
+              next[segmentKey] = { isAnalyzing: false, suggestion: firstText(suggestion, "") };
+              return next;
+            });
+          }).catch(function (error) {
+            console.warn("AI analysis failed", error);
+            setAIAnalysisMap(function (prev) {
+              const next = Object.assign({}, prev);
+              next[segmentKey] = { isAnalyzing: false, error: firstText(error && error.message, "AI 分析接口调用失败") };
+              return next;
+            });
+          }).finally(function () {
+            setAnalyzingMap(function (prev) {
+              const next = Object.assign({}, prev);
+              delete next[segmentKey];
+              return next;
+            });
+          });
+        }
+        return e("section", { className: "analysis-container" },
+          e("div", { className: "fixed-area" },
+            e("div", { className: "analysis-head" }, "✦ 内容分析"),
+            e("div", { className: "analysis-form" },
+              e("div", { className: "radio-tabs" }, tabs.map((tab, index) =>
+                e("button", {
+                  className: "tab-button" + (tab === activeTab ? " active" : ""),
+                  type: "button",
+                  key: tab,
+                  onClick: function () { setActiveTab(tab); }
+                }, tab)
+              )),
+              e("label", { className: "search-box" },
+                e("span", { className: "search-box-icon", "aria-hidden": true }),
+                e("input", { className: "search-box-input", type: "text", inputMode: "search", autoComplete: "off", value: searchQuery, placeholder: "搜索内容", "aria-label": "搜索内容分析", onChange: function (event) { setSearchQuery(event.target.value); } }),
+                searchQuery ? e("button", { className: "search-box-clear", type: "button", "aria-label": "清空搜索", onClick: function () { setSearchQuery(""); } }, "×") : null
+              )
+            )
+          ),
+          e("div", { className: "analysis-content" },
+            e("div", { className: "timeline" },
+              visibleSegments.length ? (props.showAllSegments ? visibleSegments : visibleSegments.slice(0, 30)).map((seg, index) => {
+                const labels = uniqueSegmentLabels(collectSegmentLabels(seg));
+                const segmentKey = firstText(seg.id, seg.SegmentID, seg.SegmentId, seg.segment_id, seg.Index, index);
+                const expanded = !!expandedMomentIds[segmentKey];
+                const showMomentDetail = hasMomentDetail(seg);
+                const interactions = normalizeSegmentInteractions(seg);
+                const products = collectSegmentProducts(seg, automotive);
+                const hotWords = collectSegmentHotWords(seg);
+                const hasComments = hasSegmentComments(seg);
+                const displayLabels = visibleSegmentLabels(labels).map(function (label) { return automotive && label === "商品讲解" ? "车型讲解" : label; });
+                const momentTagIndex = displayLabels.findIndex(isMomentLabel);
+                const allowAIAnalysis = props.allowAIAnalysis !== false;
+                const segmentStart = firstNumber(seg.start_time, seg.StartTime, seg.start_ms, seg.StartMS);
+                const segmentTimeText = firstText(seg.time_text, [seg.start_text, seg.end_text].filter(Boolean).join(" ~ "), "--");
+                const hasAIAnalysis = allowAIAnalysis && !!(aiAnalysisMap[segmentKey] || initialAIAnalysis(seg));
+                const isAnalyzing = !!analyzingMap[segmentKey];
+                const detailControl = showMomentDetail ? e("button", {
+                  className: "momentDetailButton",
+                  type: "button",
+                  "aria-expanded": expanded,
+                  onClick: function (event) {
+                    event.stopPropagation();
+                    setExpandedMomentIds(function (prev) {
+                      const next = Object.assign({}, prev);
+                      next[segmentKey] = !next[segmentKey];
+                      return next;
+                    });
+                  }
+                }, e("span", { className: "tagDetailIcon" + (expanded ? " expanded" : "") }, "›")) : null;
+                return e("article", { className: "timeline-step", key: segmentKey, "data-segment-key": segmentKey },
+                  e("div", { className: "dotWrapper" },
+                    e("span", { className: "dot" }),
+                    props.playbackAvailable ? e("button", {
+                      className: "timeline-time-button",
+                      type: "button",
+                      title: "跳转到回放对应位置",
+                      "aria-label": "跳转到回放 " + segmentTimeText,
+                      onClick: function () { window.dispatchEvent(new CustomEvent("review:seek", { detail: { time: segmentStart } })); }
+                    }, segmentTimeText) : e("span", null, segmentTimeText)
+                  ),
+                  e("div", { className: "timelineItem" },
+                    e("div", { className: "timelineTitle" },
+                      e("div", { className: "titleLeft" },
+                        e("span", { className: "timelineTitleText" }, firstText(seg.title, seg.Title, "片段分析")),
+                        e("div", { className: "tags" }, displayLabels.map((label, labelIndex) =>
+                          renderSegmentTag(label, labelIndex === momentTagIndex ? detailControl : null)
+                        ))
+                      ),
+                      props.playbackAvailable && showMomentDetail && activeTab !== "全部" ? e("button", {
+                        className: "segment-review-button",
+                        type: "button",
+                        "aria-label": "定位复核 " + segmentTimeText,
+                        onClick: function () { window.dispatchEvent(new CustomEvent("review:seek", { detail: { time: segmentStart } })); }
+                      }, "定位复核", e("span", { "aria-hidden": true }, "↗")) : null,
+                      allowAIAnalysis && !hasAIAnalysis ? e("button", {
+                        className: "aiAnalysisBtn",
+                        type: "button",
+                        disabled: isAnalyzing,
+                        onClick: function () { handleAIAnalysis(seg, segmentKey); }
+                      }, isAnalyzing ? "AI分析中..." : "✦ AI分析") : null
+                    ),
+                    allowAIAnalysis ? renderAIAnalysis(seg, segmentKey) : null,
+                    e("p", { className: "itemContent" }, firstText(seg.text, seg.Text, seg.content, seg.Content, seg.summary, seg.Summary, "--")),
+                    renderCommentHotWords(hotWords, hasComments),
+                    expanded && showMomentDetail ? renderMomentDetail(seg) : null,
+                    expanded && showMomentDetail ? renderMomentImages(seg) : null,
+                    renderProductCards(products),
+                    renderInteractionIcons(interactions)
+                  )
+                );
+              }).concat(e("div", { className: "timelineEnd", key: "timeline-end" }, "没有更多数据了")) : e("div", { className: "emptyTimeline" },
+                e("div", { className: "emptyTimelineText" }, emptyAnalysisText(activeTab))
+              )
+            )
+          )
+        );
+      }
+
+      function EcommerceReviewOverview(props) {
+        const module = props.module || {};
+        const highlights = safeArray(module.highlights);
+        const problems = safeArray(module.problems);
+        const recommendations = safeArray(module.recommendations);
+        const structure = safeArray(module.recommended_structure);
+        const findingReason = function (item, problem) {
+          const reason = firstText(item.reason, "");
+          const risk = problem ? firstText(item.risk, "") : "";
+          if (!risk) return reason;
+          return reason.replace(/[。；;，,：:\s]+$/g, "") + "；" + risk.replace(/^[。；;，,：:\s]+/g, "");
+        };
+        const findingPanel = function (title, rows, problem) {
+          return e("div", { className: "ecommerce-finding-panel " + (problem ? "problem" : "highlight") },
+            e("h3", { className: "ecommerce-panel-title" }, title),
+            rows.length ? e("ol", { className: "ecommerce-finding-list" }, rows.map(function (item, index) {
+              return e("li", { className: "ecommerce-finding-item", key: index },
+                e("div", { className: "ecommerce-finding-name" }, firstText(item.title, "")),
+                e("p", { className: "ecommerce-finding-reason" }, findingReason(item, problem))
+              );
+            })) : e("p", { className: "ecommerce-empty" }, problem ? "未发现有充分证据的主要问题" : "未发现有充分证据的突出亮点")
+          );
+        };
+        const conclusionCard = e("section", { className: "ecommerce-conclusion-card" },
+            e("div", { className: "ecommerce-conclusion-head" }, e("span", null, "✦"), e("h2", null, "复盘结论")),
+            e("div", { className: "ecommerce-conclusion-body" },
+              e("h1", { className: "ecommerce-review-conclusion" }, firstText(module.conclusion, "--"))
+            )
+          );
+        const insightsCard = e("section", { className: "ecommerce-review-card" },
+            e("div", { className: "ecommerce-review-body" },
+              e("div", { className: "ecommerce-insights-header" }, e("h2", null, "复盘洞察与建议")),
+              e("section", { className: "ecommerce-section" },
+                e("h2", { className: "ecommerce-section-heading" }, "关键发现"),
+                e("div", { className: "ecommerce-findings-grid" }, findingPanel("表现亮点", highlights, false), findingPanel("主要问题", problems, true))
+              ),
+              e("section", { className: "ecommerce-section" },
+                e("h2", { className: "ecommerce-section-heading" }, "优化建议"),
+                e("div", { className: "ecommerce-structure" }, structure.flatMap(function (item, index) { return [e("span", { className: "ecommerce-structure-step", key: "s" + index }, item), index < structure.length - 1 ? e("span", { className: "ecommerce-structure-arrow", key: "a" + index }, "→") : null]; }).filter(Boolean)),
+                e("ol", { className: "ecommerce-action-list" }, recommendations.map(function (item, index) { return e("li", { className: "ecommerce-action-item", key: index }, e("span", { className: "ecommerce-action-index" }, index + 1), e("span", null, item)); }))
+              )
+            )
+          );
+        return props.part === "conclusion" ? conclusionCard : insightsCard;
+      }
+
+      function ReviewScoring(props) {
+        const score = props.score;
+        if (!score) return null;
+        if (props.part === "summary") return Number.isFinite(score.total) ? e("section", {className:"ecommerce-review-card",style:{gridColumn:"1 / -1"}},
+          e("h2", null, `综合评分 ${score.total.toFixed(1)} / 10`)) : null;
+        const status = {not_applicable:"不适用", insufficient:"证据不足"};
+        const rows = score.dimensions.map(d => {
+          const refs = d.evidence.map(ref => e("p", {key:ref.id}, Number.isFinite(ref.start_ms) ? e("button", {type:"button", className:"timeline-time-button", disabled:!props.playbackAvailable, title:"定位到视频片段", onClick:() => window.dispatchEvent(new CustomEvent("review:seek", {detail:{time_ms:ref.start_ms}}))}, (ref.start_ms / 1000).toFixed(1) + " 秒") : "无时间定位：", ref.text));
+          return e("tr", {key:d.id}, e("td", null, d.name),
+            e("td", null, d.score === null ? status[d.status] : d.score + " / 10"),
+            e("td", null, d.reason, refs.length ? e("details", {className:"score-evidence"}, e("summary", null, "查看评分证据"), ...refs) : null));
+        });
+        return e("section", {className:"ecommerce-review-card"},
+          e("h2", null, "分项评分"),
+          e("p", null, score.scope + " · " + score.message),
+          score.cap !== null ? e("p", null, `已识别 ${score.high_risk_count} 项高风险，综合分上限 ${score.cap.toFixed(1)} 分`) : null,
+          e("table", {style:{width:"100%",textAlign:"left"}}, e("thead", null, e("tr", null, ...["维度","评分","依据"].map(t => e("th", {key:t}, t)))), e("tbody", null, ...rows)));
+      }
+
+      function LiveReportApp() {
+        const data = readReportData();
+        const showLiveScore = displayEnabled(data, "live_score");
+        const showFullCurve = displayEnabled(data, "full_curve");
+        const showHighlightMoment = displayEnabled(data, "highlight_moment");
+        const showContentAnalysis = displayEnabled(data, "content_analysis");
+        const ecommerceMode = data.report_meta && data.report_meta.scope === "asr_and_quality_report_only";
+        const playbackInfo = data.playbackInfo || {};
+        const hasPlayback = Boolean(firstText(playbackInfo.PlayUrl, playbackInfo.play_url, data.live && data.live.play_url, data.live && data.live.vid, data.live && data.live.Vid, ""));
+        const mediaTitle = data.live?.review_type === "video" ? "视频复盘报告" : "直播复盘报告";
+        if (ecommerceMode) document.title = mediaTitle;
+        return e(React.Fragment, null,
+          e(Header, { title: ecommerceMode ? mediaTitle : "直播内容复盘" }),
+          e("main", { className: "report-shell" },
+            e(ReviewScoring, {score:data.modules?.content_analysis?.scoring, part:"summary"}),
+            ecommerceMode ? e(EcommerceReviewOverview, { module: data.modules && data.modules.content_analysis, part: "conclusion" }) : null,
+            e("aside", { className: "left-rail" },
+              e(Info, { live: data.live }),
+              hasPlayback ? e(Playback, { live: data.live, playbackInfo: data.playbackInfo, content: data.content, modules: data.modules }) : null
+            ),
+            e("section", { className: "main-area" },
+              e(Score, { metrics: data.metrics }),
+              ecommerceMode ? e(EcommerceReviewOverview, { module: data.modules && data.modules.content_analysis, part: "insights" }) : null,
+              e(Diagnosis, { diagnosis: data.diagnosis, modules: data.modules || {}, enabled: showLiveScore }),
+              e(LiveChart, {
+                enabled: showFullCurve,
+                showHighlights: showHighlightMoment,
+                lineData: data.lineData,
+                curve: data.curve,
+                interactionData: data.interactionData,
+                highlightsData: data.highlightsData,
+                content: data.content,
+                modules: data.modules || {},
+                baseStartTime: data.baseStartTime
+              }),
+              e(Analysis, { content: data.content, modules: data.modules || {}, live: data.live || {}, playbackAvailable: hasPlayback, showContentAnalysis: showContentAnalysis, showHighlights: showHighlightMoment, allowAIAnalysis: !ecommerceMode, showAllSegments: ecommerceMode, account_id: data.account_id || data.AccountId, review_task_id: data.review_task_id || data.ReviewTaskID, legacy_console_api: data.legacy_console_api || data.legacyConsoleAPI || {} }),
+              e(ReviewScoring, {score:data.modules?.content_analysis?.scoring, part:"details", playbackAvailable:hasPlayback})
+            )
+          )
+        );
+      }
+
+      if (!window.React || !window.ReactDOM) {
+        document.getElementById("live-report-root").textContent = "React runtime 加载失败，无法渲染报告。";
+        return;
+      }
+      ReactDOM.createRoot(document.getElementById("live-report-root")).render(e(LiveReportApp));
+    })();
+  </script>
+<script>
+  // Reading a static report must count as activity, including while watching its replay.
+  (() => {
+    const token = new URLSearchParams(location.search).get('token');
+    if (location.protocol !== 'http:' || location.hostname !== '127.0.0.1' || !token) return;
+    const keepAlive = () => fetch('/api/health?token=' + encodeURIComponent(token), {
+      cache: 'no-store', signal: AbortSignal.timeout(5000)
+    }).catch(() => {});
+    keepAlive();
+    setInterval(keepAlive, 60_000);
+    window.addEventListener('pageshow', keepAlive);
+  })();
+</script>
+</body>
+</html>

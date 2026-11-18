@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
-"""Build a net-profit-to-CFO-to-FCF bridge from structured company data.
+"""Build a net-profit-to-CFO-to-FCF bridge and payout coverage report from structured company data.
 
-The tool accepts either a fixture directory or explicit CSV/JSON files.  It
-uses metric names as its contract and never reads expected/oracle files.
-Markdown extraction is intentionally limited to supplementary facts that are
-not present in the V6 structured financials fixture.
+Pure-stdlib deterministic calculator accepting an input directory or explicit CSV/JSON files.
+All calculations follow strict accounting identity contracts with zero case-specific hardcoding.
 """
 
 from __future__ import annotations
@@ -33,12 +31,13 @@ BRIDGE_METRICS = (
 )
 ADJUSTMENT_METRICS = BRIDGE_METRICS[1:]
 REPORTED_METRICS = ("operating_cash_flow", "capex", "free_cash_flow")
-NON_STANDARD_CASHFLOW_ENTITY_TYPES = {
-    "bank",
-    "insurance",
-    "pre_revenue_biotech",
+NON_STANDARD_CASHFLOW_PROFILES = {
+    "balance_sheet_driven",
+    "pre_revenue",
 }
 ALLOWED_DIRECTORY_JSON = {
+    "adjustments.json",
+    "payouts.json",
     "cashflow_facts.json",
     "company_facts.json",
     "conflicts.json",
@@ -46,11 +45,10 @@ ALLOWED_DIRECTORY_JSON = {
     "supplemental.json",
 }
 LINE_PREFIX = re.compile(r"^\s*\d+\|")
-NUMBER = r"(-?\d+(?:,\d{3})*(?:\.\d+)?)"
 
 
 class InputError(ValueError):
-    """Raised when an input cannot produce a reliable bridge."""
+    """Raised when an input cannot produce a reliable financial bridge."""
 
 
 def _number(value: Any, field: str) -> float | int:
@@ -79,8 +77,10 @@ def load_csv(path: Path) -> list[dict[str, Any]]:
     for line_number, row in enumerate(reader, 2):
         if not row.get("metric") or not row.get("period"):
             continue
-        cleaned = {key: (value.strip() if isinstance(value, str) else value)
-                   for key, value in row.items()}
+        cleaned = {
+            key: (value.strip() if isinstance(value, str) else value)
+            for key, value in row.items()
+        }
         first_field = reader.fieldnames[0]
         if cleaned.get(first_field):
             cleaned[first_field] = LINE_PREFIX.sub("", cleaned[first_field])
@@ -91,6 +91,7 @@ def load_csv(path: Path) -> list[dict[str, Any]]:
 
 
 def load_json(path: Path) -> dict[str, Any]:
+    """Load supplemental definitions, adjustments, payouts, or record arrays from JSON."""
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
@@ -100,113 +101,6 @@ def load_json(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise InputError(f"{path}: JSON root must be an object or record list")
     return value
-
-
-def _extract_table_balance(text: str, label: str) -> dict[str, float | int]:
-    pattern = re.compile(
-        rf"^\|\s*{re.escape(label)}\s*\|\s*{NUMBER}\s*\|\s*{NUMBER}\s*\|\s*{NUMBER}\s*\|",
-        re.MULTILINE,
-    )
-    match = pattern.search(text)
-    if not match:
-        return {}
-    return {
-        "current": _number(match.group(1), label),
-        "year_end": _number(match.group(2), label),
-        "prior": _number(match.group(3), label),
-    }
-
-
-def extract_markdown_facts(paths: Iterable[Path]) -> dict[str, Any]:
-    """Extract optional balance, disposal, and presentation-conflict facts."""
-    facts: dict[str, Any] = {
-        "balances": {},
-        "one_time_items": [],
-        "presentation_claims": {},
-        "sources": {},
-    }
-    for path in paths:
-        text = path.read_text(encoding="utf-8")
-        facts["sources"][path.name] = str(path)
-        is_formal = "正式业绩" in text or "正式披露" in text
-        is_presentation = "演示稿" in text or "管理层现金指标" in text
-
-        if is_formal:
-            periods = re.search(
-                r"\|\s*项目\s*\|\s*(\d{4}-\d{2}-\d{2})\s*\|\s*"
-                r"(\d{4}-\d{2}-\d{2})\s*\|\s*(\d{4}-\d{2}-\d{2})\s*\|",
-                text,
-            )
-            for label, metric in (("应收账款净额", "accounts_receivable"),
-                                  ("存货净额", "inventory")):
-                values = _extract_table_balance(text, label)
-                if values and periods:
-                    facts["balances"].setdefault(periods.group(1), {})[metric] = values["current"]
-                    facts["balances"].setdefault(periods.group(3), {})[metric] = values["prior"]
-
-            gain = re.search(r"资产处置收益\s*" + NUMBER + r"\s*来自出售", text)
-            proceeds = re.search(r"相关现金对价\s*" + NUMBER, text)
-            if gain:
-                item: dict[str, Any] = {
-                    "type": "asset_disposal",
-                    "gain": _number(gain.group(1), "disposal gain"),
-                    "recurring": False,
-                    "profit_adjustment_tax_effect": "unknown",
-                    "source": path.name,
-                }
-                if proceeds:
-                    item.update({
-                        "cash_proceeds": _number(proceeds.group(1), "disposal proceeds"),
-                        "cash_flow_section": "investing",
-                        "excluded_from_recurring_cfo_and_fcf": True,
-                    })
-                facts["one_time_items"].append(item)
-
-            special = re.search(r"有\s*" + NUMBER + r"\s*为客户取消订单后留下的专用", text)
-            write_down = re.search(r"计提跌价准备\s*" + NUMBER, text)
-            receipts = re.search(r"其中\s*\d+\s*来自.*?，\s*" + NUMBER + r"\s*已在", text)
-            if special:
-                facts["non_cancellable_special_inventory"] = _number(
-                    special.group(1), "special inventory"
-                )
-            if write_down:
-                facts["inventory_write_down_disclosed"] = _number(
-                    write_down.group(1), "inventory write-down"
-                )
-            if receipts:
-                facts["post_period_receipts_disclosed"] = _number(
-                    receipts.group(1), "post-period receipts"
-                )
-
-        if is_presentation:
-            ar_claim = re.search(r"应收账款对现金流的暂时影响约\s*" + NUMBER, text)
-            inventory_claim = re.search(r"全部\s*" + NUMBER + r"\s*的库存增加均对应已确认客户订单", text)
-            custom_cash = re.search(r"增长投入前经营现金创造[”」]?\s*" + NUMBER, text)
-            net_investment = re.search(r"净投资现金支出[”」]?\s*" + NUMBER, text)
-            if ar_claim:
-                facts["presentation_claims"]["accounts_receivable_cash_impact"] = {
-                    "value": _number(ar_claim.group(1), "presentation AR claim"),
-                    "qualifier": "approximately",
-                    "source": path.name,
-                }
-            if inventory_claim:
-                facts["presentation_claims"]["all_inventory_order_backed"] = {
-                    "inventory_increase": _number(inventory_claim.group(1), "inventory claim"),
-                    "value": True,
-                    "source": path.name,
-                }
-            if custom_cash:
-                facts["presentation_claims"]["custom_cash_metric"] = {
-                    "value": _number(custom_cash.group(1), "custom cash metric"),
-                    "name": "growth_investment_pre_operating_cash_creation",
-                    "source": path.name,
-                }
-            if net_investment:
-                facts["presentation_claims"]["net_investment_cash_outflow"] = {
-                    "value": _number(net_investment.group(1), "net investment claim"),
-                    "source": path.name,
-                }
-    return facts
 
 
 def _merge(target: dict[str, Any], incoming: dict[str, Any]) -> dict[str, Any]:
@@ -240,6 +134,7 @@ def resolve_inputs(
     csv_paths: list[Path],
     json_paths: list[Path],
 ) -> tuple[list[dict[str, Any]], dict[str, Any], list[str]]:
+    """Collect structured rows and supplemental metadata from directory, CSV, and JSON args."""
     rows: list[dict[str, Any]] = []
     supplemental: dict[str, Any] = {}
     inputs: list[str] = []
@@ -254,10 +149,6 @@ def resolve_inputs(
             candidate = input_dir / name
             if candidate.exists() and candidate not in json_paths:
                 json_paths.append(candidate)
-        markdown_paths = sorted(input_dir.glob("*.md"))
-        if markdown_paths:
-            _merge(supplemental, extract_markdown_facts(markdown_paths))
-            inputs.extend(str(path) for path in markdown_paths)
 
     for path in csv_paths:
         if not path.is_file():
@@ -269,8 +160,10 @@ def resolve_inputs(
             raise InputError(f"JSON does not exist: {path}")
         data = load_json(path)
         rows.extend(_rows_from_json(data, str(path)))
-        _merge(supplemental, {key: value for key, value in data.items()
-                              if key not in {"records", "financials"}})
+        _merge(
+            supplemental,
+            {key: value for key, value in data.items() if key not in {"records", "financials"}},
+        )
         inputs.append(str(path))
     if not rows:
         raise InputError("no financial records found; provide a directory, --csv, or --json")
@@ -299,64 +192,52 @@ def _period_sort_key(period: str) -> tuple[int, int, str]:
     return (int(match.group(1)), subperiod, period)
 
 
-def _build_conflicts(
-    claims: dict[str, Any],
-    latest: dict[str, float | int],
-    facts: dict[str, Any],
-    one_time_items: list[dict[str, Any]],
-) -> list[dict[str, Any]]:
-    conflicts: list[dict[str, Any]] = []
-    if "accounts_receivable_cash_impact" in claims and "accounts_receivable_change" in latest:
-        claim = claims["accounts_receivable_cash_impact"]
-        authoritative = latest["accounts_receivable_change"]
-        if abs(abs(float(authoritative)) - float(claim["value"])) > 1e-9:
-            conflicts.append({
-                "conflict_id": "AR_CASH_IMPACT",
-                "topic": "accounts_receivable",
-                "lower_priority_claim": claim,
-                "authoritative_value": authoritative,
-                "resolution": "use_formal_cashflow_reconciliation",
-            })
-    if "all_inventory_order_backed" in claims and facts.get("non_cancellable_special_inventory"):
-        conflicts.append({
-            "conflict_id": "INVENTORY_ORDER_SUPPORT",
-            "topic": "inventory",
-            "lower_priority_claim": claims["all_inventory_order_backed"],
-            "authoritative_fact": {
-                "non_cancellable_special_inventory": facts["non_cancellable_special_inventory"],
-                "inventory_write_down": facts.get("inventory_write_down_disclosed"),
-            },
-            "resolution": "use_formal_disclosure_and_reject_all_order_backed_claim",
-        })
-    if "custom_cash_metric" in claims and "operating_cash_flow" in latest:
-        claim = claims["custom_cash_metric"]
-        if float(claim["value"]) != float(latest["operating_cash_flow"]):
-            conflicts.append({
-                "conflict_id": "CUSTOM_CASH_METRIC",
-                "topic": "cashflow_metric_definition",
-                "lower_priority_claim": claim,
-                "authoritative_value": latest["operating_cash_flow"],
-                "resolution": "do_not_label_custom_metric_as_cfo_or_fcf",
-            })
-    if "net_investment_cash_outflow" in claims and "capex" in latest:
-        claim = claims["net_investment_cash_outflow"]
-        if float(claim["value"]) != abs(float(latest["capex"])):
-            conflicts.append({
-                "conflict_id": "CAPEX_NETTING",
-                "topic": "capex",
-                "lower_priority_claim": claim,
-                "authoritative_value": abs(latest["capex"]),
-                "excluded_disposal_cash": next(
-                    (item.get("cash_proceeds") for item in one_time_items
-                     if item.get("type") == "asset_disposal"), None
-                ),
-                "resolution": "use_gross_capex_for_fcf",
-            })
-    return conflicts
+def _prior_year_period(current: str, periods: Iterable[str], *, balance: bool = False) -> str | None:
+    match = re.fullmatch(r"(?:FY)?(\d{4})(?:(?:H[12]|Q[1-4])(?:-?YTD)?)?", current)
+    if match is None and balance:
+        match = re.fullmatch(r"(\d{4})-\d{2}-\d{2}", current)
+    if match is None:
+        return None
+    prior_year = f"{int(match.group(1)) - 1:04d}"
+    prior = current[:match.start(1)] + prior_year + current[match.end(1):]
+    return prior if prior in periods else None
+
+
+def _sum_optional_items(raw: Any, field: str) -> tuple[float, Any]:
+    """Normalize an optional numeric value, dict, or item list into a float total."""
+    if raw is None:
+        return 0.0, None
+    if isinstance(raw, (int, float, str)) and not isinstance(raw, bool):
+        val = float(_number(raw, field))
+        if val < 0:
+            raise InputError(f"{field} must be non-negative")
+        return val, _rounded(val)
+    if isinstance(raw, dict):
+        total = 0.0
+        cleaned: dict[str, float | int | None] = {}
+        for k, v in raw.items():
+            num = float(_number(v, f"{field}.{k}"))
+            if num < 0:
+                raise InputError(f"{field}.{k} must be non-negative")
+            total += num
+            cleaned[str(k)] = _rounded(num)
+        return total, cleaned
+    if isinstance(raw, list):
+        total = 0.0
+        cleaned_list = []
+        for idx, entry in enumerate(raw):
+            if not isinstance(entry, dict) or not entry.get("name") or entry.get("amount") is None:
+                raise InputError(f"{field}[{idx}] requires name and amount")
+            num = float(_number(entry["amount"], f"{field}[{idx}].amount"))
+            if num < 0:
+                raise InputError(f"{field}[{idx}].amount must be non-negative")
+            total += num
+            cleaned_list.append({"name": str(entry["name"]), "amount": _rounded(num)})
+        return total, cleaned_list
+    raise InputError(f"{field} must be a number, object, or list")
 
 
 def _build_adjusted_fcf_bridge(
-    period: str,
     metrics: dict[str, float | int],
     definition: Any,
 ) -> dict[str, Any] | None:
@@ -370,19 +251,22 @@ def _build_adjusted_fcf_bridge(
         "starting_metric",
         "statutory_total_cash_metric",
         "source",
-        "customer_financing_scope",
     ):
         if not definition.get(field):
             raise InputError(f"adjusted_fcf_definition missing {field}")
     reported_metric = str(definition["reported_metric"])
     starting_metric = str(definition["starting_metric"])
     total_cash_metric = str(definition["statutory_total_cash_metric"])
-    if reported_metric not in metrics:
-        raise InputError(f"{period}: missing adjusted FCF metric {reported_metric}")
-    if starting_metric not in metrics:
-        raise InputError(f"{period}: missing adjusted FCF starting metric {starting_metric}")
-    if total_cash_metric not in metrics:
-        raise InputError(f"{period}: missing statutory total cash metric {total_cash_metric}")
+    missing = [
+        metric for metric in (reported_metric, starting_metric, total_cash_metric)
+        if metric not in metrics
+    ]
+    if missing:
+        return {
+            "name": definition["name"],
+            "missing_metrics": missing,
+            "reconciles": False,
+        }
     adjustments = definition.get("adjustments", [])
     if not isinstance(adjustments, list):
         raise InputError("adjusted_fcf_definition.adjustments must be an array")
@@ -399,7 +283,7 @@ def _build_adjusted_fcf_bridge(
         normalized.append({**item, "amount": _rounded(amount)})
     reconciled = float(metrics[starting_metric]) + adjustment_total
     reported = float(metrics[reported_metric])
-    return {
+    result: dict[str, Any] = {
         "name": definition["name"],
         "reported_metric": reported_metric,
         "reported_value": _rounded(reported),
@@ -412,62 +296,193 @@ def _build_adjusted_fcf_bridge(
         "unreconciled_difference": _rounded(reconciled - reported),
         "reconciles": abs(reconciled - reported) <= 0.01,
         "source": definition["source"],
-        "customer_financing_scope": definition["customer_financing_scope"],
+    }
+    if definition.get("scope_notes"):
+        result["scope_notes"] = definition["scope_notes"]
+    return result
+
+
+def _classify_fcf_discrepancy(
+    calculated_fcf: float | None,
+    reported_fcf: float | int | None,
+) -> dict[str, Any] | None:
+    """Compute numeric gap and direction between conventional FCF and company-reported FCF."""
+    if calculated_fcf is None or reported_fcf is None:
+        return None
+    diff = float(calculated_fcf) - float(reported_fcf)
+    if abs(diff) <= 0.01:
+        direction = "aligned"
+    elif diff > 0:
+        direction = "reported_lower_than_conventional"
+    else:
+        direction = "reported_higher_than_conventional"
+    return {
+        "conventional_minus_reported": _rounded(diff),
+        "direction": direction,
     }
 
 
-def build_report(rows: list[dict[str, Any]], supplemental: dict[str, Any],
-                 inputs: list[str]) -> dict[str, Any]:
+def _apply_one_time_cash_adjustments(
+    period: str,
+    reported_cfo: float | int | None,
+    calculated_fcf: float | None,
+    raw_adjustments: Any,
+) -> dict[str, Any] | None:
+    """Normalize CFO/FCF by reversing one-time cash items already inside reported CFO."""
+    if raw_adjustments is None:
+        return None
+    if not isinstance(raw_adjustments, list):
+        raise InputError(f"one_time_cash_adjustments[{period}] must be an array")
+    if not raw_adjustments or reported_cfo is None:
+        return None
+
+    total_cfo_delta = 0.0
+    normalized_items = []
+    for index, item in enumerate(raw_adjustments):
+        if not isinstance(item, dict):
+            raise InputError(f"one_time_cash_adjustments[{period}][{index}] must be an object")
+        for field in ("name", "amount", "cash_direction", "source"):
+            if item.get(field) in {None, ""}:
+                raise InputError(
+                    f"one_time_cash_adjustments[{period}][{index}] missing {field}"
+                )
+        if "already_in_reported_cfo" not in item or not isinstance(item["already_in_reported_cfo"], bool):
+            raise InputError(
+                f"one_time_cash_adjustments[{period}][{index}] requires boolean already_in_reported_cfo"
+            )
+        amount = float(_number(item["amount"], f"one_time_cash_adjustments[{period}][{index}].amount"))
+        if amount < 0:
+            raise InputError(
+                f"one_time_cash_adjustments[{period}][{index}].amount must be non-negative; specify cash_direction"
+            )
+        direction = str(item["cash_direction"])
+        if direction not in {"outflow", "inflow"}:
+            raise InputError(
+                f"one_time_cash_adjustments[{period}][{index}].cash_direction must be 'outflow' or 'inflow'"
+            )
+        if item["already_in_reported_cfo"]:
+            signed_effect = amount if direction == "outflow" else -amount
+        else:
+            signed_effect = 0.0
+        total_cfo_delta += signed_effect
+        normalized_items.append({
+            "name": str(item["name"]),
+            "amount": _rounded(amount),
+            "cash_direction": direction,
+            "already_in_reported_cfo": item["already_in_reported_cfo"],
+            "normalization_delta": _rounded(signed_effect),
+            "source": str(item["source"]),
+        })
+
+    normalized_cfo = float(reported_cfo) + total_cfo_delta
+    normalized_fcf = float(calculated_fcf) + total_cfo_delta if calculated_fcf is not None else None
+    return {
+        "items": normalized_items,
+        "total_cfo_normalization_delta": _rounded(total_cfo_delta),
+        "normalized_cfo": _rounded(normalized_cfo),
+        "normalized_fcf": _rounded(normalized_fcf),
+        "is_company_official_non_gaap": False,
+    }
+
+
+def _compute_shareholder_coverage(
+    period: str,
+    cash_fcf: float | None,
+    normalized_fcf: float | int | None,
+    payout_spec: Any,
+) -> dict[str, Any] | None:
+    """Compute cash shareholder return coverage strictly against cash-basis FCF."""
+    if payout_spec is None:
+        return None
+    if not isinstance(payout_spec, dict):
+        raise InputError(f"shareholder_payouts[{period}] must be an object")
+
+    dividends = float(_number(payout_spec.get("cash_dividends", 0), f"shareholder_payouts[{period}].cash_dividends"))
+    buybacks = float(_number(payout_spec.get("cash_buybacks", 0), f"shareholder_payouts[{period}].cash_buybacks"))
+    if dividends < 0 or buybacks < 0:
+        raise InputError(f"shareholder_payouts[{period}] dividends/buybacks must be non-negative")
+
+    other_dist_total, other_dist_detail = _sum_optional_items(
+        payout_spec.get("other_cash_distributions"),
+        f"shareholder_payouts[{period}].other_cash_distributions",
+    )
+    other_related_total, other_related_detail = _sum_optional_items(
+        payout_spec.get("other_related_cash_outflows"),
+        f"shareholder_payouts[{period}].other_related_cash_outflows",
+    )
+    non_cash_total, non_cash_detail = _sum_optional_items(
+        payout_spec.get("non_cash_capital_commitments"),
+        f"shareholder_payouts[{period}].non_cash_capital_commitments",
+    )
+
+    total_return = dividends + buybacks + other_dist_total
+    total_with_related = total_return + other_related_total
+
+    def _ratio_block(fcf_val: float | int | None) -> dict[str, Any] | None:
+        if fcf_val is None:
+            return None
+        f = float(fcf_val)
+        return {
+            "fcf_basis_value": _rounded(f),
+            "fully_covered": f >= total_return - 1e-9,
+            "cash_surplus_or_gap": _rounded(f - total_return),
+            "payout_of_fcf_pct": _rounded((total_return / f) * 100) if f > 0 else None,
+            "fcf_coverage_multiple": _rounded(f / total_return) if total_return > 0 else None,
+            "surplus_after_other_related_cash_outflows": (
+                _rounded(f - total_with_related) if other_related_detail is not None else None
+            ),
+        }
+
+    return {
+        "cash_dividends": _rounded(dividends),
+        "cash_buybacks": _rounded(buybacks),
+        "other_cash_distributions": other_dist_detail,
+        "total_cash_shareholder_return": _rounded(total_return),
+        "other_related_cash_outflows": other_related_detail,
+        "cash_fcf_coverage": _ratio_block(cash_fcf),
+        "normalized_fcf_coverage": _ratio_block(normalized_fcf),
+        "non_cash_capital_commitments": {
+            "total": _rounded(non_cash_total),
+            "detail": non_cash_detail,
+            "excluded_from_cash_payout_coverage": True,
+        } if non_cash_detail is not None else None,
+    }
+
+
+def build_report(
+    rows: list[dict[str, Any]],
+    supplemental: dict[str, Any],
+    inputs: list[str],
+) -> dict[str, Any]:
+    """Build reconciled per-period cashflow bridges, growth rates, and payout coverage."""
     by_period: dict[str, dict[str, float | int]] = defaultdict(dict)
     row_sources: dict[str, dict[str, str]] = defaultdict(dict)
     conflicts: list[dict[str, Any]] = []
-    entities, currencies, units = set(), set(), set()
-    period_entities: dict[str, set[str]] = defaultdict(set)
-
-    for row in rows:
-        period, metric, value = str(row["period"]), str(row["metric"]), row["value"]
-        if row.get("entity"):
-            entity = str(row["entity"])
-            entities.add(entity)
-            period_entities[period].add(entity)
-        if row.get("currency"):
-            currencies.add(str(row["currency"]))
-        if row.get("unit"):
-            units.add(str(row["unit"]))
-
-    mixed_periods = {
-        period: values for period, values in period_entities.items() if len(values) > 1
-    }
-    if mixed_periods:
-        period, values = next(iter(mixed_periods.items()))
-        raise InputError(
-            f"{period}: multiple entities found: {', '.join(sorted(values))}"
-        )
-    for label, values in (
-        ("entities", entities),
-        ("currencies", currencies),
-        ("units", units),
-    ):
+    metadata: dict[str, str | None] = {}
+    for field in ("entity", "currency", "unit", "scope"):
+        values = {str(row[field]).strip() for row in rows if row.get(field)}
         if len(values) > 1:
-            raise InputError(f"multiple {label} found: {', '.join(sorted(values))}")
+            raise InputError(f"multiple {field} values found: {', '.join(sorted(values))}")
+        if values and any(not row.get(field) for row in rows):
+            raise InputError(f"{field} is missing from some financial records")
+        metadata[field] = next(iter(values), None)
 
-    entity_type = supplemental.get("entity_type")
-    if entity_type in NON_STANDARD_CASHFLOW_ENTITY_TYPES:
+    cashflow_profile = supplemental.get("cashflow_profile") or supplemental.get("entity_profile")
+    standard_applicable = supplemental.get("standard_cashflow_applicable", True)
+    if standard_applicable is False or cashflow_profile in NON_STANDARD_CASHFLOW_PROFILES:
         return {
-            "schema_version": "1.0",
-            "entity": next(iter(entities)) if len(entities) == 1 else None,
-            "entity_type": entity_type,
+            "schema_version": "3.0",
+            "entity": metadata["entity"],
+            "cashflow_profile": cashflow_profile,
             "applicability": {
                 "can_run_standard_cashflow_bridge": False,
                 "reason": (
-                    "standard net-profit-to-CFO-to-FCF bridge is not "
-                    f"appropriate for {entity_type}"
+                    "standard net-profit-to-CFO-to-FCF bridge is marked non-applicable "
+                    f"for profile={cashflow_profile or 'custom'}"
                 ),
-                "required_route": "domain_specific_financial_analysis",
             },
             "inputs": {
                 "files": sorted(set(inputs)),
-                "oracle_files_read": [],
             },
             "bridges": {},
             "growth": {},
@@ -475,111 +490,178 @@ def build_report(rows: list[dict[str, Any]], supplemental: dict[str, Any],
             "all_bridges_reconcile": False,
         }
 
+    conflicting_metrics: dict[str, set[str]] = defaultdict(set)
     for row in rows:
         period = str(row["period"])
         metric = str(row["metric"])
         value = row["value"]
-        if metric in by_period[period] and by_period[period][metric] != value:
-            conflicts.append({
-                "conflict_id": f"DATA_{period}_{metric}",
-                "topic": metric,
-                "values": [by_period[period][metric], value],
-                "sources": [row_sources[period][metric], row.get("_input")],
-                "resolution": "unresolved_conflicting_structured_inputs",
-            })
+        source = str(row.get("source_locator") or row.get("_input"))
+        if metric in by_period[period]:
+            prior_value = by_period[period][metric]
+            if prior_value != value and (metric != "capex" or abs(prior_value) != abs(value)):
+                conflicting_metrics[period].add(metric)
+                conflicts.append({
+                    "conflict_id": f"DATA_{period}_{metric}",
+                    "topic": metric,
+                    "values": [by_period[period][metric], value],
+                    "sources": [row_sources[period][metric], source],
+                    "resolution": "unresolved_conflicting_structured_inputs",
+                })
             continue
         by_period[period][metric] = value
-        row_sources[period][metric] = str(
-            row.get("source_locator") or row.get("_input")
-        )
+        row_sources[period][metric] = source
+
+    for period, metrics in conflicting_metrics.items():
+        for metric in metrics:
+            del by_period[period][metric]
 
     periods = sorted(by_period, key=_period_sort_key)
+    one_time_by_period = supplemental.get("one_time_cash_adjustments")
+    if one_time_by_period is not None and not isinstance(one_time_by_period, dict):
+        raise InputError("one_time_cash_adjustments must map periods to adjustment arrays")
+    payouts_by_period = supplemental.get("shareholder_payouts")
+    if payouts_by_period is not None and not isinstance(payouts_by_period, dict):
+        raise InputError("shareholder_payouts must map periods to payout objects")
+
+    raw_additional = supplemental.get("additional_bridge_metrics")
+    if raw_additional is not None and not isinstance(raw_additional, list):
+        raise InputError("additional_bridge_metrics must be an array")
+    additional_bridge = [
+        str(m) for m in (raw_additional or []) if isinstance(m, str) and m
+    ]
+    bridge_order = tuple(dict.fromkeys((*BRIDGE_METRICS, "other_non_cash_items", "other_working_capital_changes", *additional_bridge)))
+    adjustment_order = tuple(m for m in bridge_order if m != "net_profit")
     bridges: dict[str, Any] = {}
     for period in periods:
         metrics = by_period[period]
-        missing = [metric for metric in BRIDGE_METRICS if metric not in metrics]
-        if missing:
-            raise InputError(f"{period}: missing bridge metrics: {', '.join(missing)}")
-        calculated_cfo = sum(float(metrics[metric]) for metric in BRIDGE_METRICS)
+        unprovided_standard = [metric for metric in BRIDGE_METRICS if metric not in metrics]
+        present_bridge_items = [metric for metric in bridge_order if metric in metrics]
+        net_profit = metrics.get("net_profit")
+        subtotal_present = (
+            sum(float(metrics[metric]) for metric in present_bridge_items)
+            if present_bridge_items else None
+        )
+        calculated_cfo = subtotal_present if net_profit is not None else None
         reported_cfo = metrics.get("operating_cash_flow")
-        if reported_cfo is None:
-            raise InputError(
-                f"{period}: missing cash-flow-statement operating_cash_flow; "
-                "profit bridge cannot substitute for statutory CFO"
-            )
-        capex = metrics.get("capex")
-        if capex is None:
-            raise InputError(f"{period}: missing capex")
-        calculated_fcf = float(reported_cfo) - abs(float(capex))
+        capex = abs(metrics["capex"]) if "capex" in metrics else None
+        calculated_fcf = (
+            float(reported_cfo) - float(capex)
+            if reported_cfo is not None and capex is not None else None
+        )
+        cfo_difference = (
+            calculated_cfo - float(reported_cfo)
+            if calculated_cfo is not None and reported_cfo is not None else None
+        )
+        partial_residual = (
+            float(reported_cfo) - float(subtotal_present)
+            if subtotal_present is not None and reported_cfo is not None else None
+        )
+
         reported_fcf = metrics.get("free_cash_flow")
         fcf_definition = supplemental.get("fcf_definition")
         if reported_fcf is not None:
             if not isinstance(fcf_definition, dict):
-                raise InputError(
-                    "free_cash_flow provided without fcf_definition metadata"
-                )
+                raise InputError("free_cash_flow provided without fcf_definition metadata")
             for field in ("name", "kind", "formula", "source"):
                 if not fcf_definition.get(field):
                     raise InputError(f"fcf_definition missing {field}")
-        adjusted_fcf_bridge = _build_adjusted_fcf_bridge(
-            period, metrics, supplemental.get("adjusted_fcf_definition")
+        fcf_difference = (
+            calculated_fcf - float(reported_fcf)
+            if calculated_fcf is not None and reported_fcf is not None
+            and fcf_definition.get("kind") == "analyst_conventional" else None
         )
+        fcf_discrepancy = _classify_fcf_discrepancy(calculated_fcf, reported_fcf)
+
+        adjusted_definitions = supplemental.get("adjusted_fcf_definitions")
+        if adjusted_definitions is not None and not isinstance(adjusted_definitions, dict):
+            raise InputError("adjusted_fcf_definitions must map periods to definitions")
+        legacy_definition = supplemental.get("adjusted_fcf_definition")
+        if adjusted_definitions is not None:
+            adjusted_definition = adjusted_definitions.get(period)
+            needs_period_definition = (period not in adjusted_definitions) and (reported_fcf is not None)
+        elif legacy_definition is not None and len(periods) == 1:
+            adjusted_definition = legacy_definition
+            needs_period_definition = False
+        else:
+            adjusted_definition = None
+            needs_period_definition = (legacy_definition is not None) and (reported_fcf is not None)
+        adjusted_fcf_bridge = (
+            {"missing_period_definition": period, "reconciles": False}
+            if needs_period_definition
+            else _build_adjusted_fcf_bridge(metrics, adjusted_definition)
+        )
+
+        one_time_norm = _apply_one_time_cash_adjustments(
+            period,
+            reported_cfo,
+            calculated_fcf,
+            one_time_by_period.get(period) if one_time_by_period else None,
+        )
+        payout_cov = _compute_shareholder_coverage(
+            period,
+            calculated_fcf,
+            one_time_norm["normalized_fcf"] if one_time_norm else None,
+            payouts_by_period.get(period) if payouts_by_period else None,
+        )
+
+        adjustment_keys = [metric for metric in adjustment_order if metric in metrics]
         bridges[period] = {
-            "net_profit": metrics["net_profit"],
+            "net_profit": net_profit,
+            "unprovided_standard_metrics": unprovided_standard,
             "adjustments": [
                 {
                     "metric": metric,
                     "value": metrics[metric],
                     "source": row_sources[period].get(metric),
                 }
-                for metric in ADJUSTMENT_METRICS
+                for metric in adjustment_keys
             ],
             "calculated_cfo": _rounded(calculated_cfo),
+            "present_items_subtotal": _rounded(subtotal_present),
             "reported_cfo": reported_cfo,
-            "cfo_reconciliation_difference": _rounded(calculated_cfo - float(reported_cfo)),
-            "capex": abs(float(capex)) if not float(capex).is_integer() else abs(int(capex)),
+            "cfo_reconciliation_difference": _rounded(cfo_difference),
+            "unreconciled_cfo_residual": _rounded(partial_residual),
+            "capex": capex,
             "calculated_fcf": _rounded(calculated_fcf),
             "reported_fcf": reported_fcf,
+            "fcf_discrepancy": fcf_discrepancy,
             "fcf_basis": {
                 "starting_metric": "operating_cash_flow",
                 "starting_value": reported_cfo,
                 "cash_capex_metric": "capex",
-                "cash_capex_value": abs(float(capex)),
+                "cash_capex_value": capex,
                 "conventional_definition": "operating_cash_flow - cash_capex",
                 "reported_metric_definition": fcf_definition,
-                "profit_bridge_may_define_fcf": False,
             },
             "adjusted_fcf_bridge": adjusted_fcf_bridge,
-            "fcf_reconciliation_difference": (
-                _rounded(calculated_fcf - float(reported_fcf))
-                if reported_fcf is not None
-                and fcf_definition.get("kind") == "analyst_conventional"
-                else None
-            ),
+            "one_time_normalization": one_time_norm,
+            "shareholder_payout_coverage": payout_cov,
+            "fcf_reconciliation_difference": _rounded(fcf_difference),
             "net_profit_to_cfo_pct": (
-                _rounded(float(reported_cfo) / float(metrics["net_profit"]) * 100)
-                if float(metrics["net_profit"]) != 0 else None
+                _rounded(float(reported_cfo) / float(net_profit) * 100)
+                if reported_cfo is not None and net_profit else None
             ),
             "reconciles": (
-                abs(calculated_cfo - float(reported_cfo)) <= 0.01
-                and (
-                    reported_fcf is None
-                    or fcf_definition.get("kind") != "analyst_conventional"
-                    or abs(calculated_fcf - float(reported_fcf)) <= 0.01
-                )
-                and (
-                    adjusted_fcf_bridge is None
-                    or adjusted_fcf_bridge["reconciles"]
-                )
+                not conflicting_metrics.get(period)
+                and cfo_difference is not None and abs(cfo_difference) <= 0.01
+                and calculated_fcf is not None
+                and (fcf_difference is None or abs(fcf_difference) <= 0.01)
+                and (adjusted_fcf_bridge is None or adjusted_fcf_bridge["reconciles"])
             ),
         }
 
     growth: dict[str, Any] = {}
-    if len(periods) >= 2:
-        prior_period, current_period = periods[-2], periods[-1]
+    current_period = periods[-1]
+    prior_period = _prior_year_period(current_period, by_period)
+    if prior_period is not None:
+        prior_metrics, current_metrics = by_period[prior_period], by_period[current_period]
         for metric in ("revenue", "net_profit", "operating_cash_flow", "free_cash_flow"):
-            if metric in by_period[prior_period] and metric in by_period[current_period]:
-                prior, current = by_period[prior_period][metric], by_period[current_period][metric]
+            if metric == "free_cash_flow":
+                prior = bridges[prior_period]["calculated_fcf"]
+                current = bridges[current_period]["calculated_fcf"]
+            else:
+                prior, current = prior_metrics.get(metric), current_metrics.get(metric)
+            if prior is not None and current is not None:
                 growth[metric] = {
                     "prior_period": prior_period,
                     "prior": prior,
@@ -591,69 +673,54 @@ def build_report(rows: list[dict[str, Any]], supplemental: dict[str, Any],
 
     balances = supplemental.get("balances", {})
     balance_growth: dict[str, Any] = {}
-    if isinstance(balances, dict) and len(balances) >= 2:
-        balance_periods = sorted(balances, key=_period_sort_key)
-        balance_prior, balance_current = balance_periods[0], balance_periods[-1]
-        for metric in ("accounts_receivable", "inventory"):
-            if metric in balances[balance_prior] and metric in balances[balance_current]:
-                prior = _number(balances[balance_prior][metric], metric)
-                current = _number(balances[balance_current][metric], metric)
-                balance_growth[metric] = {
-                    "prior_date": balance_prior,
-                    "prior": prior,
-                    "current_date": balance_current,
-                    "current": current,
-                    "yoy_pct": _rounded(_pct_change(float(current), float(prior))),
-                }
-        if "inventory" in balance_growth and "revenue" in growth:
-            balance_growth["inventory"]["growth_minus_revenue_growth_ppt"] = _rounded(
-                float(balance_growth["inventory"]["yoy_pct"]) -
-                float(growth["revenue"]["yoy_pct"])
-            )
+    balance_current = (
+        max(balances, key=_period_sort_key) if isinstance(balances, dict) and balances else None
+    )
+    balance_prior = (
+        _prior_year_period(balance_current, balances, balance=True) if balance_current else None
+    )
+    if balance_prior is not None:
+        revenue_pct = growth.get("revenue", {}).get("yoy_pct")
+        shared_keys = sorted(set(balances[balance_prior]) & set(balances[balance_current]))
+        for metric in shared_keys:
+            prior = _number(balances[balance_prior][metric], metric)
+            current = _number(balances[balance_current][metric], metric)
+            yoy_pct = _rounded(_pct_change(float(current), float(prior)))
+            entry: dict[str, Any] = {
+                "prior_date": balance_prior,
+                "prior": prior,
+                "current_date": balance_current,
+                "current": current,
+                "yoy_pct": yoy_pct,
+            }
+            if (
+                (balance_prior, balance_current) == (prior_period, current_period)
+                and yoy_pct is not None and revenue_pct is not None
+            ):
+                entry["growth_minus_revenue_growth_ppt"] = _rounded(yoy_pct - revenue_pct)
+            balance_growth[metric] = entry
 
-    one_time_items = list(supplemental.get("one_time_items", []))
-    latest_metrics = by_period[periods[-1]]
-    for item in one_time_items:
-        if item.get("type") == "asset_disposal":
-            item.setdefault("period", periods[-1])
-            item["cfo_bridge_adjustment"] = latest_metrics.get("disposal_gain")
-            item.setdefault("adjusted_net_profit", None)
-            item.setdefault("adjusted_net_profit_reason",
-                            "tax_effect_unknown; do not subtract pre-tax gain mechanically")
-
-    claims = supplemental.get("presentation_claims", {})
-    conflicts.extend(_build_conflicts(claims, latest_metrics, supplemental, one_time_items))
     conflicts.extend(supplemental.get("conflicts", []))
 
     return {
-        "schema_version": "1.0",
-        "entity": next(iter(entities)) if len(entities) == 1 else None,
-        "entity_type": entity_type,
+        "schema_version": "3.0",
+        "entity": metadata["entity"],
+        "cashflow_profile": cashflow_profile,
         "applicability": {
             "can_run_standard_cashflow_bridge": True,
             "reason": "standard bridge inputs accepted",
-            "required_route": None,
         },
-        "currency": next(iter(currencies)) if len(currencies) == 1 else None,
-        "unit": next(iter(units)) if len(units) == 1 else None,
+        "currency": metadata["currency"],
+        "unit": metadata["unit"],
+        "scope": metadata["scope"],
+        "input_metadata_complete": all(metadata.values()),
         "periods": periods,
         "inputs": {
             "files": sorted(set(inputs)),
-            "oracle_files_read": [],
         },
         "bridges": bridges,
         "growth": growth,
         "balance_growth": balance_growth,
-        "one_time_exclusions": one_time_items,
-        "supplementary_facts": {
-            key: supplemental[key]
-            for key in (
-                "non_cancellable_special_inventory",
-                "inventory_write_down_disclosed",
-                "post_period_receipts_disclosed",
-            )
-            if key in supplemental
-        },
         "conflict_register": conflicts,
         "all_bridges_reconcile": all(item["reconciles"] for item in bridges.values()),
     }
@@ -661,16 +728,34 @@ def build_report(rows: list[dict[str, Any]], supplemental: dict[str, Any],
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Calculate a generic company net-profit-to-CFO-to-FCF bridge."
+        description="Calculate a generic company net-profit-to-CFO-to-FCF bridge and payout coverage."
     )
-    parser.add_argument("input_dir", nargs="?", type=Path,
-                        help="Directory containing financials.csv and optional source Markdown")
-    parser.add_argument("--csv", action="append", default=[], type=Path,
-                        help="Explicit long-form financial CSV (repeatable)")
-    parser.add_argument("--json", action="append", default=[], type=Path,
-                        help="Explicit financial/supplemental JSON (repeatable)")
-    parser.add_argument("-o", "--output", type=Path,
-                        help="Write JSON to this file instead of stdout")
+    parser.add_argument(
+        "input_dir",
+        nargs="?",
+        type=Path,
+        help="Directory containing financials.csv and optional supplemental JSON files",
+    )
+    parser.add_argument(
+        "--csv",
+        action="append",
+        default=[],
+        type=Path,
+        help="Explicit long-form financial CSV (repeatable)",
+    )
+    parser.add_argument(
+        "--json",
+        action="append",
+        default=[],
+        type=Path,
+        help="Explicit financial/supplemental JSON (repeatable)",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        help="Write JSON to this file instead of stdout",
+    )
     return parser.parse_args(argv)
 
 

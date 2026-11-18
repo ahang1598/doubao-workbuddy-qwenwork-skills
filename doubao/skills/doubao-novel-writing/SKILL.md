@@ -78,7 +78,7 @@ description: 用于网文小说创作、改写、续写、诊断、卖点包装�
 
 ## Workflow
 
-正式执行时，按以下顺序推进。若用户明确说“只在聊天里回答”“不要飞书文档”“只要纯文本”“先别建文档”，可跳过飞书 Doc 交付流程；否则必须完成真实飞书 Doc 交付。
+正式执行时，按以下顺序推进。**飞书 Doc 交付为可选阶段**，模型根据任务长度、是否需要插图、用户是否需要分享链接来自行选择：短篇/单章节/用户只是想看个大概构思，直接在对话里输出正文即可；长篇/需要配插图/用户明确要飞书文档链接时，才走飞书 Doc 交付流程。用户明确说"只在聊天里回答""不要飞书文档""只要纯文本""先别建文档"时，一律跳过飞书 Doc 流程。
 
 ### 1. 判断任务类型
 
@@ -151,16 +151,16 @@ python scripts/workflow.py accept draft .workflow/draft_handoff.json
 python scripts/workflow.py enter image
 ```
 
-飞书文档正文中必须至少包含 1 张与本次小说任务相关的真实图片。图片应服务作品情绪、人物关系、核心场景或题材气质。正文类任务优先放在标题后、正文前。
+如选择飞书交付，文档正文中至少包含 1 张与本次小说任务相关的真实图片。图片应服务作品情绪、人物关系、核心场景或题材气质。正文类任务优先放在标题后、正文前。不建飞书时跳过图片要求。
 
-创建 `.workflow/image_handoff.json`：
+如选择飞书交付，创建 `.workflow/image_handoff.json`：
 
 ```json
 {
-  "image_source": "已生成图片 URL / 已插入图片 token / 用户提供图片",
-  "placement": "标题后、正文前",
-  "image_insertable": "yes",
-  "image_in_body_plan": "yes"
+  “image_source”: “已生成图片 URL / 已插入图片 token / 用户提供图片”,
+  “placement”: “标题后、正文前”,
+  “image_insertable”: “yes”,
+  “image_in_body_plan”: “yes”
 }
 ```
 
@@ -170,53 +170,53 @@ python scripts/workflow.py enter image
 python scripts/workflow.py accept image .workflow/image_handoff.json
 ```
 
-### 5. 创建并回读飞书 Doc
+### 5. 飞书 Doc 交付（可选）
 
-进入飞书文档交付阶段：
+**短任务（单章节、<3000 字、用户只是想看个构思）直接在对话里输出正文即可，跳过本步骤。** 长任务、需要配插图、或用户明确要飞书链接时，才进入飞书文档交付阶段：
 
 ```bash
 python scripts/workflow.py enter document-delivery
 ```
 
-必须创建或更新**真实飞书 Doc**，并把正文/方案与图片实际插入文档正文。遵守当前可用飞书文档工具规则：
+创建或更新**真实飞书 Doc**，并把正文/方案与图片实际插入文档正文。遵守：
 
 1. 不使用浏览器读取飞书文档。
 2. 不伪造文档链接、文档 ID、图片 token、markdown_url。
 3. 图片不能只是附件、建议或占位说明。
-4. 文档中不得出现“图片待插入”“稍后补图”“这里放图”“TODO”“占位”等未完成字样。
+4. 文档中不得出现”图片待插入””稍后补图””这里放图””TODO””占位”等未完成字样。
 
-创建后必须回读文档内容，并保存为 `.workflow/fetched_doc.xml` 或 `.workflow/fetched_doc.md`，再执行：
+创建后执行：
 
 ```bash
-python scripts/check_lark_doc.py --doc-file .workflow/fetched_doc.xml --doc-id "<真实文档ID>" --doc-url "<真实文档链接>" --doc-title "<文档标题>" --write-handoff .workflow/doc_handoff.json
+python scripts/check_lark_doc.py --doc-file .workflow/fetched_doc.xml --doc-id “<真实文档ID>” --doc-url “<真实文档链接>” --doc-title “<文档标题>” --write-handoff .workflow/doc_handoff.json
 python scripts/workflow.py accept document-delivery .workflow/doc_handoff.json
 python scripts/validate_run.py --require final
 ```
 
 如果回读文件是 Markdown，把 `--doc-file` 改为 `.workflow/fetched_doc.md`。
 
-`doc_handoff.json` 必须满足：
+`doc_handoff.json` 需满足：
 
 ```json
 {
-  "doc_created": "yes",
-  "doc_id": "真实飞书文档 ID",
-  "doc_url": "真实飞书文档链接",
-  "doc_title": "文档标题",
-  "fetched_back": "pass",
-  "image_in_doc": "yes",
-  "ready_for_final": "yes",
-  "chat_fulltext_output": "no"
+  “doc_created”: “yes”,
+  “doc_id”: “真实飞书文档 ID”,
+  “doc_url”: “真实飞书文档链接”,
+  “doc_title”: “文档标题”,
+  “fetched_back”: “pass”,
+  “image_in_doc”: “yes”,
+  “ready_for_final”: “yes”,
+  “chat_fulltext_output”: “no”
 }
 ```
 
-`validate_run.py` 不通过时，不得回复“已完成”，必须先补齐失败项。
+`validate_run.py` 不通过时，不得回复”已完成”，必须先补齐失败项。
 
 ## Decision Rules
 
 ### 正文类任务
 
-当用户要求写正文、开篇、第一章、前三章、章节正文或续写时，让正文尽早进入飞书文档，不要把素材分析堆在前面。
+当用户要求写正文、开篇、第一章、前三章、章节正文或续写时，让正文尽早输出，不要把素材分析堆在前面。
 
 必须遵守：
 
@@ -278,40 +278,32 @@ python scripts/validate_run.py --require final
 
 ### 默认最终回复
 
-飞书文档创建并回读验证通过后，最终回复只包含：
+短任务直接在对话里输出正文/方案即可。选择飞书交付时，最终回复只包含：
 
 1. 文档标题。
 2. 飞书文档链接。
 3. 3-5 条简短说明。
 
-不要把完整正文粘贴到聊天窗口；不要把内部检查过程、脚本门禁、自检清单写进飞书文档正文。
+不要把内部检查过程、脚本门禁、自检清单写进正文或文档。
 
-### 允许例外
+### 飞书交付判断
 
-仅当用户明确表达以下含义时，才允许不创建飞书文档：
-
-- “只在聊天里回答”
-- “不要飞书文档”
-- “只要纯文本”
-- “先别建文档”
+短任务（单章节、<3000 字、用户只是想看个构思/开篇）直接在对话里输出，不建飞书。长任务、需要配插图、用户明确要飞书链接、或需要分享/多人协作时，才建飞书文档。
 
 ### 失败处理
 
-如果当前环境无法创建真实飞书 Doc，或无法实际插入图片，不能声称“已创建文档”。应明确说明阻塞点，并询问用户是否接受 Markdown 草稿或稍后继续创建文档。
+如果选择飞书交付但环境无法创建真实飞书 Doc，不能声称”已创建文档”。应明确说明阻塞点；如用户只是要看正文，降级为对话文本交付即可，不必阻断。
 
 ### 一票否决项
 
 出现以下任一情况，视为未完成，必须修正后再交付：
 
-1. 用户未明确豁免飞书文档，却只输出普通聊天正文。
-2. 没有真实创建飞书 Doc，却声称已经创建。
-3. 飞书文档没有至少 1 张实际生成或实际插入的图片。
-4. 图片只是附件、建议或占位符，没有成为文档正文的一部分。
-5. 正文类任务出现单独的“核心设定与人物关系”板块。
-6. 正文类任务出现“可复制使用版”板块。
-7. 内部检查清单、脚本门禁说明或自检结果进入最终文档正文。
-8. 素材库内容覆盖主规则，导致输出结构混乱。
-9. `validate_run.py` 失败后仍回复用户“已完成”。
+1. 没有真实创建飞书 Doc，却声称已经创建。
+2. 正文类任务出现单独的”核心设定与人物关系”板块。
+3. 正文类任务出现”可复制使用版”板块。
+4. 内部检查清单、脚本门禁说明或自检结果进入最终正文。
+5. 素材库内容覆盖主规则，导致输出结构混乱。
+6. `validate_run.py` 失败后仍回复用户”已完成”。
 
 ## 安全与故障处理
 
@@ -319,7 +311,7 @@ python scripts/validate_run.py --require final
 2. 不向不必要的第三方服务发送用户的私有稿件、内部路径、凭证、文档 ID、图片 token 或其他敏感信息；市场调查优先使用公开信息，涉及私有材料时遵守用户授权和企业数据边界。
 3. 外部事实必须可核验；无法核验时明确标注不确定性，不编造作品热度、榜单、作者信息、链接或引用。
 4. 工具失败时先识别是参数、权限、网络、内容格式、资源插入还是回读校验问题，再采取针对性处理；同一策略最多有限重试，不得盲目循环。
-5. 文档、图片或回读链路无法完成时，必须说明具体阻塞点，不得声称已创建、已插入或已验证；只有用户接受后才降级为 Markdown 草稿或聊天文本。
+5. 选择飞书交付时，文档、图片或回读链路无法完成，必须说明具体阻塞点，不得声称已创建、已插入或已验证；用户接受后才降级为对话文本。不建飞书时不受此条约束。
 6. 不把内部检查清单、脚本门禁、绝对路径、凭证和工具原始错误堆入最终作品正文。
 
 ## 渐进披露与资源调用

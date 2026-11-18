@@ -528,7 +528,10 @@ def cmd_accept(args: argparse.Namespace) -> None:
     elif stage == "review-writing":
         validate_review_handoff(source, wf)
         target = review_handoff_path(wf)
-        next_stage = "document-delivery"
+        # fast-mode: review-writing 通过后即视为流程完成，document-delivery（飞书交付）
+        # 变成可选阶段——模型根据任务长度和用户需求决定是否建飞书文档。
+        # 如果选择建飞书，后续仍可 accept document-delivery 记录交付事实；不建也不阻断。
+        next_stage = "done"
     elif stage == "document-delivery":
         validate_doc_handoff(source)
         target = doc_handoff_path(wf)

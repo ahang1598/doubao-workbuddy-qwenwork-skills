@@ -126,7 +126,7 @@ def esc(value: Any) -> str:
 
 
 def normalize_display_id(value: Any, fallback: str = "") -> str:
-    """Normalize common visual variants without making them an acceptance gate."""
+    """Normalize common visual variants for readable diagram labels."""
     text = " ".join(str(value or "").split()).strip("【】[]").strip()
     match = re.fullmatch(r"([A-Za-z\u4e00-\u9fff]{1,12})\s*[-－—]\s*(\d{1,3})", text)
     if not match:
@@ -585,38 +585,10 @@ def render(payload: dict[str, Any]) -> str:
     return "\n".join(parts) + "\n"
 
 
-def render_feishu_demo_document(payload: dict[str, Any], svg: str) -> str:
-    """Wrap a rendered board in a small XML document for Feishu regression."""
-    data = normalize_payload(payload)
-    summary_items = "".join(
-        f"<li><p>{esc(summary)}</p></li>" for summary in data["summary"]
-    )
-    return (
-        f"<title>{esc(data['topic'])}｜总览画板视觉回归</title>\n"
-        '<callout emoji="💡" background-color="light-blue" border-color="blue">\n'
-        f"<ul>{summary_items}</ul>\n"
-        "</callout>\n"
-        "<h1>本期进展总览</h1>\n"
-        '<whiteboard type="svg" path="@overview.svg"></whiteboard>\n'
-        "<h1>灵感启发</h1>\n"
-        '<callout emoji="💡" background-color="light-yellow" border-color="yellow">'
-        "<p><b>验证实施条件。</b> 将外部验证结果与真实世界工作流放在同一研究框架中观察。</p>"
-        "</callout>\n"
-        '<callout emoji="🔎" background-color="light-blue" border-color="blue">'
-        "<p><b>关注平台可迁移性。</b> 比较不同检测平台阈值及跨人群校准策略。</p>"
-        "</callout>\n"
-        "<p>本页仅用于验证画板与 callout 的飞书呈现。</p>\n"
-    )
-
-
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", required=True, help="JSON payload path")
     parser.add_argument("--output", required=True, help="SVG output path")
-    parser.add_argument(
-        "--feishu-doc-output",
-        help="Optional Feishu XML demo document path for visual regression",
-    )
     args = parser.parse_args()
 
     input_path = Path(args.input)
@@ -625,19 +597,11 @@ def main() -> None:
     svg = render(payload)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(svg, encoding="utf-8")
-    if args.feishu_doc_output:
-        doc_output = Path(args.feishu_doc_output)
-        doc_output.parent.mkdir(parents=True, exist_ok=True)
-        doc_output.write_text(
-            render_feishu_demo_document(payload, svg),
-            encoding="utf-8",
-        )
     print(
         json.dumps(
             {
                 "ok": True,
                 "output": str(output_path),
-                "feishu_doc_output": args.feishu_doc_output,
                 "items": len(normalize_payload(payload)["items"]),
                 "input_repaired": input_repaired,
             },

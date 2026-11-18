@@ -20,7 +20,7 @@
 - 选择预测方法时读取 [references/three-statements-methodology.md](references/three-statements-methodology.md)。
 - 设计表页、科目和检查项时读取 [references/three-statements-model-spec.md](references/three-statements-model-spec.md)。
 - 需要按行业选择收入驱动时读取 [references/three-statements-sector-drivers.md](references/three-statements-sector-drivers.md)。
-- 查询 A 股、港股或美股数据时，先按强制读取完整性协议完整读取 [references/source-tool-priority.md](references/source-tool-priority.md)，再读取 [references/three-statements-market-data-sources.md](references/three-statements-market-data-sources.md)，执行“用户指定来源优先、未指定项目再以 `seed_finance_search` 为默认入口”的回退规则。
+- 查询 A 股、港股或美股数据时，先按强制读取完整性协议完整读取 [references/source-tool-priority.md](references/source-tool-priority.md)，再读取 [references/three-statements-market-data-sources.md](references/three-statements-market-data-sources.md)，执行“用户指定来源优先、未指定项目再以 `seed_finance_lookup` 为默认入口”的回退规则。
 
 ## 执行工作流
 
@@ -33,9 +33,9 @@
 
 ### 1. 建立证据底稿
 
-先按数据项目识别用户指定的工具、网站、文件、字段和时点口径，并优先实际调用。用户未指定的项目才检查并优先调用 `seed_finance_search` 查询历史三表、关键财务指标、公司指引、市场一致预期和证券基础信息。指定来源或默认工具缺失、字段不完整或口径不清时，记录实际尝试与降级原因，再按 [references/three-statements-market-data-sources.md](references/three-statements-market-data-sources.md) 回退到权威来源。不得静默换源，也不得声称使用了未实际调用的工具。
+先按数据项目识别用户指定的工具、网站、文件、字段和时点口径，并优先实际调用。用户未指定的项目才检查并优先调用 `seed_finance_lookup` 查询历史三表、关键财务指标、市场一致预期和证券基础信息；公司指引原文优先用 `seed_finance_search`，不可用时回退 `general_search`。指定来源或默认工具缺失、字段不完整或口径不清时，记录实际尝试与降级原因，再按 [references/three-statements-market-data-sources.md](references/three-statements-market-data-sources.md) 回退到权威来源；披露原文优先由 `seed_finance_search` 检索，不可用时回退 `general_search`。不得静默换源，也不得声称使用了未实际调用的工具。
 
-即使 `seed_finance_search` 可用，也要用至少一份公司原始披露或监管文件核验基准期收入、归母净利润/净利润、总资产、总负债、现金及现金等价物和经营现金流等关键锚点。若财务搜索结果与原始披露冲突，以原始披露为准并记录差异。
+即使 `seed_finance_lookup` 可用，也要用至少一份公司原始披露或监管文件核验基准期收入、归母净利润/净利润、总资产、总负债、现金及现金等价物和经营现金流等关键锚点。若财务搜索结果与原始披露冲突，以原始披露为准并记录差异。
 
 收集并记录以下信息：
 
@@ -141,8 +141,8 @@
 1. 先运行 `scripts/common/detect_workbook_engines.py`，确认OpenPyXL和LibreOffice状态；
 2. 将实际使用的生成脚本和输入JSON保存到运行记录；
 3. 将最终工作簿保存到当前任务的`outputs/`；
-4. 使用电子表格检查能力完成结构检查、公式错误扫描和逐表渲染；
-5. 运行 `python3 scripts/three-statements/audit_three_statements_workbook.py <workbook.xlsx> <artifact-audit.json> --recalculate required`，确认隔离重算、工作簿哈希、检查状态、循环引用、单位公式和异常数量级全部通过。
+4. 使用电子表格检查能力完成逐表渲染；
+5. 运行 `python3 scripts/three-statements/audit_three_statements_workbook.py <workbook.xlsx> <artifact-audit.json> --recalculate required --inspect-output workbook-inspect.json`，生成结构快照，并确认隔离重算、工作簿哈希、检查状态、公式错误扫描、循环引用、单位公式和异常数量级全部通过。
 
 ### 8. 执行财务审计
 

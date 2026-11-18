@@ -1,3 +1,4 @@
+import { calculateScoring } from './review-scoring.mjs';
 import { access, chmod, mkdir, readFile, realpath, rename, rm, writeFile } from 'node:fs/promises';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { createServer } from 'node:http';
@@ -254,6 +255,8 @@ export function buildReviewReportViewModel(review, metadata = {}) {
     .map((item) => ({ time: integer(item?.time), url: text(item?.url) }))
     .filter((item) => item.time !== null && /^https?:\/\//i.test(item.url))
     : [];
+  if (review.scoring && !playback.scoring_context) throw Object.assign(new Error('Scoring requires the original prepared evidence'), {code:'REVIEW_CONTEXT_REQUIRED'});
+  const scoring = playback.scoring_context ? calculateScoring(review.scoring, playback.scoring_context) : undefined;
   const transcriptSegments = asrTimelineSegments(playback.asr_timeline, segments, { ...review, timed_images: timedImages });
   return {
     schema_version: 1,
@@ -261,7 +264,7 @@ export function buildReviewReportViewModel(review, metadata = {}) {
       title: reviewTitle(metadata.title || playback.display_name),
       duration_text: durationText(durationMs),
       time_range: inspectionPeriod(playback),
-      review_type: 'live',
+      review_type: playback.kind === 'video' ? 'video' : 'live',
       vid: playbackVid,
       cover_label: text(playback.source_label) || '直播',
       account_name: text(metadata.account_name || playback.account_name),
@@ -281,6 +284,7 @@ export function buildReviewReportViewModel(review, metadata = {}) {
       content_analysis: {
         module_code: 'content_analysis',
         status: text(review.status) || 'success',
+        ...(scoring ? {scoring} : {}),
         conclusion: text(review.conclusion),
         summary: text(review.summary),
         highlights: Array.isArray(review.highlights) ? review.highlights : [],
@@ -322,7 +326,7 @@ export async function renderReviewReport({ review, metadata, templatePath, outpu
   if (!['html', 'json'].includes(format)) throw Object.assign(new Error('Unsupported report format'), { code: 'INVALID_INPUT' });
   // The complete document is assembled in the runtime, without sending ASR back through model output.
   if (format === 'json') {
-    if (!Array.isArray(metadata?.playback?.asr_timeline) || !metadata.playback.asr_timeline.length) {
+    if (!Array.isArray(metadata?.playback?.asr_timeline) || (!metadata.playback.asr_timeline.length && !(review.status === 'degraded' && viewModel.modules.content_analysis.scoring?.status === 'unavailable'))) {
       throw Object.assign(new Error('Complete JSON requires the prepared ASR timeline'), { code: 'ASR_NOT_FOUND' });
     }
     if (!metadata.playback.asr_timeline.every(row => Number.isSafeInteger(row?.start_time) && row.start_time >= 0

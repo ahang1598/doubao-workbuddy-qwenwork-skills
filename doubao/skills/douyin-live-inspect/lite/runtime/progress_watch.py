@@ -25,10 +25,12 @@ def diagnostic(task, state, component, reason, outcome, now):
         watchdog_stage=state['stage'], blocking_reason=state.get('blocking_reason','none'),
         recovery_action=state.get('action','await_host'), recovery_attempts=state.get('attempts',0),
         recovery_elapsed_ms=max(0,round((now-state.get('incident_at',now))*1000)))
-    detail.update({k:state[k] for k in ('reviewed_segments','unresolved_segments','recap_input_code','json_line','json_column') if k in state})
+    detail.update({k:state[k] for k in ('reviewed_segments','unresolved_segments','recap_input_code','recap_validation_reason','json_line','json_column') if k in state})
     identity=f"{component}:{state.get('incident_at',now)}:{reason}:{outcome}:{state.get('attempts',0)}"
     if state.get('recap_input_code'):
         identity += f":{state['recap_input_code']}:{state.get('json_line','')}:{state.get('json_column','')}"
+    if 'recap_validation_reason' in detail:
+        identity += ':' + detail['recap_validation_reason']
     detail['diagnostic_event_id']=str(uuid.uuid5(uuid.UUID(hex=task.get('task_id') or task['id']),identity))
     task[key]=detail
 
@@ -49,6 +51,9 @@ def startup_stage(task, segments):
     stage=('first_media' if not segments else 'first_transcript' if not any(s.get('subtitles') or ready(task,s) for s in segments)
            else 'first_review' if not any(s['review_status']=='done' for s in segments) else 'complete')
     pending=[s for s in segments if s['review_status'] not in {'done','skipped'}]
+    # No outstanding evidence is not a stalled first judgment. Capture may continue.
+    if segments and not pending:
+        stage='complete'
     if stage=='complete' and pending:
         stage='review_processing' if any(ready(task,s) for s in pending) else 'media_processing'
     component='runtime_watch' if stage in {'media_processing','review_processing','complete'} else 'startup_watch'

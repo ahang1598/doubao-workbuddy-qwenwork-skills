@@ -66,9 +66,11 @@ make status    # 打印 PASS / BLOCKED / DRAFT_ONLY
   "paper_type": "research_article|review_article|term_paper|journal_article|conference_paper|thesis|proposal|other",
   "citation_style": "apa7|mla9|chicago18_author_date",
   "needs_citation": "yes|no",
-  "output_target": "lark|markdown_only"
+  "output_target": "markdown_only | lark"
 }
 ```
+
+**`output_target` defaults to `markdown_only`**: the final draft is written to local `paper_final.md` and delivery is complete; no Feishu doc is created automatically. Only set `lark` when the user explicitly asks for a Feishu doc link, needs sharing/collaboration, or the paper is very long (>8000 words).
 
 有明确篇幅要求时再增加数值字段，例如`"min_words": 4000`和
 `"max_words": 8000`；没有明确要求时省略。

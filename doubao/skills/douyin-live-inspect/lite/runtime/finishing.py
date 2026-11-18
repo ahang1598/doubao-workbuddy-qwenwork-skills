@@ -27,7 +27,8 @@ def freeze_media(store, conn, task, now):
     task.update(media_frozen=True, media_frozen_at=time.time(), monitor_ended_at=now,
                 monitored_duration_ms=max(0, round((now-start)*1000)),
                 capture_end_ms=task.get('capture_end_ms') if task.get('capture_end_ms') is not None else
-                    max([task.get('capture_observed_ms', 0)] + [s['end_ms'] for s in segments]),
+                    max([task.get('capture_observed_ms', 0), round((now-start)*1000) if task.get('capture_reconnecting') else 0]
+                        + [s['end_ms'] for s in segments]),
                 recovery_state=None)
     for segment in segments:
         if segment['asr_status'] not in {'success','no_audio'}:
@@ -239,7 +240,8 @@ def message(task, finish, pending=0):
 
 def closed(state, now=None):
     return bool(state) and (state['phase'] == 'completed' or state.get('mode') == 'immediate' or
-        (state.get('deadline_at') is not None and (time.time() if now is None else now) >= state['deadline_at']))
+        (state.get('drain_version') != 1 and state.get('deadline_at') is not None
+         and (time.time() if now is None else now) >= state['deadline_at']))
 
 
 def summary(state, segments):

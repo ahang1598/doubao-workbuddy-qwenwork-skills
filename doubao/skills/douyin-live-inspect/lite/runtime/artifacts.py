@@ -1,4 +1,5 @@
 """Pinned HTTPS artifacts. No network manifests, global installs or executable install scripts."""
+from contextlib import contextmanager
 import hashlib
 import json
 import os
@@ -10,7 +11,6 @@ import stat
 import subprocess
 import sys
 import tarfile
-import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -18,7 +18,7 @@ import urllib.request
 import wave
 import zipfile
 
-from runtime.platform_support import file_lock, private_directory
+from runtime.platform_support import file_lock, private_directory, private_temporary_directory
 
 CATALOG = Path(__file__).resolve().parents[1] / 'config/runtime-artifacts.json'
 SUPPORTED = {'darwin-arm64', 'darwin-x64', 'linux-x64', 'win32-x64'}
@@ -31,7 +31,24 @@ class PreparationError(RuntimeError):
         result={'code':self.code, 'stage':self.stage, 'retryable':self.retryable}
         if getattr(self,'network_failure_kind',None) in {'dns','tls','timeout','connection','unknown'}:result['network_failure_kind']=self.network_failure_kind
         if type(getattr(self,'http_status',None)) is int and 400<=self.http_status<=599:result['http_status']=self.http_status
+        from runtime.context import DIAGNOSTIC_ENUMS
+        if getattr(self,'prepare_operation',None) in DIAGNOSTIC_ENUMS['prepare_operation']:
+            result['prepare_operation']=self.prepare_operation
+        for key in ('errno','winerror'):
+            value=getattr(self,key,None)
+            if type(value) is int and 0<=value<=2**53-1:result[key]=value
         return result
+
+
+@contextmanager
+def artifact_operation(stage, operation):
+    """Keep the innermost filesystem operation without exposing paths or messages."""
+    try:
+        yield
+    except OSError as error:
+        if not hasattr(error, 'prepare_operation'):
+            error.prepare_stage, error.prepare_operation = stage, operation
+        raise
 
 
 def platform_key():
@@ -191,22 +208,26 @@ def unpack(archive,root,spec):
         if count>spec['max_files'] or not regular: raise PreparationError('ARTIFACT_ARCHIVE_INVALID','extract')
         target=root.joinpath(*p.parts)
         if directory:
-            target.mkdir(parents=True,exist_ok=True)
+            with artifact_operation('verify_extract','extract_mkdir'):
+                target.mkdir(parents=True,exist_ok=True)
             return None
         if canonical not in expected or canonical.casefold() in seen or size!=expected[canonical]['bytes']:
             raise PreparationError('ARTIFACT_ARCHIVE_INVALID','extract')
         seen.add(canonical.casefold());total+=size
         if total>spec['unpacked_bytes']: raise PreparationError('ARTIFACT_ARCHIVE_INVALID','extract')
-        target.parent.mkdir(parents=True,exist_ok=True)
+        with artifact_operation('verify_extract','extract_mkdir'):
+            target.parent.mkdir(parents=True,exist_ok=True)
         return target
     def write(source,target,size):
-        with target.open('xb') as out:
+        with artifact_operation('verify_extract','extract_write'), target.open('xb') as out:
             remaining=size
             while remaining:
-                block=source.read(min(1024*1024,remaining))
+                with artifact_operation('verify_extract','read_archive'):
+                    block=source.read(min(1024*1024,remaining))
                 if not block: raise PreparationError('ARTIFACT_ARCHIVE_INVALID','extract')
                 out.write(block);remaining-=len(block)
-        target.chmod(0o755 if str(target.relative_to(root)).replace('\\','/') in spec.get('executables',[]) else 0o600)
+        with artifact_operation('verify_extract','extract_chmod'):
+            target.chmod(0o755 if str(target.relative_to(root)).replace('\\','/') in spec.get('executables',[]) else 0o600)
     if zipfile.is_zipfile(archive):
         with zipfile.ZipFile(archive) as z:
             for item in z.infolist():
@@ -221,48 +242,70 @@ def unpack(archive,root,spec):
                 if target:
                     with tar.extractfile(item) as source: write(source,target,item.size)
     if len(seen)!=len(expected): raise PreparationError('ARTIFACT_ARCHIVE_INVALID','extract')
-    verify_files(root,spec)
+    with artifact_operation('verify_extract','verify_files'):
+        verify_files(root,spec)
 
 
 def ensure_artifact(component,key,spec,smoke,progress=None, prefix='.prepare-', downloader=None):
     validate_spec(spec)
     root=destination(component,key,spec)
     if progress:progress(stage='permissions')
-    private_directory(cache_root())
-    lockdir=private_directory(cache_root()/'.locks')
+    with artifact_operation('permissions','cache_permissions'):
+        private_directory(cache_root())
+    with artifact_operation('permissions','lock_permissions'):
+        lockdir=private_directory(cache_root()/'.locks')
     if progress:progress(stage='lock')
-    with file_lock(lockdir/(component+'-'+key+'-'+spec['sha256']+'.lock')):
+    with artifact_operation('lock','acquire_lock'), file_lock(lockdir/(component+'-'+key+'-'+spec['sha256']+'.lock')):
         if progress:progress(stage='cache')
         if cache_valid(root,spec): return root,'cache'
-        root.parent.mkdir(parents=True,exist_ok=True)
+        with artifact_operation('cache','create_cache_parent'):
+            root.parent.mkdir(parents=True,exist_ok=True)
         required=spec['bytes']+spec['unpacked_bytes']+16*1024*1024
-        if shutil.disk_usage(root.parent).free<required: raise PreparationError('ARTIFACT_DISK_FULL','download')
-        with tempfile.TemporaryDirectory(prefix=prefix,dir=root.parent) as tmp:
-            temp=Path(tmp); archive=(root.parent/(root.name+'.part')) if component=='ffmpeg' else temp/'archive.part'; stage=temp/'runtime';stage.mkdir()
+        with artifact_operation('cache','check_disk_space'):
+            if shutil.disk_usage(root.parent).free<required: raise PreparationError('ARTIFACT_DISK_FULL','download')
+        with artifact_operation('cache','create_staging'):
+            temporary=private_temporary_directory(prefix=prefix,dir=root.parent)
+        with artifact_operation('cleanup','cleanup_staging'), temporary as tmp:
+            temp=Path(tmp); archive=(root.parent/(root.name+'.part')) if component=='ffmpeg' else temp/'archive.part'; stage=temp/'runtime'
+            with artifact_operation('cache','create_staging'):
+                stage.mkdir()
             if progress: progress(stage="download")
             if downloader:downloader(spec,archive,progress=progress)
             elif progress: download(spec,archive,progress=progress)
             else: download(spec,archive)
             if progress: progress(stage="verify_extract", download_completed_at=time.time(),
                                   download_completed_monotonic=time.monotonic())
-            try: unpack(archive,stage,spec)
+            try:
+                with artifact_operation('verify_extract','read_archive'):
+                    unpack(archive,stage,spec)
             except (tarfile.TarError,zipfile.BadZipFile,EOFError): raise PreparationError('ARTIFACT_ARCHIVE_INVALID','extract') from None
             if progress: progress(stage="smoke")
-            smoke(stage,spec)
+            with artifact_operation('smoke','check_binaries'):
+                smoke(stage,spec)
             if progress: progress(stage='publish')
-            (stage/'.ready.json').write_text(json.dumps({'version':spec['version'],'sha256':spec['sha256']}))
-            if root.exists():
+            with artifact_operation('publish','write_manifest'):
+                (stage/'.ready.json').write_text(json.dumps({'version':spec['version'],'sha256':spec['sha256']}))
+            with artifact_operation('publish','inspect_cache'):
+                exists=root.exists()
+            if exists:
                 # Only this exact corrupted version is replaced; other versions remain untouched.
-                shutil.rmtree(root)
-            stage.rename(root)
+                with artifact_operation('publish','remove_cache'):
+                    shutil.rmtree(root)
+            with artifact_operation('publish','publish_cache'):
+                stage.rename(root)
             if progress: progress(stage='cleanup')
-            if component=='ffmpeg':archive.unlink(missing_ok=True)
+            if component=='ffmpeg':
+                with artifact_operation('cleanup','remove_archive'):
+                    archive.unlink(missing_ok=True)
     return root,'download'
 
 
-def binary_ok(path,name):
+def binary_ok(path,name, *, require_v8=False):
     try:
         p=subprocess.run([str(path), '-version'],capture_output=True,text=True,timeout=10)
+        if require_v8:
+            version = re.match(rf'{name} version (?:n)?(\d+)\.', p.stdout)
+            return p.returncode == 0 and bool(version and int(version[1]) >= 8)
         return p.returncode == 0
     except (OSError,ValueError,KeyError,PreparationError,subprocess.SubprocessError): return False
 
@@ -271,7 +314,7 @@ def runtime_smoke(root):
     from runtime.local_asr import LocalASR
     bridge=LocalASR()
     try:
-        with tempfile.TemporaryDirectory(prefix='inspect-asr-smoke-') as temp:
+        with private_temporary_directory(prefix='inspect-asr-smoke-') as temp:
             p=Path(temp)/'silence.wav'
             with wave.open(str(p),'wb') as audio:
                 audio.setnchannels(1);audio.setsampwidth(2);audio.setframerate(16000);audio.writeframes(b'\0'*3200)
@@ -282,7 +325,7 @@ def runtime_smoke(root):
     finally: bridge.close()
 
 
-def prepare(*, task=None, install=True, common_only=False, model_only=False, progress=None):
+def prepare(*, task=None, install=True, common_only=False, model_only=False, progress=None, supervised=False):
     """Read-only when install=False. Frozen task specs take precedence over the current catalog."""
     result={'ready':False,'backend':'local','issues':[],'binaries':{},'artifacts':{},'next_action':'prepare-runtime'}
     task=task or {}
@@ -296,30 +339,49 @@ def prepare(*, task=None, install=True, common_only=False, model_only=False, pro
             specs['ffmpeg']=migrated_spec(specs['ffmpeg'])
         result['artifact_specs']=specs
         if model_only: result['binaries']=task.get('runtime_binaries',{})
+        live = task.get('kind', 'live') == 'live'
         for component,names in ([] if model_only else [('ffmpeg',['ffmpeg','ffprobe'])]):
             paths={name:task.get('runtime_binaries',{}).get(name+'_bin',task.get(name+'_bin')) or shutil.which(name) for name in names}
-            if not all(p and binary_ok(p,name) for name,p in paths.items()):
+            previous=task.get('artifact_specs',{}).get(component)
+            if previous and previous.get('sha256') != specs.get(component,{}).get('sha256'):
+                old_root=destination(component,key,previous)
+                for name in names:
+                    entry=previous.get('entrypoints',{}).get(name)
+                    if entry and paths[name] and Path(paths[name]) == old_root/entry:
+                        paths[name]=None
+            if not all(p and binary_ok(p, name, require_v8=live) for name,p in paths.items()):
                 spec=specs.get(component)
+                # Only repair old built-in Mac snapshots; custom manifests stay frozen.
+                if 'ffmpeg' not in specs and 'artifact_specs' in task and key in {'darwin-arm64','darwin-x64'}:
+                    bundled=json.loads(CATALOG.read_text(encoding='utf-8'))
+                    if specs.get('asr') == bundled['shared']['asr']:
+                        spec=specs['ffmpeg']=bundled['platforms'][key]['ffmpeg']
                 if not spec: raise PreparationError('ARTIFACT_NOT_CONFIGURED',component)
                 validate_spec(spec)
-                def smoke(folder,spec):
-                    if not all(binary_ok(folder/spec['entrypoints'][n],n) for n in names): raise PreparationError('ARTIFACT_SMOKE_FAILED',component)
                 if install:
                     from runtime.ffmpeg_install import ensure, console_progress
-                    root,source=ensure(key,spec,progress=console_progress)
+                    root,source=ensure(key,spec,progress=console_progress,supervised=supervised)
                 else:
                     root=destination(component,key,spec);source='cache'
                     if not cache_valid(root,spec): raise PreparationError('ARTIFACT_CACHE_MISSING',component)
                 paths={n:str(root/spec['entrypoints'][n]) for n in names}
+                if live and not all(binary_ok(p, n, require_v8=True) for n,p in paths.items()):
+                    raise PreparationError('ARTIFACT_SMOKE_FAILED', component)
                 result['artifacts'][component]={'version':spec['version'],'sha256':spec['sha256'],'source':source}
             result['binaries'].update({n+'_bin':str(p) for n,p in paths.items()})
         if common_only:
             result['ready']=True
             return result
-        from runtime.asr_worker import dependencies
+        from runtime.asr_environment import prepare as prepare_dependencies
         from runtime.asr_model import ModelError
-        try: dependencies()
-        except ModelError as error: raise PreparationError(error.code, 'python-dependencies') from None
+        try:
+            if progress: progress(stage='python-dependencies')
+            prepare_dependencies(install=install)
+        except ModelError as error:
+            issue = PreparationError(error.code, getattr(error, 'stage', 'python-dependencies'))
+            issue.errno = getattr(error, 'errno', None)
+            issue.winerror = getattr(error, 'winerror', None)
+            raise issue from None
         explicit=task.get('asr_runtime_root') or os.environ.get('LOCAL_ASR_RUNTIME_ROOT')
         if explicit:
             root=Path(explicit)

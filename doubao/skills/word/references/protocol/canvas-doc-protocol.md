@@ -2,15 +2,14 @@
 
 ## 查询协议条目
 
-读取 Canvas 用 [`+local-fetch`](canvas-doc-fetch.md)。在 Word Skill 目录里，直接传命令名。查 XML 写法时加 `xml:`。
+在 Word Skill 目录里，用 `scripts/canvas_help.py` 查询下方关键词对应的协议；命令直接传名称，XML 关键词带 `xml:` 前缀。
 
 ```bash
-python scripts/canvas_help.py local-fetch
-python scripts/canvas_help.py str_replace
+python scripts/canvas_help.py local-update str_replace
 python scripts/canvas_help.py local-update block_replace xml:common xml:p xml:span
 ```
 
-一次可以查多个条目。
+一次批量查询本次所需条目。
 
 - 通用参数和回执查 `local-update`。
 - `--list` 列出全部关键词。
@@ -41,6 +40,7 @@ lark-cli docs +local-help --doc "<token>" --tool local-update --command table
 | `block_replace`          | 替换已有可寻址 block，并确认 content 形状与 ID 保留规则                           |
 | `block_insert_after`     | 在真实锚点后插入合法 block                                                        |
 | `block_delete`           | 原子删除一个或多个可寻址 block/inline object                                      |
+| `move`                   | 在同一文档内移动完整段落、标题、列表项或整表，调整内容顺序                                   |
 | `append`                 | 在尾随连续分节符之前追加合法正文 block                                            |
 | `table`                  | 表格行列增删、合并拆分及单元格/行/列属性操作，含完整单元格 XML 替换 |
 | `table_geometry`         | 修改表格尺寸与排列，包括均分行列、拖动边界、移动行列和调整整表宽高                               |

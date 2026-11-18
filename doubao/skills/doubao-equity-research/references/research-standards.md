@@ -40,8 +40,8 @@
 
 来源优先级为：监管/交易所/法定披露/政府统计，公司 IR 与正式指引，专业数据库，具名券商或行业机构，具名主流媒体。匿名传闻和搜索摘要只作线索。
 
-- 标准化财务、行情、估值、一致预期、股本、公司行动和批量证券数据优先通过 `/seed_finance_search` 获取；查询前读取 `references/capability-financial-data-retrieval.md`。
-- `/seed_finance_search` 是访问方式，不是正文来源名称；引用返回结果中的数据集或来源标签，并记录查询截止日与字段口径。
+- 标准化财务、行情、估值、一致预期、股本、公司行动和批量证券数据优先通过 `/seed_finance_lookup` 获取；查询前读取 `references/capability-financial-data-retrieval.md`。
+- `/seed_finance_lookup` 是访问方式，不是正文来源名称；引用返回结果中的数据集或来源标签，并记录查询截止日与字段口径。
 
 - “当前/最新”必须检查截至信息截止日最新可得资料；未发布数据不能写成事实。
 - 行情注明交易日、时区、币种和复权方式。
@@ -81,4 +81,4 @@
 
 `claim_id`、`text`、`source`、`source_date`、`url`、`source_type`、`usage_type`，有数值时补充 `period`、`value` 和 `unit`。
 
-正文在相关句末使用 `{fact:claim_id}`；同句确由多个来源共同支持时使用 `{fact:id1,id2}`。作者推断增加 `evidence_ids`、`alternatives` 和 `confidence`。
+正文中的关键数字、公告/新闻事实及引用的外部判断在对应句末使用 `{fact:claim_id}`；同句确由多个来源共同支持时使用 `{fact:id1,id2}`。表格在相关行、单元格或表下注明来源，图表在图注或邻近说明中注明来源。文末来源列表只作汇总，不能替代正文引用。生成后的事实编号有 URL 时须可点击，无公开 URL 时保留编号并在来源列表写清来源名称与日期。作者推断增加 `evidence_ids`、`alternatives` 和 `confidence`。

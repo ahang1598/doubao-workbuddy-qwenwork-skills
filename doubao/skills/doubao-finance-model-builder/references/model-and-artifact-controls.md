@@ -71,15 +71,7 @@ python3 scripts/common/detect_workbook_engines.py
 
 最终工作簿按同一路径执行：
 
-1. 只读结构快照：
-
-```bash
-python3 scripts/common/inspect_finance_workbook.py model.xlsx workbook-inspect.json
-```
-
-记录哈希、工作表状态、区域、公式地址、合并/隐藏、验证、表格、图表、批注、冻结窗格、打印区域、定义名称、外链、计算模式和缓存错误。
-
-2. 公式语义审计：
+1. 公式语义审计：
 
 ```bash
 python3 scripts/common/audit_formula_semantics.py \
@@ -88,17 +80,19 @@ python3 scripts/common/audit_formula_semantics.py \
 
 阻断文本标签引用、错期间/证券/单位、依赖缺失或越界、重复映射、自引用和跨表循环。
 
-3. 隔离重算和直接审计：
+2. 隔离重算和直接审计：
 
 ```bash
 python3 scripts/common/audit_formula_workbook.py \
   model.xlsx workbook-contract.json artifact-audit.json \
-  --recalculate required
+  --recalculate required --inspect-output workbook-inspect.json
 ```
 
-三表使用专属审计器。审计器必须复制最终文件到唯一临时目录，使用唯一LibreOffice配置重算副本，不修改交付文件。超时、非零退出、无输出、重算前后公式地址变化、外链、循环、公式丢失、硬编码、全簿错误值、关键输出超容差或总状态非PASS均为`FAIL`。
+三表使用专属审计器，公共检查与三表勾稽共用一次重算。审计器必须复制最终文件到唯一临时目录，使用唯一LibreOffice配置重算副本，不修改交付文件。超时、非零退出、无输出、重算前后公式地址变化、外链、循环、公式丢失、硬编码、全簿错误值、关键输出超容差或总状态非PASS均为`FAIL`。
 
-4. 统一模型审计：
+`--inspect-output`复用直接审计已采集的原工作簿结构快照，记录哈希、工作表状态、区域、公式地址、合并/隐藏、验证、表格、图表、批注、冻结窗格、打印区域、定义名称、外链、计算模式和缓存错误。
+
+3. 统一模型审计：
 
 ```bash
 python3 scripts/quality/audit_model.py \
@@ -107,7 +101,7 @@ python3 scripts/quality/audit_model.py \
 
 检查prompt覆盖、公式穿透、场景映射、公式覆盖、维度恒等式、反向DCF和检查页防伪。
 
-5. 对所有用户可见工作表执行视觉检查，保存`visual-audit.json`；检查截断、溢出、不可读列宽、异常空白、错误格式、单位和核心结论可读性。
+4. 对所有用户可见工作表执行视觉检查，保存`visual-audit.json`；检查截断、溢出、不可读列宽、异常空白、错误格式、单位和核心结论可读性。
 
 所有审计JSON必须绑定同一最终工作簿SHA-256。修复或补充文字后全部重跑，不得沿用旧哈希。
 
@@ -158,6 +152,6 @@ python3 scripts/common/audit_report_artifact.py \
   report.md calculated.json --workflow comps --output report-artifact-audit.json
 ```
 
-报告不得形成第二套数值。最终打包由`finalize_delivery_package.py`重新核对主要交付物、审计对象、工作流和SHA-256；哈希变化或审计非PASS时强制失败。
+报告不得形成第二套数值。新任务由`run_quality_gates.py`统一核对主要交付物、计划附件、审计工作流和SHA-256，并生成发布决定及打包清单。
 
 <!-- END OF FILE: model-and-artifact-controls.md -->

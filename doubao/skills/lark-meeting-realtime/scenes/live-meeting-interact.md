@@ -122,6 +122,19 @@ lark-cli vc +meeting-countdown --meeting-id <meeting_id> --action set --duration
 
 动作、提醒点和权限规则见 [`lark-vc-meeting-countdown`](../references/lark-vc-meeting-countdown.md)。
 
+## 操作本人麦克风
+
+操作自己的在会麦克风时使用本人命令，不用下方管理其他参会人的命令。确认会议后先预览：
+
+```bash
+lark-cli vc +meeting-self-mute --meeting-id <meeting_id> --dry-run
+lark-cli vc +meeting-self-unmute --meeting-id <meeting_id> --dry-run
+```
+
+- 要求 `vc:meeting.interaction:write`。
+- 开麦结果为 `request_submitted` 时，只能报告“已提交开麦申请”，麦克风仍是关闭状态。
+- 结果语义和麦克风状态事件见 [本人麦克风与状态事件](../references/lark-vc-self-microphone.md)。
+
 ## 管理参会人麦克风
 
 只有用户明确要求操作指定参会人，且目标会议与目标用户已经确认时执行：

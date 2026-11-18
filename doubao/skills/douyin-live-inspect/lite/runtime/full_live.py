@@ -1,7 +1,6 @@
 """版本化的全量音频直播策略：只作用于直播，不作用于视频或旧任务。"""
 import time
 POLICY = 'lite_live_full_asr_v1'
-INTERVAL_MS = 120000
 
 def enabled(task):
     """判断任务是否进入全量音频管线；策略名是兼容边界，不能按默认值猜测。"""
@@ -29,9 +28,10 @@ def requires_frames(snapshot):
 
 def sample_times(task,start,end):
     if not requires_frames(task['rules_snapshot']) or speech_only_scope(task):return []
+    interval=int(task.get('frame_interval_seconds',120))*1000
     origin=task.get('frame_sampling_origin_ms',0)
-    first=origin+max(0,(start-origin+INTERVAL_MS-1)//INTERVAL_MS)*INTERVAL_MS
-    return list(range(first,end,INTERVAL_MS))
+    first=origin+max(0,(start-origin+interval-1)//interval)*interval
+    return list(range(first,end,interval))
 
 def initialize_segment(task,data):
     """为新片段计算画面采样计划，并初始化语音/画面状态。"""
@@ -62,7 +62,7 @@ def progress(task,segments):
     return {**(metrics(task,segments,task.get('_review_batches',[])) if protocol_v2(task) else {}),'policy':task.get('inspection_policy', POLICY),'ready_segments':len(ready_rows),'oldest_wait_seconds':round(oldest,1),
             'recovering_speech_segments':sum(s['asr_status'] in {'pending','running','fallback_pending'} for s in segments),
             'mode':task.get('review_dispatch',{}).get('mode','serial'),
-            'frame_required':required,'frame_interval_seconds':120 if required else None,
-            'frame_message':'画面检测已关闭，仅判定字幕' if speech_only_scope(task) else '本任务无需画面检测' if not required else '画面暂不可用，语音检测继续' if unavailable else '每两分钟采样一次',
+            'frame_required':required,'frame_interval_seconds':task.get('frame_interval_seconds',120) if required else None,
+            'frame_message':'画面检测已关闭，仅判定字幕' if speech_only_scope(task) else '本任务无需画面检测' if not required else '画面暂不可用，语音检测继续' if unavailable else f"每{task.get('frame_interval_seconds',120)}秒采样一次",
             'planned_frames':sum(len(s.get('frame_sample_times_ms',[])) for s in segments),
             'available_frames':sum(len(s.get('frames',[])) for s in segments)}

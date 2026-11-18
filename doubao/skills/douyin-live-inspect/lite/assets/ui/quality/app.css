@@ -434,7 +434,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 0;
 }
 .page .top-hit-rules .review-button {
   margin: 0;
@@ -901,8 +901,8 @@
   display: block;
 }
 .page .diagnosis-summary {
-  min-height: 112px;
-  padding: 24px 30px;
+  min-height: 64px;
+  padding: 16px 24px;
   border-radius: 9px;
   background: #fff;
 }
@@ -1638,3 +1638,13 @@
   justify-content: center;
   gap: 24px;
 }
+
+.page .inspection-details { margin-top: 8px; font-size: 13px; line-height: 1.6; }
+.page .inspection-details summary { cursor: pointer; color: var(--muted); }
+
+.page .priority-tag { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 700; line-height: 20px; }
+.page .priority-p0 { color: #b42318; background: #fee4e2; }
+.page .priority-p1 { color: #b45309; background: #fff1d6; }
+.page .priority-p2 { color: #2455a4; background: #eaf2ff; }
+
+.page .priority-ungraded { color: #596273; background: #eef0f3; }

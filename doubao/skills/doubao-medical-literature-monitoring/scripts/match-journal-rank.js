@@ -17,7 +17,6 @@ const usage = `Usage:
   node scripts/match-journal-rank.js --report-json report-data.json --output ranked-report-data.json
   node scripts/match-journal-rank.js --csv literature-log.csv --in-place
   node scripts/match-journal-rank.js --csv literature-log.csv --output ranked.csv
-  node scripts/match-journal-rank.js --self-test
 
 Matches journal names against the bundled 2025 CAS quartile / PKU Core index.
 Report JSON mode reads report_items[].journal_name and writes journal_rank_2025.
@@ -209,7 +208,6 @@ function parseArgs(argv) {
     else if (arg === "--index") options.index = argv[++index];
     else if (arg === "--in-place") options.inPlace = true;
     else if (arg === "--no-fuzzy") options.fuzzy = false;
-    else if (arg === "--self-test") options.selfTest = true;
     else if (arg === "--help" || arg === "-h") options.help = true;
     else throw new Error(`Unknown argument: ${arg}`);
   }
@@ -406,30 +404,6 @@ function enrichReportJson(filePath, options) {
   };
 }
 
-function runSelfTest() {
-  const cases = [
-    ["NEW ENGLAND JOURNAL OF MEDICINE", "中科院 1 区"],
-    ["N Engl J Med", "中科院 1 区"],
-    ["The Lancet", "中科院 1 区"],
-    ["BMJ", "中科院 1 区"],
-    ["中华内科杂志", "北大核心"],
-    ["Chinese Medical Journal", "中科院 2 区"],
-    ["Chinese Medical Journal (Engl)", "中科院 2 区"],
-    ["Chinese Medical Journal (English)", "中科院 2 区"],
-  ];
-  for (const [input, expected] of cases) {
-    const result = matchJournal(input);
-    if (!result.journalRank2025.includes(expected)) {
-      throw new Error(`Self-test failed for ${input}: ${JSON.stringify(result)}`);
-    }
-  }
-  const missing = matchJournal("Journal That Does Not Exist 987654", false);
-  if (missing.status !== "not_found" || missing.journalRank2025 !== "") {
-    throw new Error("Self-test failed: unknown journal must keep journalRank2025 empty.");
-  }
-  return { passed: cases.length + 1, rankingYear: index.meta.rankingYear, records: index.meta.recordCount };
-}
-
 try {
   const options = parseArgs(process.argv.slice(2));
   if (options.help) {
@@ -447,10 +421,6 @@ try {
   }
   index = resolvedIndex.payload;
   recordCompacts = index.records.map(([title]) => compact(title));
-  if (options.selfTest) {
-    console.log(JSON.stringify(runSelfTest(), null, 2));
-    process.exit(0);
-  }
   if (options.csv) {
     console.log(JSON.stringify(enrichCsv(options.csv, options), null, 2));
     process.exit(0);

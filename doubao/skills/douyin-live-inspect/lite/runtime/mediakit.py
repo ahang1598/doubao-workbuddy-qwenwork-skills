@@ -23,6 +23,16 @@ DIAGNOSTIC_CATEGORIES = frozenset({
 })
 
 
+def format_unsupported(value, depth=0):
+    """Only explicit structured decoder codes warrant changing the media input."""
+    if depth>=4 or not isinstance(value,dict):return False
+    codes={'unsupported_container','unsupported_codec','unsupported_format','decode_error','decode_failed'}
+    for key in ('code','error_code'):
+        code=value.get(key)
+        if isinstance(code,str) and code.lower() in codes:return True
+    return any(format_unsupported(value.get(key),depth+1) for key in ('error','result','data'))
+
+
 class CommandFailure(RuntimeError):
     def __init__(self, exit_code, output='', *, category=None, not_submitted=False):
         # Only fixed categories leave the adapter; never persist raw CLI output.
@@ -55,6 +65,9 @@ class CommandFailure(RuntimeError):
                 'upload_response_missing' if upload_address else 'unknown')
         self.diagnostic={'category':category,'reason':reason,'exit_code':exit_code,
                          'failure_stage':'upload_address' if upload_address else 'submit'}
+        try:
+            if format_unsupported(json.loads(output)):self.diagnostic['format_unsupported']=True
+        except (ValueError,TypeError):pass
         # Phase and cause are independent: a 401/429/5xx at address acquisition
         # is still known not to have created a remote recognition task.
         if not_submitted or upload_address:self.diagnostic['submission_state']='not_submitted'
@@ -64,7 +77,11 @@ class CommandFailure(RuntimeError):
 
 def sync_credentials(store):
     """Called by a fresh host shell, never by the long-lived supervisor."""
+    from runtime.credentials import status
+    previous = status(store.workspace_root).get('version')
+    store.update_task(asr_host_refresh_at=time.time())
     result = refresh(store.workspace_root)
+    result['credential_changed'] = bool(result['updated'] and result.get('version') != previous)
     if not result['updated']:
         return {**result, 'requeued_segments': 0, 'asr_health': asr_health(store.segments(), store.task())}
     recovered = recover_credentials(store)
@@ -76,6 +93,15 @@ def sync_credentials(store):
                 if store._update_segment(conn, segment['id'], asr_status='pending', asr_diagnostic=None):
                     recovered.append(segment['id'])
     return {**result, 'requeued_segments': len(recovered), 'asr_health': asr_health(store.segments(), store.task())}
+
+
+def host_refresh_due(task):
+    """Ask the active Agent for a fresh host invocation, never renew in a worker."""
+    if task.get('media_frozen') or task.get('asr_policy') not in {'remote_first','local_first'}:
+        return False
+    category = (task.get('asr_credential_block') or {}).get('category') or task.get('asr_cloud_failure')
+    return (category in {'authentication_rejected','credentials_unavailable','upload_address_failed'}
+            and time.time() - task.get('asr_host_refresh_at', 0) >= 120)
 
 
 def credentials_env(store):
@@ -179,6 +205,7 @@ def invoke(binary, args, timeout=60, env=None, store=None):
         value = json.loads(result.stdout)
     except (ValueError, TypeError):
         raise CommandFailure(result.returncode, category='invalid_response') from None
+    if isinstance(value,dict) and value.get('status')=='failed' and format_unsupported(value):return value
     if isinstance(value, dict) and (value.get('error') or value.get('success') is False):
         raise CommandFailure(result.returncode, result.stdout)
     if not isinstance(value, dict):
@@ -371,12 +398,13 @@ def process_asr(store, segment, *, poll_seconds=3, clock=None, sleep=time.sleep,
             if not store.update_segment(segment['id'],asr_cloud_deadline_at=deadline):return
         deadline=min(deadline,task.get('finishing',{}).get('media_deadline_at',float('inf')))
     task_id = segment.get('asr_task_id')
+    env = {}
     def observe(phase,outcome,attempt,diagnostic=None):
         try:
             from runtime.bridge import emit,safe_failure
             selection=segment.get('remote_asr_selection') or {}
             change=selection.get('credential_change','unknown')
-            if selection.get('credential_version') and credential_version(env)!=selection['credential_version']:
+            if phase != 'query' and selection.get('credential_version') and credential_version(env)!=selection['credential_version']:
                 change='rotated'
             emit(task,phase=phase,outcome=outcome,segment_id=segment['id'],attempt=attempt,
                  route_generation=selection.get('generation',0),backend='mediakit',
@@ -390,24 +418,36 @@ def process_asr(store, segment, *, poll_seconds=3, clock=None, sleep=time.sleep,
     if submissions_paused(store):
         return
     if (task.get('asr_policy')=='remote_first' or current_live) and clock()>=deadline:
-        update(asr_status='timed_out')
+        if update(asr_status='timed_out') and task_id:
+            observe('query','failed',0,{'query_status':'timed_out','failure_stage':'query'})
         return
     if not task_id:
         if not segment.get('audio_file'):
             return
-        env = request_credentials(store, segment, defer_failure=defer_failure)
-        if env is None or cancellation.is_set():
-            return
-        # A marker without a diagnostic may still be in flight; reconciliation
-        # requires a settled submission failure and must not race this invocation.
-        if not update(asr_status='submission_unknown', asr_diagnostic=None,
-                      asr_cloud_attempts=segment.get('asr_cloud_attempts',0)+1): return
+        # Limit FLV uploads, not the potentially long remote recognition wait.
+        slots = getattr(store, 'asr_upload_slots', None) if Path(segment['audio_file']).suffix.lower() == '.flv' else None
+        if slots is not None:
+            while not slots.acquire(timeout=.1):
+                if cancellation.is_set():return
+                if clock() >= deadline:
+                    update(asr_status='timed_out')
+                    return
         try:
+            # Authentication may change while this upload waits for a slot.
+            if cancellation.is_set() or submissions_paused(store):return
+            env = request_credentials(store, segment, defer_failure=defer_failure)
+            if env is None or cancellation.is_set():return
+            # Waiting for an upload slot must not look like an unknown submission.
+            if clock() >= deadline:
+                update(asr_status='timed_out')
+                return
+            if not update(asr_status='submission_unknown', asr_diagnostic=None,
+                          asr_cloud_attempts=segment.get('asr_cloud_attempts',0)+1): return
             if cancellation.is_set():return
             attempts=segment.get('asr_submit_attempts',0)
             # Retry only failures proven to happen before remote task creation.
             # Live stays remote-first without risking duplicate submissions.
-            limit=3
+            limit=segment.get('flv_format_submit_limit',3)
             while True:
                 if attempts>=limit:
                     raise CommandFailure(None,category='cli_unavailable',not_submitted=True)
@@ -425,13 +465,15 @@ def process_asr(store, segment, *, poll_seconds=3, clock=None, sleep=time.sleep,
                 except CommandFailure as failure:
                     observe('result','failed',attempts,failure.diagnostic)
                     if (failure.diagnostic.get('submission_state')!='not_submitted' or attempts>=limit
+                            or (task.get('kind','live')=='live' and (task.get('asr_policy')=='remote_first' or current_live)
+                                and failure.diagnostic.get('failure_stage')=='upload_address')
                             or failure.diagnostic.get('category')=='authentication_rejected'):
                         raise
                     # The failed call is known not to have created a remote
                     # task. Persist that fact before waiting or being stopped.
                     if not update(asr_status='pending',asr_remote_status='pending',asr_diagnostic={**failure.diagnostic,
                             'stage':'submit','credential_source':'workspace'}):return
-                    delay=min((2,10)[attempts-1],max(0,deadline-clock()))
+                    delay=min((2,10)[min(attempts-1,1)],max(0,deadline-clock()))
                     # Small slices keep injected test clocks and real cancellation
                     # responsive without extending the original segment deadline.
                     while delay>0:
@@ -460,14 +502,17 @@ def process_asr(store, segment, *, poll_seconds=3, clock=None, sleep=time.sleep,
                 store.update_task(asr_credential_block={'version': credential_version(env), 'category': diagnostic['category']})
             if diagnostic.get('submission_state')=='not_submitted':
                 update(asr_status='failed',asr_diagnostic=diagnostic)
-                store.log('asr_submit_failed', 'ASR submit failed before remote task creation; safe retries exhausted', segment['id'])
+                store.log('asr_submit_failed', 'ASR submit failed before remote task creation: ' + json.dumps(diagnostic), segment['id'])
                 return
             update(asr_diagnostic=diagnostic)
             store.log('asr_submission_unknown', 'Submission outcome unknown: ' + json.dumps(diagnostic) + '; automatic replay disabled', segment['id'])
             return
+        finally:
+            if slots is not None:slots.release()
     else:
         update(asr_status='submitted')
     if not v2:deadline = clock() + budget
+    last_query_failure = {}
     while clock() < deadline:
         current=next(s for s in store.segments() if s['id']==segment['id'])
         if current.get('asr_selection_reason')=='cloud_unavailable_local': return
@@ -486,18 +531,23 @@ def process_asr(store, segment, *, poll_seconds=3, clock=None, sleep=time.sleep,
             state = str(result.get('status', '')).lower()
             if state == 'completed':
                 subtitles = normalize_subtitles(result, segment)
-                update(asr_status='success', subtitles=subtitles, asr_diagnostic=None)
+                if update(asr_status='success', subtitles=subtitles, asr_diagnostic=None):
+                    observe('query','success',0,{'query_status':'completed','subtitle_count':len(subtitles)})
                 return
             if state in ('failed', 'canceled', 'cancelled'):
-                update(asr_status='failed', asr_outcome=state)
+                if update(asr_status='failed', asr_outcome=state,
+                          asr_format_unsupported=state=='failed' and format_unsupported(result)):
+                    observe('query','failed',0,{'query_status':'failed' if state=='failed' else 'cancelled','failure_stage':'query'})
                 store.log('asr_' + state, 'ASR task ' + state, segment['id'])
                 return
         except (OSError, ValueError, KeyError, TypeError, RuntimeError, subprocess.SubprocessError) as error:
             if cancellation.is_set():return
             diagnostic = getattr(error, 'diagnostic', {})
+            last_query_failure = {**diagnostic, 'failure_stage':'query'}
             if diagnostic.get('category') == 'authentication_rejected':
                 store.update_task(asr_credential_block={'version': credential_version(env), 'category': 'authentication_rejected'})
-                update(asr_status='timed_out', asr_diagnostic=diagnostic)
+                if update(asr_status='timed_out', asr_diagnostic=diagnostic):
+                    observe('query','failed',0,{**last_query_failure,'query_status':'authentication_rejected'})
                 return
             # Queries are read-only and safe to retry against the same stored task ID.
             store.log('asr_query_retry', 'ASR query unavailable or malformed', segment['id'])
@@ -508,5 +558,6 @@ def process_asr(store, segment, *, poll_seconds=3, clock=None, sleep=time.sleep,
             else:
                 sleep(min(poll_seconds, remaining))
     if cancellation.is_set():return
-    update(asr_status='timed_out')
+    if update(asr_status='timed_out'):
+        observe('query','failed',0,{**last_query_failure,'query_status':'timed_out','failure_stage':'query'})
     store.log('asr_timed_out', 'ASR wait expired; saved task ID can be resumed', segment['id'])

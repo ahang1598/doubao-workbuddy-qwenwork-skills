@@ -138,6 +138,9 @@ class Store:
                 'window_ms': int(config.get('segment_seconds',30)*1000), 'max_frames':2,
                 'pending_seconds':None, 'review_seconds':None, 'finish_seconds':None}
         if config.get('image_inspection') is False and 'sampling_parameters' in config:config['sampling_parameters']['max_frames']=0
+        if kind == 'live':
+            from runtime.remediation import VERSION
+            config['remediation_version'] = VERSION
         duration=config.setdefault('max_duration_seconds',None)
         if duration is not None and (type(duration) is not int or duration <= 0):
             raise ValueError('duration must be a positive integer or null')
@@ -152,7 +155,12 @@ class Store:
         path=root/'inspection.db'
         from runtime.task_context import reserve
         tid=reserve(root) or uuid.uuid4().hex
-        fd=os.open(path,os.O_RDWR|os.O_CREAT|os.O_EXCL,0o600);os.close(fd)
+        try:
+            fd=os.open(path,os.O_RDWR|os.O_CREAT|os.O_EXCL,0o600)
+        except FileExistsError:
+            from runtime.task_context import TaskAlreadyExists
+            raise TaskAlreadyExists() from None
+        os.close(fd)
         sid=uuid.uuid4().hex
         task=dict(config,id=tid,task_id=tid,session_id=sid,kind=kind,name=name,scenario=scenario,
                   source=source,rules_snapshot=rules,created_at=now_iso(),capture_status='pending',
@@ -169,7 +177,7 @@ class Store:
             c.execute('INSERT INTO live_sessions VALUES(?,?)',(sid,encode(task)))
             c.commit()
         obj=cls(root)
-        for folder in ('media','frames','audio'): (root/folder).mkdir(mode=0o700)
+        for folder in ('media','frames','audio'): (root/folder).mkdir(mode=0o777 if os.name == 'nt' else 0o700)
         from runtime.media_jobs import initialize
         initialize(obj)
         from runtime.transaction import start_store
@@ -199,7 +207,11 @@ class Store:
                     c.execute('BEGIN IMMEDIATE')
                 break
             except BaseException as error:
-                log_failure(error, stage=stage, attempt=attempt)
+                # Replaceable progress intentionally yields to an evidence writer.
+                busy_progress = (write and timeout == 0 and stage == 'transaction_begin'
+                    and isinstance(error, sqlite3.OperationalError)
+                    and getattr(error, 'sqlite_errorcode', 0) & 255 in (5, 6))
+                if not busy_progress:log_failure(error, stage=stage, attempt=attempt)
                 if c is not None:
                     cleanup_actions([('cleanup_connection_close', c.close)], error)
                 if stage == 'transaction_begin' and _is_transient_read_error(error) and attempt < 4:
@@ -271,7 +283,7 @@ class Store:
             task=self._task(c)
             for k in ('asr_fallback_runtime','asr_fallback_runtime_root'):
                 if k in fields and fields[k]!=task.get(k):raise ValueError('immutable fallback model identity')
-            for k in ('id','task_id','session_id','kind','source','rules_snapshot','scenario','delivery_mode','asr_backend','asr_policy','frames_policy','asr_primary_backend','asr_selection_reason','model_preparation_id','artifact_specs','node_bin','ffmpeg_bin','ffprobe_bin','asr_runtime_root','asr_runtime','source_duration_ms','source_fingerprint','inspection_policy','review_protocol','segmentation','sampling_parameters','frame_required','frame_sampling_origin_ms','image_inspection'):
+            for k in ('id','task_id','session_id','remediation_version','kind','source','rules_snapshot','scenario','delivery_mode','asr_backend','asr_policy','frames_policy','asr_primary_backend','asr_selection_reason','model_preparation_id','artifact_specs','node_bin','ffmpeg_bin','ffprobe_bin','asr_runtime_root','asr_runtime','source_duration_ms','source_fingerprint','inspection_policy','review_protocol','segmentation','sampling_parameters','frame_required','frame_sampling_origin_ms','image_inspection'):
                 if k in fields and fields[k]!=task.get(k):raise ValueError('immutable task identity')
             if task.get('media_frozen'):
                 frozen = {'capture_start_ms','capture_end_ms','capture_observed_ms','capture_spans','capture_active_span',
@@ -299,19 +311,22 @@ class Store:
             if not current(task):return {}
             _, _, stalled, waiting = self._read_with_retry(lambda conn:current_work(self, conn, time.time()))
             from runtime.realtime_policy import no_speech_evidence
-            if not stalled and interval_ms(waiting) <= 180000 and not any(no_speech_evidence(task, s) for s in waiting):return {}
+            if not stalled and not any(no_speech_evidence(task, s) for s in waiting):return {}
         # Re-read inside the write transaction; a concurrent stop must not be
         # overwritten by the read-only fast path's older task snapshot.
         with self.connection(True) as c:return advance(self,c)
 
     def update_progress(self, **fields):
         """Disposable live progress must not backpressure PCM or model decoding."""
-        if not fields.keys() <= {'capture_active_span','live_subtitle','worker_heartbeat','asr_consumed_ms'}:
+        if not fields.keys() <= {'capture_reconnecting','capture_active_span','capture_observed_ms','capture_last_input_at',
+                                'live_subtitle','worker_heartbeat','asr_consumed_ms'}:
             raise ValueError('only replaceable live progress may skip a busy write')
         try:
             with self.connection(True, timeout=0) as c:
                 task=self._task(c)
                 if task.get('media_frozen'):return False
+                if task.get('capture_reconnecting') and fields.get('capture_reconnecting') is False:
+                    task['live_source_status'] = 'live'
                 task.update(fields)
                 self._set_task(c,task)
             return True
@@ -495,6 +510,8 @@ class Store:
         if data.get('asr_final') and any(k in fields for k in ('asr_status','subtitles','asr_task_id')):return False
         if data.get('review_status')=='skipped' or (_asr_recovery and data.get('review_status')=='done'):return False
         if _remote_asr and data.get('asr_selection_reason')=='cloud_unavailable_local':return False
+        if _remote_asr and 'asr_status' in fields:
+            fields['asr_remote_status']=fields['asr_status']
         if _defer_asr_failure and fields.get('asr_status') in {'failed','timed_out','submission_unknown'}:
             fields['asr_remote_status']=fields['asr_status']
             fields['asr_status']='fallback_pending'
@@ -639,6 +656,9 @@ class Store:
                 s['image_inspection']=self._task(c).get('image_inspection',True)
                 s['inspection_scope']='字幕和画面' if s['image_inspection'] else '仅ASR字幕，未检测画面'
                 s['image_checklist']=[{k:f[k] for k in ('id','path','time_ms') if k in f} for f in s.get('frames',[])]
+                from runtime.remediation import enabled as remediation_enabled, contract as remediation_contract
+                if remediation_enabled(self._task(c)):
+                    s['remediation_contract'] = remediation_contract()
                 selected.append(s)
                 if len(selected)>=limit:break
             if selected:
@@ -711,13 +731,13 @@ class Store:
                 record_attempt(self,context_id=payload.get('context_id'),
                                error={k:failures[-1][k] for k in ('code','field') if k in failures[-1]},
                                count_error=False)
-            expired = bool(failures) and all(r.get('code') == 'LIVE_BATCH_REVIEW_TIMEOUT' for r in failures)
+            retryable = [r for r in failures if r.get('code') not in {'LIVE_BATCH_REVIEW_TIMEOUT', 'ALREADY_REVIEWED'}]
             return {'status':'batch_saved','results':results,
                     'saved_count':sum(r['status'] in {'saved','already_saved'} for r in results),
                     'error_count':sum(r['status']=='error' for r in results),
-                    'retry_segment_ids':[] if expired else [r['segment_id'] for r in results if r['status']=='error'],
-                    'repair_required':bool(failures) and not expired,
-                    **({'next_action':'review-next' if expired else 'review-submit'} if failures else {})}
+                    'retry_segment_ids':[r['segment_id'] for r in retryable],
+                    'repair_required':bool(retryable),
+                    **({'next_action':'review-submit' if retryable else 'review-next'} if failures else {})}
         digest=hashlib.sha256(encode({k:v for k,v in payload.items() if k != '_source_context'}).encode()).hexdigest()
         with self.connection(True) as c:
             from runtime.realtime_policy import current as realtime_current
@@ -787,6 +807,9 @@ class Store:
                         b=min(s['end_ms'],max(e.get('end_ms',e.get('time_ms',0)+1000) for e in items))
                         if b<=a:raise ValueError('evidence outside segment')
                         bound.append({'evidence_ids':refs,'start_ms':a,'end_ms':b,'text':event.get('description') or ''.join(speech)})
+                        from runtime.remediation import enabled as remediation_enabled, normalize as normalize_remediation
+                        if remediation_enabled(self._task(c)) and "remediation" in event:
+                            bound[-1]['remediation'] = normalize_remediation(event['remediation'], source='compliance', rule_id=row['rule_id'])
                     decision={'rule_id':row['rule_id'],'status':status,'result':status,'reason':row['reason'],'events':bound}
                     if full(self._task(c)):
                         from runtime.full_live import speech_only_scope
@@ -993,6 +1016,9 @@ class Store:
                 b=min(s['end_ms'],max(e.get('end_ms',e.get('time_ms',0)+1000) for e in items))
                 if b<=a:raise review_error('evidence outside segment',sid,rule_index,event_index)
                 bound.append({'evidence_ids':refs,'start_ms':a,'end_ms':b,'text':event.get('description') or ''.join(speech)})
+                from runtime.remediation import enabled as remediation_enabled, normalize as normalize_remediation
+                if remediation_enabled(self._task(c)) and "remediation" in event:
+                    bound[-1]['remediation'] = normalize_remediation(event['remediation'], source='compliance', rule_id=row['rule_id'])
             result.append({'rule_id':row['rule_id'],'status':status,'result':status,'reason':row['reason'],'events':bound})
         if not self._update_segment(c,s['id'],review_status='done',review_result={'rules':result,'decisions':result,'images_viewed':viewed},claim_token=None,lease_until=0,reviewed_at=now_iso(),review_defer=None,review_attempts=None):
             return {'status':'inspection_finished','retryable':False,'next_action':'report'}
@@ -1048,7 +1074,10 @@ class Store:
         has_text=any(str(u.get('text','')).strip() for s in segments for u in s.get('subtitles',[]))
         has_review=any(s['review_status']=='done' and s.get('review_result') for s in segments)
         no_review=bool(finish.get('mode')=='bounded' and terminal and not unresolved and not has_review)
-        no_text=bool(task.get('media_frozen') and not has_text)
+        has_visual=full_live.enabled(task) and task.get('image_inspection') is True and any(
+            s.get('review_status')=='done' and (s.get('review_result') or {}).get('rules') and any(
+                f['id'] in s['review_result'].get('images_viewed',[]) for f in s.get('frames',[])) for s in segments)
+        no_text=bool(task.get('media_frozen') and not has_text and not has_visual)
         ready=terminal and bool(segments) and not unresolved and not media_pending and not no_text and not no_review
         safe={k:task.get(k) for k in ('id','task_id','name','scenario','created_at','capture_status','worker_status','failure_stage','kind','source_duration_ms','asr_backend','stop_requested','stop_immediately','stop_reason','stop_audit','review_protocol','finished_at','recovery_state','recovery_attempts')}
         safe.update({k:task.get(k) for k in ('media_frozen','monitor_ended_at','monitored_duration_ms')})

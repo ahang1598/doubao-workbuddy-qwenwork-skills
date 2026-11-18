@@ -60,7 +60,7 @@ def _dispatch(command, directory, value=None):
         entry_files={FILE, FILE+'.lock', '.workflow-telemetry.json', '.workflow-telemetry.json.lock'}
         if task_id is None or any(p.name not in entry_files or p.is_symlink() or not p.is_file()
                                   for p in root.iterdir()): raise FileExistsError('batch directory already in use')
-        (root / 'tasks').mkdir(mode=0o700)
+        (root / 'tasks').mkdir(mode=0o777 if os.name == 'nt' else 0o700)
         data = {'id': task_id, 'stopped': False, 'delivery_mode': mode, 'asr_policy':policy,
                 'image_inspection':image_inspection, 'videos': [{**item, 'status': 'queued'} for item in videos]}
         atomic_json(root / 'batch.json', data)
@@ -87,7 +87,11 @@ def _dispatch(command, directory, value=None):
                 recoverable = item['status']=='partial' or (item['status']=='failed' and item.get('error')=='NO_REVIEWED_CONTENT')
                 if recoverable and (path/'inspection.db').exists():
                     from runtime.video_report import delivered_report
-                    delivered=delivered_report(Store(path))
+                    recovered = Store(path)
+                    if recovered.task().get('video_recap_enabled'):
+                        from runtime.report_completion import completion
+                        if not completion(recovered)['workflow_complete']: continue
+                    delivered=delivered_report(recovered)
                     if delivered and delivered['report']['conclusion'].get('effective_evidence'):
                         status='completed' if delivered.get('processing_complete') and delivered.get('coverage_complete') else 'partial'
                         if item['status'] != status:
@@ -114,6 +118,13 @@ def _dispatch(command, directory, value=None):
                     from runtime.video_report import delivered_report
                     delivered=delivered_report(store)
                     if delivered:
+                        if store.task().get('video_recap_enabled') and delivered['report']['conclusion'].get('effective_evidence'):
+                            from runtime.recap import recap_report
+                            recap = recap_report(store)
+                            from runtime.report_completion import completion
+                            if not completion(store)['workflow_complete']:
+                                return {**public(root,data),'current_index':i+1,'task_dir':str(path),
+                                        'next_action':'recap-report' if recap['available'] or recap['status'] in {'blocked','failed'} else 'recap-input --begin'}
                         if not delivered['report']['conclusion'].get('effective_evidence'):
                             item.update(status='failed', error='NO_REVIEWED_CONTENT')
                         else:

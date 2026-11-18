@@ -29,7 +29,7 @@ description: |
 
 完整分析的默认交付物是独立 HTML 页面；对话文本框只给简短结论、关键证据和页面链接，不粘贴报告全文。HTML 保留完整分析、表格、风险提示与可点击来源。中间产物只服务于你自己，不得在最终回答中展示、概括、附带、上传或列为交付内容。
 
-所有中间产物必须写入 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/` 目录。这个目录名是执行提醒：其中任何文件都不是文件交付物，包括 brief、facts、outline、HTML 源稿、日志和脚本输出。最终 HTML 页面写入 `FINAL_REPORT_HTML/index.html`，作为唯一文件交付物或发布源。最终对话回复不得出现内部目录和内部文件名。
+所有中间产物必须写入 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/` 目录。这个目录名是执行提醒：其中任何文件都不是文件交付物，包括 brief、facts、outline、HTML 源稿、日志和脚本输出。最终 HTML 页面写入 `FINAL_REPORT_HTML/index.html`，作为唯一文件交付物。最终对话回复不得出现内部目录和内部文件名。
 
 压缩恢复规则：如果 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/00_RESUME_HERE__NEXT_STEP.md` 存在，继续任何工作前必须先读取它，并按其中的「下一步必须执行」恢复流程。开始任务创建内部目录后，必须创建并持续更新这个文件；每进入新阶段、写完源稿、运行 finalize 前后，都要更新当前状态、禁止交付文件、下一步命令和最终正文来源。
 
@@ -46,7 +46,7 @@ description: |
 最终页面来源：FINAL_REPORT_HTML/index.html
 ```
 
-最终回复必须简短：先输出固定风险提示语「回答基于AI 生成，仅用于信息参考与研究辅助，不构成任何投资建议。股市有风险，请结合自身风险承受能力决策。」；再用 2-4 句话回答问题、说明最关键的证据及判断局限；最后附上 HTML 页面链接或 HTML 文件。不要在文本框粘贴报告全文。对话中的数字同样必须已通过事实表核验，不能只在 HTML 中有来源。若 HTML 发布能力可用，发布为飞书妙搭 HTML 页面并附链接；若不可用，附独立 HTML 文件并说明未发布，不要改回飞书云文档。
+最终回复必须简短：先输出固定风险提示语「回答基于AI 生成，仅用于信息参考与研究辅助，不构成任何投资建议。股市有风险，请结合自身风险承受能力决策。」；再用 2-4 句话回答问题、说明最关键的证据及判断局限；最后附上 HTML 页面链接或 HTML 文件。不要在文本框粘贴报告全文。对话中的数字同样必须已通过事实表核验，不能只在 HTML 中有来源。
 
 语气像一个懂行的研究员在给读者解释：直接、克制、重因果、少口号。不写模板话，不展示「我做了哪些步骤」，不使用「机制一/现象描述/具体表现/结论：已证实」这类底稿句式。
 
@@ -161,9 +161,13 @@ description: |
 | 推理卡住或解释停在表层 | `references/reasoning-framework.md` |
 | 写正文前校准输出质量 | 报告模式读 `references/exemplars/report-exemplar.md`；聚焦模式读 `references/exemplars/focused-exemplar.md`；有对应问题时读 `references/exemplars/anti-patterns.md` |
 
-最终交付分三步：(1)研究、事实表和读者主线完成后读取 `references/html-style.md`，从 `assets/report-starter.html` 复制视觉外壳，按原有分析要求编写正文；`assets/report-layout-preview.html` 仅供查看可选组件，不规定章节；(2)运行 `python3 scripts/finalize_html_report.py <_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/HTML源稿> _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json --output FINAL_REPORT_HTML/index.html`，复用原有事实核验与正文 lint，并把事实绑定转换为来源链接；(3)检查成品后，优先使用可用的飞书妙搭 HTML 发布能力发布 `FINAL_REPORT_HTML/index.html` 并附页面链接；没有发布能力时直接附 HTML 文件。不要调用飞书云文档创建能力替代 HTML。
+HTML 生成分两步：(1)研究、事实表和读者主线完成后读取 `references/html-style.md`，从 `assets/report-starter.html` 复制视觉外壳，按原有分析要求编写正文；`assets/report-layout-preview.html` 仅供查看可选组件，不规定章节；(2)运行 `python3 scripts/finalize_html_report.py <_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/HTML源稿> _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json --output FINAL_REPORT_HTML/index.html`，复用原有事实核验与正文 lint，并把事实绑定转换为来源链接。
 
 默认交付只运行 `scripts/finalize_html_report.py`；旧的 Markdown 转换脚本保留供兼容旧稿，不作为新报告入口。`scripts/make_docx.py` 保留为用户明确要求 Word/DOCX 时的可选工具，不是默认交付物。HTML 源稿中的 `{fact:...}` 只用于来源绑定；最终页面显示可点击 `[n]` 来源标记及文末来源。源稿不要手写 `[n]` 或 `[^n]`。
+
+### 成稿复核
+
+源稿写完后，核对标题和主结论的措辞是否与证据强度相符、关键数字及其期间和口径是否与事实表一致，以及「超/低于预期」是否有对应指标的预期锚。finalize 报错时修复后重跑，警告只处理影响关键事实、来源归属或结论的项。
 
 ---
 

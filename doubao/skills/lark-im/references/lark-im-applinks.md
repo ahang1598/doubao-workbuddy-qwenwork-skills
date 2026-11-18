@@ -69,7 +69,7 @@ lark-cli im +messages-mget --message-ids om_REPLACE_WITH_MESSAGE_ID --format jso
 
 These shortcuts return rendered `content`. Extract sharing URLs from plain text and Markdown link targets, not just their visible labels. If working with raw rich-text JSON instead, inspect hyperlink nodes' `href` values.
 
-Only if the task needs a card target but its URL is missing from rendered content, try `lark-cli api GET /open-apis/im/v1/messages/om_REPLACE_WITH_MESSAGE_ID --format json` for that same message. The VM CLI uses the current user identity. Decode `data.items[].body.content` and inspect button `url` / `multi_url` fields. If unavailable or denied, report the gap; do not guess or switch identity.
+Only if the task needs a card target but its URL is missing from rendered content, try `lark-cli api GET /open-apis/im/v1/messages/om_REPLACE_WITH_MESSAGE_ID --format json` for that same message. The CLI uses the current user identity. Decode `data.items[].body.content` and inspect button `url` / `multi_url` fields. If unavailable or denied, report the gap; do not guess or switch identity.
 
 Keep the full original URL, including its host, encoded token and other query parameters. Remove only enclosing text/Markdown syntax; do not decode/re-encode the URL or reconstruct it from a token. Do not invent a sharing token from a navigation link or group invitation.
 
@@ -81,7 +81,7 @@ Keep a mapping from each URL to the containing message. Query each distinct orig
 lark-cli im message_links query --data '{"message_link_url":"https://applink.feishu.cn/client/message/link/open?token=REPLACE_WITH_LINK_TOKEN"}' --format json
 ```
 
-Replace the example URL with the full extracted URL. Serialize the request as JSON and pass it as a single argument; do not interpolate message text into executable shell code. The VM CLI uses the current user's identity. Query requires `im:message.message_link:read`. This capability ships only in the internal and Doubao CLI distributions. The scope is not generally available: the Doubao application must be included in its rollout. CLI availability alone does not grant rollout eligibility or link access. If rollout has not reached the application, report that prerequisite instead of repeatedly requesting user authorization.
+Replace the example URL with the full extracted URL. Serialize the request as JSON and pass it as a single argument; do not interpolate message text into executable shell code. The CLI uses the current user's identity. Query requires `im:message.message_link:read`. This capability ships only in the internal and Doubao CLI distributions. The scope is not generally available: the Doubao application must be included in its rollout. CLI availability alone does not grant rollout eligibility or link access. If rollout has not reached the application, report that prerequisite instead of repeatedly requesting user authorization.
 
 If the command or fields are unavailable, inspect `lark-cli schema im.message_links.query --format json` and report the installed CLI/catalog mismatch. Do not guess a shortcut or treat an unavailable command as an inaccessible link. `--dry-run` only previews the request; it does not prove that the link is valid or readable.
 
@@ -133,4 +133,18 @@ Answer using the decoded snapshot contents, not just the link label or “a mess
 - For expired, revoked, invalid or inaccessible links, report the API's actual result. Request an accessible replacement only when needed to complete the task; do not guess the cause from an empty response or retry unchanged permission failures repeatedly.
 - For authentication, scope or transient failures, follow the returned CLI error/hint. Preserve any reported error code or log ID useful for diagnosis; do not invent them.
 - An empty `messages` array or absent body provides no readable content by itself. Report that limitation without treating it as proof that the source conversation is empty.
-- Sharing-link creation is outside this workflow. Download sharing-link attachments only through `im resources download` as described above; ordinary message resource commands use different authorization. If downloading or parsing an attachment fails, state that its contents have not been read.
+- Reading does not require creating a new sharing link. Download sharing-link attachments only through `im resources download` as described above; ordinary message resource commands use different authorization. If downloading or parsing an attachment fails, state that its contents have not been read.
+
+## Create a message sharing link
+
+Use `im message_links create` only for a user-requested sharing snapshot. For navigation, return `message_app_link`; reading or a denied read does not authorize creating a snapshot.
+
+1. Inspect `lark-cli schema im.message_links.create`. Reuse authorized source-message data, or read the selected IDs with [`+messages-mget`](lark-im-messages-mget.md) in JSON mode. Verify their chat/thread membership before creating. `thread_id` alone does not distinguish roots from replies; `parent_id` / `root_id` alone does not prove a thread reply either. If needed, verify against [`+threads-messages-list`](lark-im-threads-messages-list.md) using `+threads-messages-list --thread <thread_id> --format json`. Absence from the current page is inconclusive; paginate within the requested scope or ask for the missing source. Do not create a link as a verification probe.
+2. Use `link_from="1"` + matching `chat_id` for chat-source sharing, or `link_from="3"` + matching `thread_id` for thread-source sharing. Honor an explicit source choice after verifying membership; otherwise use thread-source sharing for a verified thread reply. If the source remains ambiguous, ask rather than defaulting to chat-source. Preserve the non-empty requested `message_ids` list and order: share those selections, not the entire thread. The backend may also capture related root/reply context; do not promise isolation to selected IDs.
+3. Execute as `--as user` with scope `im:message`. A dry-run previews routing, not authorization. Return `data.message_link.token_url` verbatim; do not reconstruct it from the token. Creation neither sends the link nor grants recipients access. Do not automatically send, query or download unless requested, switch identity on denial, or blindly retry a failed write.
+
+Preview a verified chat-source selection without creating it; remove `--dry-run` only for the requested creation:
+
+```bash
+lark-cli im message_links create --as user --data '{"link_from":"1","chat_id":"oc_REPLACE_WITH_CHAT_ID","message_ids":["om_REPLACE_WITH_MESSAGE_ID"]}' --dry-run
+```

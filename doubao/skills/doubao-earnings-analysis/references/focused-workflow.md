@@ -1,6 +1,6 @@
 # 聚焦分析模式工作流
 
-对用户的具体财报问题给出深度回答。默认交付为**文本框简短作答 + 独立 HTML 完整分析**；优先将 HTML 发布成飞书妙搭页面，无法发布时附 HTML 文件。
+对用户的具体财报问题给出深度回答。默认交付为**文本框简短作答 + 独立 HTML 完整分析**。
 
 **内部产物目录：** 所有工作文件必须写入 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/`。开始工作前先创建该目录；目录名就是约束：其中任何文件都不得在最终回复中展示、列出、上传、摘要或作为交付物。
 
@@ -26,7 +26,7 @@
 - 第一步到第二步：搜索了解公司，写 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__analysis-brief.md`
 - 第三步：定向取数、写 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json`、推进因果推理
 - 第四步到第五步：写 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__reader-outline.md`，转成读者正文
-- 第六步到第八步：自查、HTML 核验、对话输出
+- 第六步到第八步：成稿复核、HTML 核验、对话输出
 
 ---
 
@@ -210,7 +210,7 @@ python3 scripts/check_facts.py _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO
 
 只能基于 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__reader-outline.md` 写正文。`_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__analysis-brief.md` 是研究底稿，不是正文模板；不得把机制候选逐条搬进正文。HTML 正文源稿固定写入 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__analysis-source.html`，不得写成 `analysis.md` 或其他看起来可交付的文件名。
 
-**事实绑定要求：** HTML 源稿的可见文字中，支撑结论的正文数字、表格关键数字、后续关注阈值、关键事实判断应在句末或表格行末绑定 `{fact:claim_id}`。多个事实写 `{fact:id1,id2}`。这些 `{fact:...}` 标记供来源绑定和 lint 使用，最终 HTML 会显示可点击 `[n]` 来源标记。`{fact:...}` 只能引用 `claims[].claim_id`，不得引用 `other_facts.name` 或中文事实名；关键 `other_facts` 若要入正文，先补一条 `claims`。`{fact:...}` 不是数值占位符，不会自动输出 claim 内容；禁止写 `自由现金流为{fact:fcf_2026}`、`资本开支达{fact:capex_2026}` 或表格单元格只写 `{fact:capex_2026}`。必须先在正文写出完整数值/判断，再绑定来源，例如 `资本开支达 1,263.79 亿元，同比增长 47%。{fact:capex_2026}`。源稿不要手写 `[n]` 或 `[^n]` 这类脚注角标；所有引用来源由 finalize 按 facts 的 `claims[].source/url` 写入文末「数据来源」。无法绑定到 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json` 的 `claims` 的数字，如果是关键证据就回到第三步补 claim；如果只是年份、序号、时间窗口或非证据性表述，可保留，并在 lint 警告中复核。未知或非规范 fact 引用会导致 finalize 失败。
+**事实绑定要求：** HTML 源稿的可见文字中，支撑结论的正文数字、表格关键数字、后续关注阈值、关键事实判断应在句末或表格行末绑定 `{fact:claim_id}`。多个事实写 `{fact:id1,id2}`。这些 `{fact:...}` 标记供来源绑定和 lint 使用，最终 HTML 会显示可点击 `[n]` 来源标记。`{fact:...}` 只能引用 `claims[].claim_id`，不得引用 `other_facts.name` 或中文事实名；关键 `other_facts` 若要入正文，先补一条 `claims`。`{fact:...}` 不是数值占位符，不会自动输出 claim 内容；禁止写 `自由现金流为{fact:fcf_2026}`、`资本开支达{fact:capex_2026}` 或表格单元格只写 `{fact:capex_2026}`。必须先在正文写出完整数值/判断，再绑定来源，例如 `资本开支达 1,263.79 亿元，同比增长 47%。{fact:capex_2026}`。源稿不要手写 `[n]` 或 `[^n]` 这类脚注角标；所有引用来源由 finalize 按 facts 的 `claims[].source/url` 写入文末「数据来源」。无法绑定到 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json` 的 `claims` 的数字，如果是关键证据就回到第三步补 claim；如果只是年份、序号、时间窗口或非证据性表述，可保留。未知或非规范 fact 引用会导致 finalize 失败。
 
 示例：
 
@@ -250,22 +250,14 @@ python3 scripts/check_facts.py _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO
 
 ---
 
-## 第六步：读者视角自查（生成 HTML 前必做）
+## 第六步：成稿复核
 
-生成 HTML 前，以**对财报分析感兴趣但不了解你内部工作流的读者**身份通读全文，逐段检查：
+按 [成稿复核](../SKILL.md#成稿复核) 核对源稿。
 
-1. **是否有内部术语残留？** 搜索以下标签形态：深度0、深度1、深度2、深度3、深度4、当前深度、补到深度、机制候选、假设空间、结论分档、门禁、收入函数、brief。出现任何一个 = 必须改写为自然语言。
-2. **是否有底稿句式残留？** 搜索：机制一、机制二、机制 A、现象描述、具体表现、为什么公司不能消解、结论：已证实、结论：合理推断、结论：单一解释。出现任何一个 = 必须改写为自然语言。
-3. **每个段落读起来像分析文章，还是像在填框架模板？** 如果某段读起来是「标签：内容」的格式，改为连贯的分析叙述。
-4. **措辞强度是否与证据匹配？** 没有充分证据的结论不应使用确定性表述。
-5. **事实绑定警告是否已复核？** 核心证据数字、表格关键行、支撑性判断是否有 `{fact:claim_id}`；是否错误引用了 `other_facts.name`；未绑定的数字是否确认为非关键证据；券商/媒体/作者推断是否用了限定语。若 lint 输出「来源/语气复核」并给出「建议改写」，除非能明确判断为误报，否则按建议改写或补充等价限制语。
-
-发现问题 → 修改后再进入下一步。
-
-完成自查后，必须更新 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/00_RESUME_HERE__NEXT_STEP.md`：
+完成复核后，必须更新 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/00_RESUME_HERE__NEXT_STEP.md`：
 
 ```text
-当前状态：HTML 源稿已完成自查，但尚未生成最终页面。
+当前状态：HTML 源稿已完成复核，但尚未生成最终页面。
 禁止交付：_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__analysis-source.html（含 {fact:...} 审计标记）
 下一步必须执行：运行 python3 scripts/finalize_html_report.py _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__analysis-source.html _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json --output FINAL_REPORT_HTML/index.html
 最终源稿：_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__analysis-source.html
@@ -281,11 +273,7 @@ python3 scripts/check_facts.py _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO
 python3 scripts/finalize_html_report.py _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__analysis-source.html _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json --output FINAL_REPORT_HTML/index.html
 ```
 
-生成后打开 `FINAL_REPORT_HTML/index.html`，按 `html-style.md` 在桌面和手机宽度核对：首屏有明确判断，论证与数据易读，来源链接和风险提示可见；不得有 `{fact:...}`、`【...】` 占位符、空组件或内部术语。实际采用的组件须包含有效内容，不为凑版式重复数字。若有图表，核对图表在独立 HTML 中可见。
-
-更新恢复入口文件：当前状态为「HTML 已生成，下一步发布页面或附 HTML 文件并简短作答」；最终页面来源为 `FINAL_REPORT_HTML/index.html`。
-
-优先使用可用的飞书妙搭 HTML 发布能力发布 `FINAL_REPORT_HTML/index.html` 并取得页面链接。若当前环境不支持 HTML 发布，则附上独立 HTML 文件并说明未发布。不要以飞书云文档替代 HTML。
+更新恢复入口文件：当前状态为「HTML 已生成，下一步交付 HTML 并简短作答」；最终页面来源为 `FINAL_REPORT_HTML/index.html`。
 
 ## 第八步：对话输出
 

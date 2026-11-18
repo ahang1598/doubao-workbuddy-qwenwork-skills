@@ -1,3 +1,4 @@
+import { scoringContext } from './review-scoring.mjs';
 import { chmod, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { basename, join, resolve, sep } from 'node:path';
@@ -227,6 +228,9 @@ function collectRuleEvidence(node, depth = 0, output = [], seen = new Set()) {
         rule_name: name,
         conclusion,
         finding_count: count,
+        scoring_findings: Object.values(node.MachineDetails || {}).filter(Array.isArray).flat().filter(v => v && typeof v === 'object').map((v, i) => ({
+          id: String(i), quote: text(v.Text), start_ms: utteranceTime(v, ['StartTimeMs','StartTime']), end_ms: utteranceTime(v, ['EndTimeMs','EndTime']),
+        })),
         machine_status_code: integer(node.FinalMachineStatus ?? node.MachineStatus),
         manual_status_code: integer(node.FinalManualStatus ?? node.ManualStatus),
         ...(startTime === null ? {} : { start_time: startTime }),
@@ -247,7 +251,7 @@ export function validateEcommerceReviewInput(input) {
   if (!plainObject(input) || input.input_contract !== 'ecommerce_review_skill/v1') fail('input_contract must be ecommerce_review_skill/v1');
   if (!Array.isArray(input.review_dimensions) || input.review_dimensions.length !== 1 || input.review_dimensions[0] !== 'content_analysis') fail('review_dimensions must equal ["content_analysis"]');
   const fd = input.fd;
-  if (!plainObject(fd) || !Array.isArray(fd.sg) || !fd.sg.length) fail('fd.sg must be a non-empty array');
+  if (!plainObject(fd) || !Array.isArray(fd.sg) || (!fd.sg.length && !fd.ev?.limitations?.includes('asr_unavailable'))) fail('fd.sg must contain evidence or disclose unavailable ASR');
   fd.sg.forEach((segment, index) => {
     if (!Number.isSafeInteger(segment?.i) || segment.i < 1 || !Number.isSafeInteger(segment?.sid) || segment.sid < 1) fail(`fd.sg[${index}] identifiers must be positive integers`);
     if (!Number.isSafeInteger(segment.st) || segment.st < 0 || !Number.isSafeInteger(segment.et) || segment.et < segment.st) fail(`fd.sg[${index}] st/et must be ordered millisecond integers`);
@@ -276,10 +280,10 @@ export function validateEcommerceReviewInput(input) {
   return input;
 }
 
-export function buildEcommerceReviewInput(reportPayload, { projectName, taskId, scenarioName, segmentDurationMs = 120_000 } = {}) {
+export function buildEcommerceReviewInput(reportPayload, { projectName, taskId, scenarioName, segmentDurationMs = 120_000, allowEmpty = false } = {}) {
   const result = unwrapCliPayload(reportPayload) ?? reportPayload;
   const utterances = normalizeAsrUtterances(reportPayload);
-  if (!utterances.length) throw Object.assign(new Error('GetReport did not contain readable timestamped ASR'), { code: 'ASR_NOT_FOUND' });
+  if (!utterances.length && !allowEmpty) throw Object.assign(new Error('GetReport did not contain readable timestamped ASR'), { code: 'ASR_NOT_FOUND' });
   const sg = buildSegments(utterances, segmentDurationMs);
   const rules = collectRuleEvidence(result);
   const reportBasicInfo = result?.ReportBasicInfo ?? {};
@@ -296,8 +300,10 @@ export function buildEcommerceReviewInput(reportPayload, { projectName, taskId, 
       bm: {},
       iad: [],
       ev: {
+        scoring_context: scoringContext(sg, rules),
         scope: 'asr_and_quality_report_only',
         limitations: [
+          ...(!utterances.length ? ['asr_unavailable'] : []),
           'comments_unavailable',
           'products_unavailable',
           'interactions_unavailable',

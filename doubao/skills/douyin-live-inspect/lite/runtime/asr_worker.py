@@ -7,16 +7,25 @@ import time
 
 # Also works when invoked directly from an unpacked Skill, with no PYTHONPATH.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from runtime.asr_model import MODEL, VERSION, ModelError, checked_model
+from runtime.asr_model import MODEL, INFERENCE_VERSION, ModelError, checked_model
 
 
 def dependencies():
     try:
         import numpy as np
+    except ModuleNotFoundError as error:
+        raise ModelError('ASR_NUMPY_MISSING' if error.name == 'numpy' else 'ASR_NUMPY_IMPORT_FAILED') from None
+    except ImportError:
+        raise ModelError('ASR_NUMPY_IMPORT_FAILED') from None
+    except OSError:
+        raise ModelError('ASR_NUMPY_LOAD_FAILED') from None
+    try:
         import sherpa_onnx as sherpa
-    except (ImportError, OSError):
-        raise ModelError('ASR_DEPENDENCY_UNAVAILABLE') from None
-    if sherpa.__version__ != VERSION: raise ModelError('ASR_DEPENDENCY_INCOMPATIBLE')
+    except ImportError:
+        raise ModelError('ASR_SHERPA_IMPORT_FAILED') from None
+    except OSError:
+        raise ModelError('ASR_SHERPA_LOAD_FAILED') from None
+    if sherpa.__version__ != INFERENCE_VERSION: raise ModelError('ASR_DEPENDENCY_INCOMPATIBLE')
     return np, sherpa
 
 
@@ -173,23 +182,22 @@ class Recognizer:
             if end > begin: ranges.append((begin, end))
             vad.pop()
         output, calls, gaps = [], 0, []
-        for low, high in ranges:
-            for begin in range(low, high, 320000):
-                end = min(begin+320000, high)
-                if not np.any(samples[begin:end]): continue
-                stream = rec.create_stream()
-                for pos in range(begin, end, 5120):
-                    stream.accept_waveform(16000, samples[pos:min(pos+5120, end)])
-                    while rec.is_ready(stream): rec.decode_stream(stream)
-                # Synthetic right context must not extend evidence timestamps.
-                stream.accept_waveform(16000, np.zeros(4800, dtype=np.float32))
-                stream.input_finished()
+        # VAD already bounds utterances to ~20s; keep its padded tail in context.
+        for begin, end in ranges:
+            if not np.any(samples[begin:end]): continue
+            stream = rec.create_stream()
+            for pos in range(begin, end, 5120):
+                stream.accept_waveform(16000, samples[pos:min(pos+5120, end)])
                 while rec.is_ready(stream): rec.decode_stream(stream)
-                try:output.append(subtitle(rec.get_result(stream), begin, end))
-                except ModelError as error:
-                    if error.code!='ASR_EMPTY_SPEECH':raise
-                    gaps.append({'start_ms':round(begin/16),'end_ms':round(end/16),'code':error.code})
-                calls += 1
+            # Synthetic right context must not extend evidence timestamps.
+            stream.accept_waveform(16000, np.zeros(4800, dtype=np.float32))
+            stream.input_finished()
+            while rec.is_ready(stream): rec.decode_stream(stream)
+            try:output.append(subtitle(rec.get_result(stream), begin, end))
+            except ModelError as error:
+                if error.code!='ASR_EMPTY_SPEECH':raise
+                gaps.append({'start_ms':round(begin/16),'end_ms':round(end/16),'code':error.code})
+            calls += 1
         return dict(subtitles=output, speech_gaps=gaps, duration_ms=len(pcm)/32, processing_ms=round((time.monotonic()-started)*1000),
                     dropped_audio_ms=0, asr_mode='single_pass', asr_calls=calls)
 

@@ -1,6 +1,6 @@
 // 小红书响应解析；只消费服务端提供的候选，不根据房间号生成流地址。
 
-const fail = code => Object.assign(new Error('小红书直播来源暂不可用'), { code, retryable: code === 'XHS_FETCH_FAILED' });
+const fail = (code, message = '小红书直播来源暂不可用') => Object.assign(new Error(message), { code, retryable: code === 'XHS_FETCH_FAILED' });
 
 export function validateXiaohongshuLiveUrl(value) {
   let url;
@@ -8,8 +8,9 @@ export function validateXiaohongshuLiveUrl(value) {
   try { url = new URL(value); } catch { throw fail('INVALID_INPUT'); }
   if (url.hostname === 'xhslink.com' && url.protocol === 'http:' && !url.port) url.protocol = 'https:';
   if (url.protocol !== 'https:' || url.username || url.password || url.port) throw fail('INVALID_INPUT');
-  if (url.hostname === 'www.xiaohongshu.com' && /^\/livestream\/[0-9]+\/?$/.test(url.pathname)) {
-    return `https://www.xiaohongshu.com${url.pathname.replace(/\/$/, '')}`;
+  const room = /^\/livestream\/(?:dynpath[A-Za-z0-9]+\/)?([0-9]+)\/?$/.exec(url.pathname);
+  if (url.hostname === 'www.xiaohongshu.com' && room) {
+    return `https://www.xiaohongshu.com/livestream/${room[1]}`;
   }
   if (url.hostname === 'xhslink.com' && /^\/[A-Za-z0-9_/-]+$/.test(url.pathname)) return url.href;
   throw fail('INVALID_INPUT');
@@ -19,8 +20,9 @@ export function xiaohongshuCandidate(value, now = Date.now()) {
   if (typeof value !== 'string' || value.length > 8192 || /[\u0000-\u0020]/.test(value)) return null;
   let url;
   try { url = new URL(value); } catch { return null; }
-  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password
+  if (value.includes('\\') || !/^https?:\/\//i.test(value) || !['http:', 'https:'].includes(url.protocol) || url.username || url.password
     || !url.hostname.endsWith('.xhscdn.com') || !/\.flv$/i.test(url.pathname)
+    || url.searchParams.getAll('only_audio').includes('1')
     || url.hash || (url.port && !['80', '443'].includes(url.port))) return null;
   for (const expiry of url.searchParams.getAll('expire')) {
     if (!/^[0-9]+$/.test(expiry) || Number(expiry) < now / 1000 + 60) return null;
@@ -60,10 +62,9 @@ export function isXiaohongshuUrl(value) {
   try { return ['www.xiaohongshu.com', 'xhslink.com'].includes(new URL(value).hostname); } catch { return false; }
 }
 
-// Each request pins a validated public DNS answer; redirects are handled by the caller.
-export async function fetchXiaohongshu(url, { timeoutMs = 8000 } = {}) {
-  const { lookup } = await import('node:dns/promises');
-  const { addressIsBlocked } = await import('./douyin-live.mjs');
+// Official Xiaohongshu room and share endpoints use the host network's HTTPS routing.
+// Redirects are validated separately by resolveXiaohongshuPage.
+export async function fetchXiaohongshu(url, { timeoutMs = 8000, platform = 'xiaohongshu' } = {}) {
   const { default: https } = await import('node:https');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -71,13 +72,11 @@ export async function fetchXiaohongshu(url, { timeoutMs = 8000 } = {}) {
     return await Promise.race([ (async () => {
       const target = new URL(url);
       if (target.protocol !== 'https:' || target.username || target.password || target.port
-        || !['www.xiaohongshu.com', 'xhslink.com', 'live-room.xiaohongshu.com'].includes(target.hostname)) throw fail('INVALID_INPUT');
-      const addresses = await lookup(target.hostname, { all: true });
-      if (!addresses.length || addresses.some(a => addressIsBlocked(a.address)) || controller.signal.aborted) throw fail('XHS_FETCH_FAILED');
+        || !(platform === 'bilibili' ? ['live.bilibili.com', 'b23.tv', 'api.live.bilibili.com'] : ['www.xiaohongshu.com', 'xhslink.com', 'live-room.xiaohongshu.com']).includes(target.hostname)) throw fail('INVALID_INPUT');
+      if (target.hostname === 'xhslink.com') validateXiaohongshuLiveUrl(target.href);
       return await new Promise((resolve, reject) => {
         const request = https.get(target, { agent: false, signal: controller.signal,
           headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json,text/html' },
-          lookup: (_host, options, done) => done(null, options.all ? [addresses[0]] : addresses[0].address, addresses[0].family),
         }, response => {
           const chunks = []; let size = 0;
           response.on('data', chunk => {
@@ -112,14 +111,19 @@ export async function resolveXiaohongshuPage(value, { fetchPage = fetchXiaohongs
   throw fail('XHS_PAGE_UNAVAILABLE');
 }
 
+function freshObservation(capturedAt, now) {
+  return Number.isSafeInteger(capturedAt) && capturedAt <= now + 5000 && now - capturedAt <= 120000;
+}
+
 export function validateXiaohongshuBrowserSource(page, source, now = Date.now()) {
   let observedPage;
   try { observedPage = validateXiaohongshuLiveUrl(source?.page_url); } catch { throw fail('INVALID_BROWSER_SOURCE'); }
   if (!source || typeof source !== 'object' || Array.isArray(source)
-    || !Number.isSafeInteger(source.captured_at) || source.captured_at > now + 5000 || now - source.captured_at > 120000
+    || !freshObservation(source.captured_at, now)
     || observedPage !== page) throw fail('INVALID_BROWSER_SOURCE');
   const candidate = xiaohongshuCandidate(source.stream_url, now);
-  if (!candidate) throw fail('INVALID_BROWSER_SOURCE');
+  const room = new URL(page).pathname.split('/').pop();
+  if (!candidate || !new RegExp('^/live/' + room + '(?:_[A-Za-z0-9_-]+)?\\.flv$').test(new URL(candidate.url).pathname)) throw fail('INVALID_BROWSER_SOURCE');
   const text = value => typeof value === 'string' ? value.trim().slice(0, 100) : '';
   return { status: 'ready', sourceType: 'xiaohongshu', sourceMethod: 'browser', streamUrl: candidate.url,
     roomName: text(source.room_title) || text(source.page_title).replace(/的小红书直播间$/, ''), accountName: text(source.account_name) };
@@ -131,6 +135,10 @@ export function xiaohongshuObservedSources(observation, now = Date.now()) {
   if (new URL(page).hostname !== 'www.xiaohongshu.com' || !Array.isArray(observation?.media_urls)
     || observation.media_urls.length > 64) throw fail('INVALID_BROWSER_SOURCE');
   const room = new URL(page).pathname.split('/').pop();
+  if (observation.status === 'not_live') {
+    if (!freshObservation(observation.captured_at, now)) throw fail('INVALID_BROWSER_SOURCE');
+    throw fail('XHS_NOT_LIVE');
+  }
   const sources = [];
   for (const url of new Set(observation.media_urls)) {
     if (!xiaohongshuCandidate(url, now)) continue;
@@ -145,29 +153,21 @@ export function xiaohongshuObservedSources(observation, now = Date.now()) {
   return sources;
 }
 
-export async function resolveXiaohongshuLive(value, { browserSource, fetchPage = fetchXiaohongshu, probe, now = Date.now, timeoutMs = 15000 } = {}) {
+export async function resolveXiaohongshuLive(value, { browserSource, fetchPage = fetchXiaohongshu, now = Date.now, timeoutMs = 15000 } = {}) {
   const deadline = Date.now() + timeoutMs;
   const page = await resolveXiaohongshuPage(value, { fetchPage, deadline });
-  const room = new URL(page).pathname.split('/').pop();
-  let source;
-  try {
-    const response = await fetchPage(`https://live-room.xiaohongshu.com/api/sns/red/live/web/v1/room/current_room_info?room_id=${room}&source=web_live&client_type=1`, { timeoutMs: Math.max(1, deadline - Date.now()) });
-    if (response.status !== 200) throw fail(response.status === 401 || response.status === 403 ? 'XHS_AUTH_REQUIRED' : 'XHS_FETCH_FAILED');
-    let payload;
-    try { payload = JSON.parse(response.body); } catch { throw fail('XHS_PAGE_UNAVAILABLE'); }
-    source = parseXiaohongshuRoomInfo(payload, { now: now() });
-    if (source.status === 'not_live') return source;
-    for (const candidate of source.candidates) {
-      if (Date.now() >= deadline) break;
-      try { await probe(candidate.url, { timeoutMs: Math.max(1, deadline - Date.now()) }); return { ...source, candidates: undefined, streamUrl: candidate.url, sourceMethod: 'anonymous' }; }
-      catch { /* Try the next server-provided candidate within the same budget. */ }
-    }
-    throw fail('XHS_STREAM_UNAVAILABLE');
-  } catch (error) {
-    if (!browserSource || error?.code === 'INVALID_INPUT') throw error;
+  if (browserSource) {
+    return validateXiaohongshuBrowserSource(page, browserSource, now());
   }
-  source = validateXiaohongshuBrowserSource(page, browserSource, now());
-  try { await probe(source.streamUrl, { timeoutMs: 8000 }); }
-  catch { throw fail('XHS_STREAM_UNAVAILABLE'); }
-  return source;
+  const room = new URL(page).pathname.split('/').pop();
+  const response = await fetchPage(`https://live-room.xiaohongshu.com/api/sns/red/live/web/v1/room/current_room_info?room_id=${room}&source=web_live&client_type=1`, { timeoutMs: Math.max(1, deadline - Date.now()) });
+  if (response.status !== 200) {
+    const code = response.status === 401 || response.status === 403 ? 'XHS_AUTH_REQUIRED' : 'XHS_FETCH_FAILED';
+    throw fail(code, `小红书匿名房间接口返回 HTTP ${response.status}。请从当前直播页获取本房间的浏览器候选，继续正式版质检。`);
+  }
+  let payload;
+  try { payload = JSON.parse(response.body); } catch { throw fail('XHS_PAGE_UNAVAILABLE'); }
+  const source = parseXiaohongshuRoomInfo(payload, { now: now() });
+  if (source.status === 'not_live') return source;
+  return { ...source, candidates: undefined, sourceMethod: 'anonymous' };
 }

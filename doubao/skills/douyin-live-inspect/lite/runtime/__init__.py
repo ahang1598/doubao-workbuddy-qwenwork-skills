@@ -11,6 +11,7 @@ for _name in ('task_telemetry','telemetry_rules','telemetry_funnel','telemetry_b
     sys.modules[__name__+'.'+_name]=transaction
     globals()[_name]=transaction
 telemetry_stop=types.ModuleType(__name__+'.telemetry_stop')
+telemetry_stop.COMMAND=bridge.STOP.OBSERVED
 telemetry_stop.safe=bridge.stop_safe
 telemetry_stop.observations=bridge.stop_observations
 sys.modules[telemetry_stop.__name__]=telemetry_stop

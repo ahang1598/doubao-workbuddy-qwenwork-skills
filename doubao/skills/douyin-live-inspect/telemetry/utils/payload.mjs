@@ -186,6 +186,10 @@ function validatePayload(value, { fit = true } = {}) {
     // Resolver facts and the last FFmpeg failure have separate causes.
     if (input.task_type === 'live_inspection' && input.capture_status === 'failed') {
       if (SOURCE_ERRORS.includes(input.source_error_code)) {
+        if (['waiting_candidate','candidate_failed'].includes(input.source_handoff_stage))
+          extra.source_handoff_stage = input.source_handoff_stage;
+        if (input.source_error_code === 'BROWSER_SOURCE_TIMEOUT' && SOURCE_ERRORS.includes(input.source_handoff_error))
+          extra.source_handoff_error = input.source_handoff_error;
         if (
           [
             'dns_error',

@@ -129,4 +129,4 @@ chart block 必填 title、chart_type、unit、caption、market、x_labels、ser
 
 ## 门禁
 
-finalize_report.py 依次检查事实表结构、必需章节、事实绑定、数据图点值与 fact.value/unit 一致性、市场和事件时间口径、原有的语气/无名锚/评级/预期锚/内部术语规则。错误会阻断 HTML 与摘要生成；警告须人工复核。固定免责声明由模板写入 HTML，避免遗漏或自行改写。
+finalize_report.py 校验事实表、报告结构、事实绑定、图表点值与单位，以及事件日期与跨市场标注。

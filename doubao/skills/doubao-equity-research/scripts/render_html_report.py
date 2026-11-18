@@ -20,7 +20,7 @@ CSS = """
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.75 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
 main{max-width:1060px;margin:32px auto 64px;background:var(--paper);box-shadow:0 16px 48px #10243a13;border:1px solid var(--line)}
 header{background:linear-gradient(125deg,var(--navy),var(--navy2));color:white;padding:36px 52px;border-bottom:4px solid var(--accent)}
-header .eyebrow{font-size:12px;letter-spacing:.22em;color:#d5bc8e;font-weight:700}header h1{font-size:30px;line-height:1.35;margin:12px 0 0;font-weight:700}
+header .eyebrow{font-size:12px;letter-spacing:.22em;color:#d5bc8e;font-weight:700}header h1{color:#fff;font-size:30px;line-height:1.35;margin:12px 0 0;font-weight:700}
 article{padding:34px 52px 55px}h1,h2,h3,h4{color:var(--navy);line-height:1.4}article h1{font-size:25px}h2{font-size:21px;margin:34px 0 15px;padding:0 0 10px;border-bottom:2px solid var(--accent)}h3{font-size:17px;margin:26px 0 11px}h4{font-size:15px;margin:20px 0 8px}
 p{margin:0 0 15px}strong{color:var(--navy)}a{color:var(--teal);text-decoration:none;border-bottom:1px solid #83b5b0}a:hover{text-decoration:underline}
 .table-wrap{overflow-x:auto;margin:17px 0 24px;border:1px solid var(--line)}table{border-collapse:collapse;width:100%;font-size:13px;min-width:480px}th{background:var(--navy);color:white;text-align:left;font-weight:600}td,th{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}tbody tr:nth-child(even){background:#f6f8fa}tbody tr:hover{background:#edf4f4}

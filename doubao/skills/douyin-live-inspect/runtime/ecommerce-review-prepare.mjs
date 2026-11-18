@@ -192,6 +192,7 @@ export async function prepareEcommerceReview(
         { code: "ORIGINAL_TASK_CONTEXT_REQUIRED" }
       );
     const taskIdentity = { environment, profile, account_id };
+    if (input.kind !== undefined && !['live','video'].includes(input.kind)) throw Object.assign(new Error('Invalid review kind'), {code:'INVALID_INPUT'});
     const routing = resolveInspectionEnvironment({ environment });
     const childEnv = {
       ...process.env,
@@ -205,8 +206,8 @@ export async function prepareEcommerceReview(
     };
     const task = parseCliResult(
       await run([
-        "quality",
-        "+task-get",
+        input.kind === "video" ? "content" : "quality",
+        input.kind === "video" ? "+video-task-get" : "+task-get",
         "--project-name",
         projectName,
         "--task-id",
@@ -218,10 +219,10 @@ export async function prepareEcommerceReview(
       if (
         detail.ProjectName !== projectName ||
         String(detail.TaskId) !== String(taskId) ||
-        Number(detail.TaskType) !== 2
+        (input.kind !== 'video' && Number(detail.TaskType) !== 2)
       ) {
         throw Object.assign(
-          new Error("Task does not match the original live inspection"),
+          new Error("Task does not match the original inspection"),
           { code: "TASK_BINDING_MISMATCH" }
         );
       }
@@ -253,9 +254,7 @@ export async function prepareEcommerceReview(
         combined.throwIfAborted();
         report = parseCliResult(
           await run([
-            "quality",
-            "report",
-            "get",
+            ...(input.kind === "video" ? ["content", "+video-report-get"] : ["quality", "report", "get"]),
             "--project-name",
             projectName,
             "--task-id",
@@ -301,15 +300,19 @@ export async function prepareEcommerceReview(
       taskId,
       scenarioName,
       segmentDurationMs,
+      allowEmpty: true,
     });
+    // 无媒体时仍需保存原任务及明确的空时间线，供降级报告校验。
     const renderContext = {
-      ...buildReviewRenderContext(report, {
+      ...(buildReviewRenderContext(report, {
         segments: reviewInput.fd.sg,
         scenarioName,
         projectName,
         taskId,
-      }),
+      }) ?? { project_name: projectName, task_id: taskId, asr_timeline: [] }),
       ...taskIdentity,
+      scoring_context: reviewInput.fd.ev.scoring_context,
+      kind: input.kind || 'live',
     };
     const artifact = await writeInput(reviewInput, undefined, renderContext);
     if (combined.aborted) {
@@ -332,12 +335,12 @@ export async function prepareEcommerceReview(
       scenario_id: reviewInput.fd.ev.quality_report.scenario_id,
       scenario_name: reviewInput.fd.ev.quality_report.scenario_name,
       segment_count: segments.length,
-      start_time: segments[0].st,
-      end_time: segments.at(-1).et,
+      start_time: segments[0]?.st ?? null,
+      end_time: segments.at(-1)?.et ?? null,
       target_skill: "douyin-live-inspect/SKILL.md",
       review_reference: "references/ecommerce-review.md",
       render_script: "scripts/ecommerce-review-render.mjs",
-      report_format: "json",
+      report_format: input.kind === 'video' ? 'html' : 'json',
       scope: reviewInput.fd.ev.scope,
     };
   } catch (error) {

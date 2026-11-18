@@ -1,7 +1,7 @@
 """Safe validation feedback shared by single and batch review submissions."""
 
 ERRORS = {
-    'review batch timed out': ('LIVE_BATCH_REVIEW_TIMEOUT', '本批次已超时，保留已保存结果，跳过未完成片段并领取下一批。', 'review-next'),
+    'review batch timed out': ('LIVE_BATCH_REVIEW_TIMEOUT', '本批次已超时，保留已保存结果及未完成片段，重新领取待判定内容。', 'review-next'),
     'review context superseded': ('REVIEW_SUPERSEDED', '原合同已被接管；查询原 context 的恢复回执，不重交或续领。', 'review-state'),
     'segment skipped': ('SEGMENT_SKIPPED', '该段已跳过判别，请 review-next 继续下一段，不补交规则结果。', 'review-next'),
     'missing ASR cannot clear speech rule': ('ASR_EVIDENCE_MISSING', '缺少语音证据，不能提交 no_hit；请读取最新片段及恢复状态。', 'review-next'),
@@ -59,7 +59,7 @@ FIELDS = {
     'hits require evidence events only': ('EVENTS_INVALID', 'events', '命中须有证据事件；非命中事件为空。'),
     'foreign evidence': ('EVIDENCE_BINDING_INVALID', 'events', '每个事件用 evidence_ids 数组，仅引用 allowed_evidence_ids；不要使用单数 evidence_id。'),
     'missing ASR cannot clear speech rule': ('ASR_EVIDENCE_MISSING', 'status', '本段 speech.can_clear=false；请一次修复本段所有含 speech 且为 no_hit 的规则。有真实命中证据可保留 hit，其余填 insufficient，不逐条重交。'),
-    'missing or unseen frames cannot clear image rule': ('FRAMES_NOT_REVIEWED', 'status', '无图或未看图不能清除视觉风险；依赖缺图的条件用 insufficient。'),
+    'missing or unseen frames cannot clear image rule': ('FRAMES_NOT_REVIEWED', 'status', '本段有图先实际查看并填写 images_viewed；无图时 image=insufficient，不能仅因缺图填 not_applicable。一次修复本段所有含 image 的规则：speech=no_hit 且 image=insufficient 时顶层也为 insufficient；保留真实 hit。'),
 }
 
 class ReviewValidationError(ValueError):

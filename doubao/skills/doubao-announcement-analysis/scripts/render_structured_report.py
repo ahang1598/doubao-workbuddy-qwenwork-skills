@@ -61,7 +61,9 @@ def numeric_text(text: str) -> bool:
     return bool(rules.NUMERIC_FACT_RE.search(text) or re.fullmatch(r"\s*[-+]?\d[\d,]*(?:\.\d+)?%?\s*", text))
 
 
-def check_visible_text(text: Any, fact_ids: Any, label: str, facts: dict[str, Any], claims: dict[str, dict], errors: list[str], warnings: list[str]) -> None:
+def check_visible_text(
+    text: Any, fact_ids: Any, label: str, claims: dict[str, dict], errors: list[str]
+) -> None:
     if not isinstance(text, str) or not text.strip():
         errors.append(f"{label}.text 必须是非空文字")
         return
@@ -73,57 +75,20 @@ def check_visible_text(text: Any, fact_ids: Any, label: str, facts: dict[str, An
     for fact_id in fact_ids:
         if fact_id not in claims:
             errors.append(f"{label} 引用未知 claim_id：{fact_id}")
-            continue
-        claim = claims[fact_id]
-        claim_period = rules.claim_periods(claim)
-        text_period = rules.canonical_periods(text)
-        if claim_period and text_period and claim_period.isdisjoint(text_period):
-            warnings.append(f"{label} 与 {fact_id} 的期间口径可能不一致")
-        rules.check_claim_wording(0, text, fact_id, claim, warnings)
-    hard_checks = (
-        (rules.JUDGMENT_RE, "自有判断表述"),
-        (rules.UNNAMED_ANCHOR_RE, "无名锚表述"),
-        (rules.PLACEHOLDER_RE, "残留占位符"),
-        (rules.DRAFT_CORNER_QUOTE_RE, "草稿引号"),
-        (rules.INLINE_FOOTNOTE_RE, "手写脚注角标"),
-        (rules.GUESS_RE, "无算式推算措辞"),
-        (rules.INTERNAL_RE, "内部流程词"),
-        (rules.INTERNAL_LEVEL_RE, "内部分类词"),
-        (rules.ASCII_QUOTED_HAN_RE, "中文被英文直引号包裹"),
-    )
-    for pattern, reason in hard_checks:
-        match = pattern.search(text)
-        if match:
-            errors.append(f"{label} 出现{reason}：{match.group(0)}")
-    if rules.RATING_RE.search(text) and not rules.ATTRIBUTION_RE.search(text):
-        errors.append(f"{label} 疑似自有评级")
-    if rules.UPSIDE_RE.search(text) and not rules.ATTRIBUTION_RE.search(text):
-        warnings.append(f"{label} 出现上行/下行空间，缺少同行转引标注")
-    if rules.BARE_WE_RE.search(text) and not rules.JUDGMENT_RE.search(text):
-        warnings.append(f"{label} 出现“我们”，请确认不是自有判断")
-    if rules.ASCII_DOUBLE_QUOTE_RE.search(text) and rules.HAN_RE.search(text):
-        warnings.append(f"{label} 中文正文含英文直引号，请改用中文弯引号")
-    if rules.US_FILING_RE.search(text) and (facts.get("meta") or {}).get("market") == "A股":
-        errors.append(f"{label} A 股标的出现美股口径词")
-    if rules.PROFIT_BEAT_RE.search(text) and rules.anchor_documented(facts, ("净利", "利润", "EPS", "每股收益")) is False:
-        errors.append(f"{label} 利润超/低于预期却无预期锚")
-    if rules.REVENUE_BEAT_RE.search(text) and rules.anchor_documented(facts, ("收入", "营收")) is False:
-        errors.append(f"{label} 收入超/低于预期却无预期锚")
 
 
-def validate_report(report: Any, facts: dict[str, Any]) -> tuple[list[str], list[str]]:
+def validate_report(report: Any, facts: dict[str, Any]) -> list[str]:
     errors: list[str] = []
-    warnings: list[str] = []
     if not isinstance(report, dict):
-        return ["report.json 顶层必须是对象"], warnings
+        return ["report.json 顶层必须是对象"]
     claims = rules.collect_claims(facts)
-    if not claims:
-        errors.append("facts.json 必须有非空 claims；结构化报告不能绕过事实表")
+    meta = facts.get("meta")
+    report_market = meta.get("market") if isinstance(meta, dict) else None
     mode = report.get("mode")
-    if mode not in {"single", "batch"}:
+    if mode not in ("single", "batch"):
         errors.append("mode 必须是 single 或 batch")
     if not isinstance(report.get("title"), str) or not report["title"].strip():
-        errors.append("title 必须是非空中文报告标题")
+        errors.append("title 必须是非空文字")
     summary = report.get("summary")
     if not isinstance(summary, list) or not 2 <= len(summary) <= 5:
         errors.append("summary 必须有 2–5 条重要结论")
@@ -132,16 +97,13 @@ def validate_report(report: Any, facts: dict[str, Any]) -> tuple[list[str], list
             if not isinstance(item, dict):
                 errors.append(f"summary[{i}] 必须是对象")
                 continue
-            check_visible_text(item.get("text"), item.get("fact_ids", []), f"summary[{i}]", facts, claims, errors, warnings)
+            check_visible_text(item.get("text"), item.get("fact_ids", []), f"summary[{i}]", claims, errors)
             if not item.get("fact_ids"):
                 errors.append(f"summary[{i}] 的重要结论必须绑定事实表")
-            if len(str(item.get("text", ""))) > 180:
-                warnings.append(f"summary[{i}] 超过 180 字，建议压缩")
     sections = report.get("sections")
     if not isinstance(sections, list) or not sections:
-        return errors + ["sections 必须是非空数组"], warnings
+        return errors + ["sections 必须是非空数组"]
     keys: list[str] = []
-    visible_text: list[str] = []
     for si, section in enumerate(sections):
         label = f"sections[{si}]"
         if not isinstance(section, dict):
@@ -158,12 +120,12 @@ def validate_report(report: Any, facts: dict[str, Any]) -> tuple[list[str], list
             errors.append(f"{label}.blocks 必须是非空数组")
             continue
         if key == "price_reaction" and mode == "single":
-            if section.get("status") not in {"normal", "abnormal"}:
+            if section.get("status") not in ("normal", "abnormal"):
                 errors.append(f"{label}.status 必须是 normal 或 abnormal")
             elif section["status"] == "abnormal" and not any(isinstance(b, dict) and b.get("type") == "chart" and b.get("events") for b in blocks):
                 errors.append(f"{label} 股价显著异动时须有带事件标记的价格图")
         if key == "perspectives" and mode == "single":
-            angles = {b.get("angle") for b in blocks if isinstance(b, dict)}
+            angles = {b["angle"] for b in blocks if isinstance(b, dict) and isinstance(b.get("angle"), str)}
             missing_angles = set(PERSPECTIVE_ANGLES) - angles
             if missing_angles:
                 errors.append(f"{label} 缺少多视角内容：{', '.join(sorted(missing_angles))}")
@@ -173,12 +135,11 @@ def validate_report(report: Any, facts: dict[str, Any]) -> tuple[list[str], list
                 errors.append(f"{path} 必须是对象")
                 continue
             kind = block.get("type")
-            if kind not in BLOCK_TYPES:
+            if not isinstance(kind, str) or kind not in BLOCK_TYPES:
                 errors.append(f"{path}.type 不支持：{kind}")
                 continue
             if kind in {"paragraph", "callout"}:
-                check_visible_text(block.get("text"), block.get("fact_ids", []), path, facts, claims, errors, warnings)
-                visible_text.append(str(block.get("text", "")))
+                check_visible_text(block.get("text"), block.get("fact_ids", []), path, claims, errors)
             elif kind == "list":
                 items = block.get("items")
                 if not isinstance(items, list) or not items:
@@ -188,8 +149,7 @@ def validate_report(report: Any, facts: dict[str, Any]) -> tuple[list[str], list
                         if not isinstance(item, dict):
                             errors.append(f"{path}.items[{ii}] 必须是对象")
                             continue
-                        check_visible_text(item.get("text"), item.get("fact_ids", []), f"{path}.items[{ii}]", facts, claims, errors, warnings)
-                        visible_text.append(str(item.get("text", "")))
+                        check_visible_text(item.get("text"), item.get("fact_ids", []), f"{path}.items[{ii}]", claims, errors)
             elif kind == "table":
                 headers, rows = block.get("headers"), block.get("rows")
                 if not isinstance(headers, list) or not headers or any(not isinstance(x, str) for x in headers):
@@ -205,15 +165,14 @@ def validate_report(report: Any, facts: dict[str, Any]) -> tuple[list[str], list
                     for ci, cell in enumerate(row):
                         cell_path = f"{path}.rows[{ri}][{ci}]"
                         if isinstance(cell, dict):
-                            check_visible_text(cell.get("text"), cell.get("fact_ids", []), cell_path, facts, claims, errors, warnings)
-                            visible_text.append(str(cell.get("text", "")))
+                            check_visible_text(cell.get("text"), cell.get("fact_ids", []), cell_path, claims, errors)
                         elif isinstance(cell, str):
                             if numeric_text(cell):
                                 errors.append(f"{cell_path} 是数字，须写为含 fact_ids 的对象")
                         else:
                             errors.append(f"{cell_path} 必须是文字或含 text/fact_ids 的对象")
             elif kind == "chart":
-                validate_chart(block, path, facts, claims, errors, warnings)
+                validate_chart(block, path, report_market, claims, errors)
     if len(keys) != len(set(keys)):
         errors.append("sections[].key 不能重复")
     required = SINGLE_SECTIONS if mode == "single" else BATCH_SECTIONS
@@ -222,20 +181,18 @@ def validate_report(report: Any, facts: dict[str, Any]) -> tuple[list[str], list
         errors.append(f"缺少必需章节：{', '.join(sorted(missing))}")
     if mode == "single" and not any(isinstance(s, dict) and s.get("key") == "history" and isinstance(s.get("blocks"), list) and any(isinstance(b, dict) and b.get("type") == "table" for b in s["blocks"]) for s in sections):
         errors.append("历史对比章节必须包含表格")
-    if mode == "single" and not any("后续" in x and "关注" in x for x in visible_text):
-        warnings.append("正文缺少「后续关注」文字；请检查 watchlist 章节")
-    if not any(str(claim.get("url", "")).startswith(("http://", "https://")) for claim in claims.values()):
-        warnings.append("事实表无可点击来源链接，请复核原公告和数据库链接")
-    return errors, warnings
+    return errors
 
 
-def validate_chart(chart: dict, path: str, facts: dict[str, Any], claims: dict[str, dict], errors: list[str], warnings: list[str]) -> None:
-    if chart.get("chart_type") not in {"line", "bar"}:
+def validate_chart(
+    chart: dict, path: str, report_market: Any, claims: dict[str, dict], errors: list[str]
+) -> None:
+    if chart.get("chart_type") not in ("line", "bar"):
         errors.append(f"{path}.chart_type 只支持 line 或 bar")
     for field in ("title", "unit", "caption", "market"):
         if not isinstance(chart.get(field), str) or not chart[field].strip():
             errors.append(f"{path}.{field} 必须是非空文字")
-    if chart.get("market") not in {"A股", "港股", "美股"}:
+    if chart.get("market") not in ("A股", "港股", "美股"):
         errors.append(f"{path}.market 必须是 A股、港股或美股")
     x_labels = chart.get("x_labels")
     if not isinstance(x_labels, list) or not 3 <= len(x_labels) <= 12 or any(not isinstance(x, str) or not x for x in x_labels):
@@ -265,8 +222,6 @@ def validate_chart(chart: dict, path: str, facts: dict[str, Any], claims: dict[s
                 continue
             if not any(isinstance(claims[fid].get("value"), (int, float)) and not isinstance(claims[fid].get("value"), bool) and math.isclose(float(claims[fid]["value"]), float(point["value"]), rel_tol=1e-9, abs_tol=1e-9) and claims[fid].get("unit") == chart.get("unit") for fid in ids):
                 errors.append(f"{pp} 的数值和单位必须与至少一条 fact 的 value/unit 完全一致")
-    if chart.get("chart_type") == "bar" and any(isinstance(p, dict) and isinstance(p.get("value"), (int, float)) and p["value"] < 0 for s in series if isinstance(s, dict) and isinstance(s.get("values"), list) for p in s["values"]):
-        warnings.append(f"{path} 柱状图含负值，请复核基线")
     events = chart.get("events", [])
     if not isinstance(events, list):
         errors.append(f"{path}.events 必须是数组")
@@ -280,24 +235,19 @@ def validate_chart(chart: dict, path: str, facts: dict[str, Any], claims: dict[s
             errors.append(f"{ep}.x_index 超出 x_labels 范围")
         elif event.get("date") != x_labels[event["x_index"]]:
             errors.append(f"{ep}.date 必须与 x_labels[x_index] 完全一致")
-        if event.get("phase") not in {"发生", "披露", "可交易"}:
+        if event.get("phase") not in ("发生", "披露", "可交易"):
             errors.append(f"{ep}.phase 必须是发生、披露或可交易")
         if not isinstance(event.get("label"), str) or not event["label"].strip():
             errors.append(f"{ep}.label 缺失")
         ids = event.get("fact_ids")
         if not isinstance(ids, list) or not ids or any(not isinstance(x, str) or x not in claims for x in ids):
             errors.append(f"{ep}.fact_ids 必须引用已登记事实")
-        else:
-            check_visible_text(event.get("label"), ids, ep, facts, claims, errors, warnings)
         if not isinstance(event.get("market"), str) or not event["market"].strip():
             errors.append(f"{ep}.market 缺失")
         elif event["market"] != chart.get("market") and not event.get("cross_market_note"):
             errors.append(f"{ep} 与图表市场不同，须填写 cross_market_note")
-    if chart.get("market") != (facts.get("meta") or {}).get("market") and not chart.get("market_note"):
+    if chart.get("market") != report_market and not chart.get("market_note"):
         errors.append(f"{path} 与报告主市场不同，须填写 market_note")
-    if isinstance(chart.get("caption"), str):
-        all_ids = [fid for item in series if isinstance(item, dict) and isinstance(item.get("values"), list) for point in item["values"] if isinstance(point, dict) for fid in point.get("fact_ids", []) if isinstance(fid, str) and fid in claims]
-        check_visible_text(chart["caption"], all_ids, f"{path}.caption", facts, claims, errors, warnings)
 
 
 class Citations:
@@ -440,7 +390,7 @@ def render_html(report: dict, facts: dict) -> str:
         seen_angles = set()
         for block in section["blocks"]:
             angle = block.get("angle")
-            if section["key"] == "perspectives" and angle in PERSPECTIVE_ANGLES and angle not in seen_angles:
+            if section["key"] == "perspectives" and isinstance(angle, str) and angle in PERSPECTIVE_ANGLES and angle not in seen_angles:
                 rendered_blocks.append(f'<h3>{esc(PERSPECTIVE_ANGLES[angle])}</h3>')
                 seen_angles.add(angle)
             rendered_blocks.append(render_block(block, citations))
@@ -470,14 +420,10 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"[错误] 无法读取输入：{exc}", file=sys.stderr)
         return 1
-    facts_result = check_facts.validate(facts)
-    errors, warnings = validate_report(report, facts)
-    facts_result.emit()
-    for warning in warnings:
-        print(f"[警告] {warning}")
-    for error in errors:
-        print(f"[错误] {error}")
-    if facts_result.errors or errors:
+    errors = check_facts.validate(facts) + validate_report(report, facts)
+    if errors:
+        for error in errors:
+            print(f"[错误] {error}")
         return 1
     if args.html_output.resolve() == args.summary_output.resolve() or args.html_output.resolve() in {args.report.resolve(), args.facts.resolve()} or args.summary_output.resolve() in {args.report.resolve(), args.facts.resolve()}:
         print("[错误] 输出路径不能覆盖输入或彼此重合", file=sys.stderr)

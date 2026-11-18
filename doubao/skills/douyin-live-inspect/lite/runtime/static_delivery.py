@@ -19,7 +19,7 @@ from runtime.platform_support import file_lock, private_directory
 from runtime.report_data import public_text
 from runtime.store import Store
 from runtime.ui import ASSETS, build_report, build_snapshot, _evidence
-from runtime.recap import recap_report
+from runtime.recap import recap_report, viewed_frame_ids
 
 
 CLOUD_SNAPSHOT_INTERVAL_SECONDS = 300
@@ -101,6 +101,10 @@ def render_html(group, payload, *, live=False):
     if group == 'quality' and payload.get('recap_failed'):
         from runtime.report_delivery import RECAP_REMINDER
         html = html.replace('</main>', '<aside class="edition-guide" aria-label="内容复盘提示">' + RECAP_REMINDER + ' 本页为静态快照，后续结果请查看原对话。</aside></main>')
+    if group in {'quality', 'review'} and payload.get('archive_url'):
+        from html import escape
+        href = escape(payload['archive_url'], quote=True)
+        html = html.replace('</main>', f'<p><a href="{href}" download>下载已录制的 FLV 切片（ZIP）</a></p></main>')
     def asset(raw):
         path = ASSETS/raw.lstrip('/') if raw.startswith('/shared/') else ASSETS/group/Path(raw).name
         return path.read_text(encoding='utf-8')
@@ -161,7 +165,7 @@ def projection_key(frozen):
     templates = [(str(path.relative_to(ASSETS)), path.stat().st_mtime_ns, path.stat().st_size)
                  for path in sorted(ASSETS.rglob('*')) if path.is_file()]
     templates += [(name, Path(__file__).with_name(name).stat().st_mtime_ns)
-                  for name in ('static_delivery.py', 'ui.py', 'report_data.py', 'recap.py')]
+                  for name in ('static_delivery.py', 'ui.py', 'report_data.py', 'recap.py', 'remediation.py')]
     return hashlib.sha256(script_json([task, frozen.segments(), status, files, templates]).encode()).hexdigest()
 
 
@@ -195,12 +199,32 @@ def export(store, *, snapshot=None, bundle=False, single_file=False, refresh_mon
         atomic(counter, str(version))
         for item in report['evidence']:
             item['images'] = [images[key] for key in item['frame_ids'] if images.get(key)]
+        for sample in (report.get('visual_samples') or {}).get('items', []):
+            sample['image_url'] = images.get(sample['evidence_id'], '')
         for row in monitor['records']:
             for sample in row['samples']: sample['image_url'] = images.get(sample.get('evidence_id'), '')
-        for row in review.get('document', {}).get('content', {}).get('segments', []):
-            row['frame_images'] = [images[key] for ref in row['evidence_ids']
-                if ':frame:' in ref for key in [ref.replace(':frame:', ':', 1)] if images.get(key)]
-        playback = media_file(frozen, task.get('playback_file', ''))
+        rows = review.get('document', {}).get('content', {}).get('segments', [])
+        viewed_frames = []
+        if any(not row['frame_images'] for row in rows):
+            for segment in frozen.segments():
+                viewed = viewed_frame_ids(segment.get('review_result') or {})
+                for frame in segment.get('frames', []):
+                    key = f"{segment['id']}:{frame['id']}"
+                    if frame['id'] in viewed and images.get(key):
+                        viewed_frames.append((frame['time_ms'], key))
+        for row in rows:
+            cited = row['frame_images']
+            row['frame_images'] = [images[key] for ref in cited
+                                   if images.get(key := ref.removeprefix('evidence:'))]
+            if not cited:
+                start, end = row['start_time'], row['end_time']
+                candidates = (frame for frame in viewed_frames if start <= frame[0] < end)
+                nearest = min(candidates, key=lambda frame: abs(2 * frame[0] - start - end), default=None)
+                if nearest:
+                    row['period_image'] = images[nearest[1]]
+        playback = None if task.get('playback_status') == 'failed' else media_file(frozen, task.get('playback_file', ''))
+        archive_file = media_file(frozen, task.get('playback_archive')) if task.get('playback_status') == 'failed' else None
+        archive_url = 'media/' + archive_file.name if archive_file and archive_file.parent == (root/'media').resolve() else ''
         # Immutable media names keep older versioned HTML playable after refresh.
         media_url = ''
         if playback:
@@ -244,6 +268,8 @@ def export(store, *, snapshot=None, bundle=False, single_file=False, refresh_mon
             payload = {'ok': True, 'report': sanitize(public_live_report(data) if task.get('kind','live')=='live' else data)}
             if group == 'quality' and task.get('kind', 'live') == 'live':
                 payload['recap_failed'] = not review['available'] and review['status'] == 'failed'
+            if archive_url:
+                payload['archive_url'] = archive_url
             report_pages[group] = render_html(group, payload)
             stat = playback.stat() if playback else None
             fingerprint = hashlib.sha256((report_pages[group] + repr(
@@ -294,11 +320,14 @@ def export(store, *, snapshot=None, bundle=False, single_file=False, refresh_mon
                         archive.writestr('monitor.html', render_html('monitor', packed))
                     for group, page in report_pages.items():
                         archive.writestr(group + '.html', page)
+                    if archive_url: archive.write(archive_file, archive_url, compress_type=zipfile.ZIP_STORED)
                     if playback: archive.write(root/media_url, media_url)
                 os.replace(temporary, root/(f'reports-{version}.zip' if task.get('kind')=='video' else 'reports.zip'))
             finally:
                 if os.path.exists(temporary): os.unlink(temporary)
             artifacts.append(artifact(root/(f'reports-{version}.zip' if task.get('kind')=='video' else 'reports.zip'), 'bundle', version))
+        if archive_url:
+            artifacts.append(artifact(archive_file, 'media', version))
         if deliverable and playback and not single_file:
             artifacts.append(artifact(root/media_url, 'media', version))
         manifest = {'evidence_version':review.get('evidence_version'), 'media_layout':'embedded' if single_file else 'separate','version':version, 'artifact_status':'ready', 'artifacts':artifacts, 'complete':monitor['complete']}
@@ -490,7 +519,9 @@ def _attach_artifacts(store, data, command):
         if command in ('start','start-video','resume','report','recap-report','recap-submit'):
             data.update(safe_export(store))
         return
-    if store.task().get('kind') == 'video': return
+    if store.task().get('kind') == 'video':
+        if command in ('recap-report','recap-submit'): data.update(safe_export(store))
+        return
     if command not in {'start','resume'} and not snapshot_due(store):return
     # Event state is private bookkeeping, never included in an attachment.
     try:

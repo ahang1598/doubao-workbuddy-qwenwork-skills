@@ -163,12 +163,15 @@ def _claim(store, conn, known_rules_version, limit, dispatcher_id, target_batch_
     for batch in batches:
         if batch.get('status') not in ACTIVE:
             continue
+        # Main batches can move on after an individual gap; child batches retain their exit fence.
+        terminal = {'done','skipped'} if batch.get('executor') == 'main' else {'done'}
         if all(
-            lookup[int(segment_id)]['review_status'] == 'done'
+            lookup[int(segment_id)]['review_status'] in terminal
             and lookup[int(segment_id)]['evidence_revision'] == revision
             for segment_id, revision in batch['targets'].items()
         ):
-            batch['status'] = 'done'
+            has_gap = any(lookup[int(sid)]['review_status'] == 'skipped' for sid in batch['targets'])
+            batch['status'] = 'skipped' if has_gap else 'done'
             save(conn, store.session_id, batch)
         elif (
             batch['rules_version'] != snapshot['version']
@@ -216,6 +219,9 @@ def _claim(store, conn, known_rules_version, limit, dispatcher_id, target_batch_
     store._set_task(conn, task)
 
     if not allocated and waiting and executor:
+        from runtime.mediakit import host_refresh_due
+        if task.get('kind','live') == 'live' and host_refresh_due(task):
+            return {'task_id':store.task_id,'segments':[], 'next_action':'refresh-credentials'}
         waiting_ids = {segment['id'] for segment in waiting}
         retry = next((
             batch for batch in batches

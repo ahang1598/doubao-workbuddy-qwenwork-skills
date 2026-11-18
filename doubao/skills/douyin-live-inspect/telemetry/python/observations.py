@@ -77,12 +77,9 @@ def request_observation(task, intent, audit, reason, base):
     source, evidence = 'unknown', 'unknown'
     limit = {}
     if reason == 'execution_limit':
-        from runtime.realtime_policy import cloud_limited, CLOUD_COMMAND_LIMIT
-        count = task.get('cloud_live_command_count')
-        confirmed = cloud_limited(task) and type(count) is int and count >= CLOUD_COMMAND_LIMIT
         source = 'execution_limit'
-        evidence = 'runtime_state' if confirmed else 'agent_claim' if origin == 'agent' else 'unknown'
-        limit['limit_source'] = 'skill_command_budget' if confirmed else 'agent_reported' if origin == 'agent' else 'unknown'
+        evidence = 'agent_claim' if origin == 'agent' else 'unknown'
+        limit['limit_source'] = 'agent_reported' if origin == 'agent' else 'unknown'
     elif reason in {'duration_limit', 'source_ended'}:source, evidence = 'system', 'runtime_state'
     elif origin == 'dashboard' and reason == 'user_request':source, evidence = 'user', 'dashboard_request'
     elif origin == 'agent':

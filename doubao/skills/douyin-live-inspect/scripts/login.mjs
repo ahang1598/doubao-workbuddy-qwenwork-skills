@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // 执行指定账号的登录流程，授权输入不回显。
 import { parseArgs } from 'node:util';
+import { startLocalLogin, publicLoginError } from '../runtime/auth-local-login.mjs';
 import { runLogin } from '../runtime/auth-login.mjs';
 try {
   const { values } = parseArgs({
@@ -26,23 +27,19 @@ try {
       JSON.stringify({
         ok: true,
         command: 'login',
-        data: await runLogin({
+        data: await (values.remote || values['authorization-response-stdin'] ? runLogin : startLocalLogin)({
           ...values,
           authorizationResponseStdin: values['authorization-response-stdin'],
         }),
       }),
     );
   }
-} catch {
+} catch (error) {
   console.log(
     JSON.stringify({
       ok: false,
       command: 'login',
-      error: {
-        code: 'AUTH_FAILED',
-        message:
-          'Authentication operation failed; check login status and retry. Authorization input is never echoed.',
-      },
+      error: publicLoginError(error),
     }),
   );
   process.exitCode = 1;

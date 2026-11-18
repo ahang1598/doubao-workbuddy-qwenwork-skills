@@ -72,10 +72,14 @@ make write MIN_CHARS=3000 MAX_CHARS=6000
   "paper_type": "journal|degree|course|conference|review|proposal|other",
   "discipline_branch": "technical|medical|law|hss_empirical|hss_humanities|review",
   "needs_citation": "yes|no",
-  "output_target": "markdown_and_lark|markdown_only",
+  "output_target": "markdown_only | markdown_and_lark",
   "citation_style": "gbt7714_numeric|author_year|footnote|apa|chicago|mla|template"
 }
 ```
+
+**`output_target` 默认 `markdown_only`**：终稿写到本地 `paper_final.md` 即交付完成，不自动建飞书。只有用户明确要飞书文档链接、需要分享/多人协作、或论文特别长（>8000 字）时才设为 `markdown_and_lark`。
+
+注意：`output_target` 只决定输出形式，不影响内容深度和篇幅要求。无论选择哪种交付方式，正文都必须按 `task_scope` 和 `paper_type` 的要求写够深度、写够章节结构——只是最后是输出到本地 Markdown 还是飞书文档的区别。
 
 `task_scope=revise`用于会改变结构、证据安排、章节职责或内容取舍的实质性修订。进入write前把用户原稿原样保存为`.workflow/original_draft.md`，并创建`.workflow/revision_contract.json`：
 

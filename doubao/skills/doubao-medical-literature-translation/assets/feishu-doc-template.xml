@@ -1,7 +1,7 @@
 <!-- 替换全部占位符；界面标签和翻译标识使用目标语言。英文译文使用 English Translation/Translation。 -->
 <title>{{translated_title}} — {{translation_label}}</title>
 <callout background-color="light-green">
-  <!-- 范围只能按 coverage ledger 填写；门槛 B 只检查写入返回值，不得声称飞书正文已回读验证。 -->
+  <!-- 范围只能按 coverage ledger 填写。 -->
   <p><b>{{scope_label}}</b>{{verified_scope}}</p>
   <!-- 默认排除参考文献时，不创建参考文献标题、处理说明或条目；只有用户明确要求纳入时，才在实际范围中说明并把真实条目放入正文。 -->
   <p><b>{{source_label}}</b>{{source_entry}}</p>

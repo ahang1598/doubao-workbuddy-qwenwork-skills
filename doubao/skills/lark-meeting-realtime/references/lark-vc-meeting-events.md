@@ -64,7 +64,7 @@ lark-cli vc +meeting-events --meeting-id <id> --page-all --format pretty
 若当前用户不是会议可见参与者，后端通常会报 `no permission`。
 
 - **会议进行中**：当前用户须仍在会中。
-- **会议已结束后的 15 分钟内**：仍可拉取事件。
+- **会议已结束后的 15 分钟内**：当前登录用户曾真实入会并最终未被移出会议时，仍可补拉事件；不满足该条件时改用会议详情、纪要、逐字稿或录制等会后产物。
 - **会议结束超过 15 分钟**：会返回会议结束错误；不要尝试继续拉取事件，改用会议详情、纪要、逐字稿或录制等会后产物。
 
 ### 4. 自动分页规则
@@ -303,7 +303,7 @@ lark-cli vc +meeting-events \
 |---------|---------|---------|
 | `--meeting-id is required` | 未传入 `--meeting-id` | 传入长数字 `meeting.id` |
 | 无权限 / 不可见 | 当前用户不是该会议的可见参与者，或 `meeting_id` 不是从用户可见路径获得 | 确认 `meeting_id` 来自 `+meeting-list-active`；若凭证缺失由 agent 平台补齐用户凭证后重试。**如果只是想看参会人快照，改用 `lark-cli vc meeting get --params '{"meeting_id":"<meeting.id>","with_participants":true}'`** |
-| `20001 meeting_status_MEETING_END` | 会议已结束且已超出后端允许的 15 分钟宽限窗口 | 本接口不再适合继续拉取事件。先用 `lark-cli vc +detail --meeting-ids <meeting.id>` 获取会议产物信息，再根据 `note_display_type` / `note_id` / `minute_token` 和用户意图选择纪要正文、逐字稿或妙记；参会人请用 `lark-cli vc meeting get --params '{"meeting_id":"<meeting.id>"}' --with-participants` |
+| `20001 meeting_status_MEETING_END` | 会议已结束且已超出后端允许的 15 分钟宽限窗口，或不满足会后补拉条件 | 本接口不再适合继续拉取事件。先用 `lark-cli vc +detail --meeting-ids <meeting.id>` 获取会议产物信息，再根据 `note_display_type` / `note_id` / `minute_token` 和用户意图选择纪要正文、逐字稿或妙记；参会人请用 `lark-cli vc meeting get --params '{"meeting_id":"<meeting.id>"}' --with-participants` |
 | `20002 meeting not exist` | `meeting_id` 错误，或会议实例当前已不可获取（常见于把 9 位会议号当 meeting_id 传） | 确认传入的是长数字 `meeting_id`，不是 9 位会议号 |
 | `HTTP 404` / `HTTP 500` | 服务端当前无法找到或处理该会议实例 | 换一个正在进行且当前用户可见的 meeting_id，或排查后端问题 |
 

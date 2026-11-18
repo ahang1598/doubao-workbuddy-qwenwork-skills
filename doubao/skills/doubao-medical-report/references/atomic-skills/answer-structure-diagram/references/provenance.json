@@ -1,0 +1,60 @@
+{
+  "snapshot": "2026-11-05",
+  "origin": "extracted",
+  "note": "保留相关规范与运行资源；飞书/renderer 按宿主适配，关联父流程的默认文种不提升为全局要求。",
+  "files": [
+    {
+      "source": "新增子skills-20261105/来源/doubao-visualization_20261105_150506_000/references/mode-html-svg.md",
+      "target": "references/mode-html-svg.md",
+      "sha256": "80a5c552af209e8b2fcc1448678ca77b1a296187cd6d862bd59a0929e3872350",
+      "materialized_sha256": "35ac4d64acdfa24e809d16eec500d0c2c4285129143ddb10a34512ee7ddea0f4",
+      "current_sha256": "40979db8802dea2e50bd00cc1e9032c3c63e7268e1f1fabf45de7796315fabda"
+    },
+    {
+      "source": "新增子skills-20261105/来源/doubao-visualization_20261105_150506_000/references/renderer-trigger-design.md",
+      "target": "references/renderer-trigger-design.md",
+      "sha256": "ca9d1c3623433a400219b34614ad13e1a757e085c47815ee4c7ecceaea904a58",
+      "materialized_sha256": "ca9d1c3623433a400219b34614ad13e1a757e085c47815ee4c7ecceaea904a58",
+      "current_sha256": "8fe3ab3dddc35b2e4aa8da1bc4ca72355d28496fde23f65fd8045f72f258cddd"
+    },
+    {
+      "source": "新增子skills-20261105/来源/doubao-visualization_20261105_150506_000/references/renderer-output-mobile.md",
+      "target": "references/renderer-output-mobile.md",
+      "sha256": "8ef406b0354db3582ae10a9a36d7b99d259f4ac68782c9a728795d9317ead830",
+      "materialized_sha256": "8ef406b0354db3582ae10a9a36d7b99d259f4ac68782c9a728795d9317ead830",
+      "current_sha256": "8ef406b0354db3582ae10a9a36d7b99d259f4ac68782c9a728795d9317ead830"
+    }
+  ],
+  "adaptations": [
+    {
+      "date": "2026-11-09",
+      "scope": "一种正式载体；中间文件内部使用；额外交付仅按明确要求",
+      "changedFiles": [
+        "SKILL.md",
+        "references/delivery-contract.md"
+      ],
+      "scriptsAndAssetsUnchanged": true
+    },
+    {
+      "date": "2026-11-09",
+      "scope": "生成前判断可视化收益，省略重复列表式图形，保留有效比较/关系/交互",
+      "changedFiles": [
+        "SKILL.md",
+        "references/visual-value.md",
+        "references/mode-html-svg.md",
+        "references/renderer-trigger-design.md"
+      ],
+      "scriptsAndAssetsUnchanged": true
+    },
+    {
+      "date": "2026-11-10",
+      "scope": "医学报告包可视化改为程序化 SVG 优先；移除生成式图片分支及位图/Canvas 回退，精确数值与响应式布局要求保留",
+      "sourceFingerprintsPreserved": true
+    },
+    {
+      "date": "2026-11-10",
+      "scope": "补充SVG直接构造与临时资源边界，区分不必要的对话确认、平台强制审批和浏览器许可"
+    }
+  ],
+  "localRevision": "svg-priority.20261110"
+}

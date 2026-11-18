@@ -7,6 +7,8 @@ import re
 
 MODEL = 'zipformer-multi-zh-hans-int8-2023-12-13'
 VERSION = '1.13.4'
+# Keep the shipped manifest identity; pin inference separately after CPU replay.
+INFERENCE_VERSION = '1.12.40'
 REQUIRED = ['vad/silero_vad.onnx', *[f'model/{MODEL}/{n}' for n in
             ('encoder.int8.onnx', 'decoder.onnx', 'joiner.int8.onnx', 'tokens.txt')]]
 
@@ -68,5 +70,5 @@ def checked_model(root):
                     model=MODEL, model_file=m['modelFile'], engine=m['engine'],
                     asr_mode='single_pass', fingerprint=fingerprint)
     if legacy: metadata['arch'] = m['arch']
-    else: metadata['inference_backend'] = f'sherpa-onnx-python-{VERSION}'
+    else: metadata['inference_backend'] = f'sherpa-onnx-python-{INFERENCE_VERSION}'
     return root, metadata

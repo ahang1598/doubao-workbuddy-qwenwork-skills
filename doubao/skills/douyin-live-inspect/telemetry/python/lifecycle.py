@@ -105,6 +105,10 @@ def inspection_result(task, segments, coverage=None, *, reviewed=None):
     if task.get('kind','live')=='live' and task.get('finishing',{}).get('phase')=='draining':
         return None
     from runtime.realtime_policy import current
+    if (task.get('kind','live')=='live' and not segments and task.get('capture_status') in {'ended','stopped'}
+            and task.get('worker_status') != 'failed'
+            and task.get('source_end_reason') in {'offline','end_requested','user_stop','execution_limit','duration_limit'}):
+        return 'stopped' if task.get('worker_status') in {'done','stopped'} else None
     if current(task) and task.get('media_frozen') and task.get('finishing', {}).get('phase') == 'completed':
         if task.get('stop_audit', {}).get('reason') == 'user_request' or task.get('stop_reason') == 'user_request':return 'completed'
         return 'partial' if has_review() else 'failed'
@@ -132,6 +136,9 @@ def inspection_result(task, segments, coverage=None, *, reviewed=None):
     return None
 
 def recap_transition(task, old, emitted):
+    # Video recaps share report delivery, but are outside the live recap funnel.
+    if task.get('kind') == 'video':
+        return
     recap = task.get('recap') or {}
     record = task.get('_recap_telemetry')
     if (record and record.get('task_finished_at') and old.get('status') == 'failed'

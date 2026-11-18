@@ -108,5 +108,5 @@ def acknowledge_report(store, value):
         from runtime.transaction import observe_video_delivery
         observe_video_delivery(store, receipt, frozen)
         return {'status':value['status'],'delivery_status':value['status'],'version':value['version'],
-                'next_action':'report --allow-partial' if value['status']=='failed' else 'delivery-complete',
+                'next_action':'report --allow-partial' if value['status']=='failed' else 'recap-input --begin' if store.task().get('video_recap_enabled') else 'delivery-complete',
                 'artifacts':receipt['result'].get('artifacts',[])}

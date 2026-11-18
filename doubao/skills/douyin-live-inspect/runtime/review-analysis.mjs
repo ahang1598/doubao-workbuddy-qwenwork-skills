@@ -92,7 +92,9 @@ export async function readAnalysis(input) {
     for (const key of ['start_time', 'end_time']) expect(Number.isSafeInteger(row[key]) && row[key] >= 0, `review.segments[${index}].${key}`, 'non-negative integer');
     expect(typeof row.content === 'string' && row.content.trim(), `review.segments[${index}].content`, 'non-empty string');
   }
-  try { buildReviewReportViewModel(review); }
+  // Evidence-bound scores are validated during assembly with the private context.
+  const { scoring, ...content } = review;
+  try { buildReviewReportViewModel(content); }
   catch (error) {
     if (error.code === 'RAW_DATA_REJECTED') throw error;
     // Existing semantic validators remain authoritative, without leaking values.

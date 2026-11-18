@@ -6,7 +6,7 @@
 
 ## 1. 先设置 delivery_mode
 
-在检索、分析或起草前锁定 `TEXT` 或 `HTML_REPORT` 并运行计划门禁。只有一至三句即可无损回答单一事实、口径或决策问题，且不需要结构化比较、图示或复杂证据链时，使用 `TEXT`；其他情况使用 `HTML_REPORT`。条件失效或生成高级组件时升级为 `HTML_REPORT`。
+在检索、分析或起草前锁定 `TEXT` 或 `HTML_REPORT` 并建立交付清单。只有一至三句即可无损回答单一事实、口径或决策问题，且不需要结构化比较、图示或复杂证据链时，使用 `TEXT`；其他情况使用 `HTML_REPORT`。条件失效或生成高级组件时升级为 `HTML_REPORT`。
 
 `HTML_REPORT` 的流程是：计划章节与图表 → 完成事实校验及读者版 Markdown → 用 `scripts/render_html_report.py` 生成自包含 HTML → 在浏览器复核结构、数据、来源、图表与移动端 → 运行最终门禁 → 交付 HTML 文件链接。无需在线文档认证。
 
@@ -61,7 +61,7 @@
 | 其他交互趋势和信息密集视图 | HTML 图表组件| 表格不足时使用；不要只为装饰创建 |
 | 公式与关键假设 | 公式或简洁段落 | 展示可复算的关键公式，不把整篇写成方法论文 |
 | 叙述、机制、判断与解释 | 连贯段落 | 默认表达；不要机械拆成 bullet 或卡片 |
-| 来源、公告、监管文件 | 可点击引用/来源列表 | 来源紧随事实，并保留发布日期和截止日 |
+| 来源、公告、监管文件 | 正文就近引用 + 文末来源汇总 | 关键事实句末、表格行/表下注和图注注明来源；有 URL 的编号可点击，保留发布日期和截止日，不能只在文末列来源 |
 
 ### 高亮块
 
@@ -117,13 +117,13 @@
 
 1. 按 `core-financial-snapshot.md`、`writing-quality.md` 和适用模板形成完整读者版 Markdown，保留 `required_sections`；复杂引用按 `script-usage.md` 运行 `report_pipeline.py` 生成来源章节。
 2. 运行 `python3 scripts/render_html_report.py <读者版正文.md> --output <报告.html>`。图表使用既有脚本生成，并嵌入最终 HTML。
-3. 打开最终 HTML，复核核心结论位置、章节、引用、表格口径、图表交互与免责声明；检查移动端宽度、标签碰撞、配色和打印效果。
+3. 打开最终 HTML，复核核心结论位置、章节、引用、表格口径、图表交互与免责声明；检查本次宽表、长标签和图表在移动端的显示；基础样式在模板版本验收时检查，打印效果在用户要求打印或 PDF 时检查。
 4. 按 `writing-quality.md` 删除低质量和重复内容；若正文或图表修改，重新生成 HTML 并再次复核。
-5. 把实际章节写入 `actual_sections`，确认 `quality_checks`、`visual_checks` 和跨产物数据一致性后运行 `delivery_gate.py --phase final`。
+5. 把实际章节写入 `actual_sections`，确认必需结构、写作与视觉质量和跨产物数据一致性后运行 `delivery_gate.py --phase final`。
 6. 门禁通过后，在聊天中返回一至三句核心结论和 HTML 文件链接。
 
 ## 7. 最终交付门禁（必须执行）
 
-发送最终回复前，盘点正文和图表中实际使用的高级组件，更新交付清单并运行 `scripts/delivery_gate.py --phase final <manifest.json>`。`HTML_REPORT` 必须有真实存在的完整 `.html` 文件，`html_created=true`、`html_path=<实际文件路径>`、`file_verified=true`。这些字段只能在最后一次生成后打开 HTML 并核对正文、表格、引用、图表和免责声明后填写。
+发送最终回复前，盘点正文和图表中实际使用的高级组件，更新交付清单并运行 `scripts/delivery_gate.py --phase final <manifest.json>`。`HTML_REPORT` 必须有真实存在的完整 `.html` 文件，并填写 `html_path=<实际文件路径>`。最后一次生成后打开 HTML，核对正文、表格、引用、图表和免责声明。
 
-若有交互图表，逐图记录独立问题、来源单位、无重复编码及实际渲染；`html_block_checks.embedded_in_html_report=true` 和 `html_block_checks.chart_source_embedded=true` 表示图表已嵌入完整报告。所有模式还必须完成跨产物数据对账并设置 `data_consistency_verified=true`。报告生成失败或渲染有误时保持未完成，修复并重新生成、复核后再交付。
+若有交互图表，逐图核对独立问题、来源单位、无重复编码、嵌入和实际渲染。所有模式还必须完成跨产物数据对账。实际复核直接完成，无需逐项转写写作、视觉、嵌入与一致性布尔值。报告生成失败或渲染有误时保持未完成，修复并重新生成、复核后再交付。

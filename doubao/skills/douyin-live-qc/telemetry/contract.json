@@ -1,0 +1,21 @@
+{
+  "entry_types": ["search", "link", "scheduled"],
+  "steps": {
+    "preflight": ["success", "failure"],
+    "search": ["success", "empty", "failure"],
+    "probe": ["success", "empty", "partial", "failure"],
+    "targets": ["waiting", "confirmed", "preset", "ended"],
+    "extract": ["success", "failure"],
+    "record": ["success", "failure", "unknown"],
+    "transcript": ["pending", "success", "failure"],
+    "mp4_delivery": ["success", "failure", "unknown"],
+    "minutes_delivery": ["success", "failure", "unknown"],
+    "review_choice": ["waiting", "continued", "deferred", "ended"],
+    "scan": ["success", "failure"],
+    "review": ["success", "failure"],
+    "report_create": ["success", "failure", "unknown"],
+    "report_delivery": ["success", "failure", "unknown"]
+  },
+  "reasons": ["dependency", "browser", "search_error", "no_matches", "probe_error", "no_live_detected", "stream_unavailable", "record_error", "duration_unverified", "transcription_error", "scan_error", "review_error", "create_error", "delivery_error", "unknown"],
+  "counts": ["targets", "recorded", "transcripts", "mp4_delivered", "minutes_delivered", "materials", "continued", "reviewed", "generated", "delivered"]
+}

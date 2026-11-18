@@ -3,6 +3,26 @@ const pendingSeeks = new WeakMap();
 const renderJobs = new WeakMap();
 // Native dialog provides focus containment and Esc; restore focus to its trigger.
 window.LiteUI = {
+  // Collapse only the generated ambiguity notice; explicit failures keep their time ranges.
+  reportGapDetail(gap) {
+    return gap.kind !== "image_unsampled" && !(gap.kind === "judgment" &&
+      gap.reason === "规则结果缺失或证据不足，具体原因见规则判断依据");
+  },
+  reportScope(report) {
+    const gaps = report.coverage?.gaps || [];
+    const notes = ["结论仅适用于已完成判定的范围。"];
+    const counts = report.conclusion?.coverage_summary?.counts;
+    if (counts?.unchecked) notes.push(`${counts.unchecked} 段未完成检测。`);
+    if (counts?.pending) notes.push(`${counts.pending} 段待判定。`);
+    if (!gaps.length && (report.conclusion?.has_incomplete_results || report.conclusion?.coverage_complete === false))
+      notes.push("存在未完成检测或未确认的内容。");
+    if (gaps.some(g => g.kind === "image_unsampled")) notes.push("画面采用抽样检测，仅覆盖抽检时刻。");
+    if (gaps.some(g => g.kind === "judgment" && !this.reportGapDetail(g)) || report.remediation?.pending?.length || counts?.evidence_insufficient)
+      notes.push("部分规则尚无法确认，不计为已确认风险。");
+    const reasons = [...new Set(gaps.filter(g => this.reportGapDetail(g)).map(g => g.reason).filter(Boolean))];
+    if (reasons.length) notes.push(`检测范围限制：${reasons.join("；")}。`);
+    return notes.join(" ");
+  },
   renderRows(container, rows, render, empty = "", revealIndex = -1) {
     const job = {};
     renderJobs.set(container, job);
@@ -49,7 +69,7 @@ window.LiteUI = {
     const dialog = document.createElement("dialog");
     dialog.id = "lite-image-dialog";
     dialog.className = "lite-image-dialog arco-image-preview";
-    dialog.setAttribute("aria-label", "证据图片预览");
+    dialog.setAttribute("aria-label", `${alt || "证据图片"}预览`);
     // Reuse the console's exported Arco markup/styles/icons, with native focus containment.
     dialog.innerHTML = '<div class="arco-image-preview-wrapper"><div class="arco-image-preview-img-container"><img class="arco-image-preview-img" draggable="false"></div><div class="arco-image-preview-toolbar"></div></div>';
     const wrapper = dialog.querySelector('.arco-image-preview-img-container');

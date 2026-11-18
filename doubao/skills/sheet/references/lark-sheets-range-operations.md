@@ -34,6 +34,7 @@
 - **普通新建区域一次排版**：可按字段类型使用合理的固定列宽和行高，长文本按需设置 `cell_styles.word_wrap="auto-wrap"`；不要求扫描全列最长内容或逐格精算。保留完整内容，不为限制行数删减信息，也不以长说明在默认视图全部展开为交付门槛。
 - **明确要求与已知异常按范围处理**：用户要求打印、指定尺寸或全文可见时按要求适配；表头、关键数值或遮挡等已有具体异常只修受影响区域，不另起全表溢出检查或反复渲染微调。仅下载 / 导出不触发打印版式要求。
 - **已有尺寸优先保留**：修改已有区域或新增行列继承样式时，沿用已有行高列宽；只有新增 / 确实放不下新内容的区域才补尺寸，不因估算值不同重设原有列。
+- **自动行高只判断模式**：`+sheet-info --include row_heights` 返回 `type=auto` 时省略 `height`，实际高度由内容布局决定；固定行高返回数值。旧服务在 auto 模式返回的默认值没有实际显示高度的参考意义。
 - **尺寸单位与调用**：飞书行高列宽使用像素，不能直接传 Excel 字符宽度或行高磅值。确需按内容估宽时，可参考 `max(表头字符数, 代表性内容字符数) × 8 + 16` 像素（汉字按 2 字符），这是估算方法，不是验收阈值。多列 / 多行用 `+cols-resize --widths` / `+rows-resize --heights` 一次设置；样式、合并和尺寸组合用 `+styles-put`。
 
 **⚠️ 合并单元格安全操作规则**（`+cells-{merge|unmerge}` 必读）：
@@ -259,7 +260,7 @@ lark-cli sheets +rows-resize --url "..." --sheet-id "$SID" --range "1" --type au
 lark-cli sheets +cols-resize --url "..." --sheet-id "$SID" --range "A:E" --type standard
 ```
 
-**⚠️ 单位是像素，不是 Excel 字符单位 / 磅**：列宽常见 60~400px；如果你按 Excel 字符单位（openpyxl / xlsxwriter 的 `width`）心算，先换算 `px ≈ 字符数 × 8 + 16`——写 `{"A": 10}` 得到的是 10px 的不可用窄列（CLI 会拒绝 < 20px 的列宽并提示换算）。行高是像素不是磅（points），默认行高约 24px。
+**⚠️ 单位是像素，不是 Excel 字符单位 / 磅**：列宽常见 60~400px；如果你按 Excel 字符单位（openpyxl / xlsxwriter 的 `width`）心算，先换算 `px ≈ 字符数 × 8 + 16`——写 `{"A": 10}` 得到的是 10px 的不可用窄列（CLI 会拒绝 < 20px 的列宽并提示换算）。固定行高使用像素，不是磅（points）；自动行高按上方模式规则处理。
 
 **列宽没有 auto-fit**：用户要求按内容适配时，可参考「按需设置行高列宽」估算像素值后用 `--widths` 显式设置；普通新建表也可直接使用按字段类型选定的合理宽度。
 
@@ -290,4 +291,4 @@ lark-cli sheets +range-sort --url "..." --sheet-id "$SID" --range "A1:E100" --ha
 - `Validate`：XOR 公共四件套；`+cells-clear` 强制 `--yes` 或 `--dry-run`；`+range-*` 校验源 / 目标 range 在同一 spreadsheet；`+range-sort` 的 `--sort-keys` 必须合法 JSON 数组且 col 都在 `--range` 内；`+rows-resize` / `+cols-resize` 两种形态二选一——统一形态必须给 `--range` 且至少给 `--height`/`--width` 或 `--type` 之一（`--type standard`/`auto` 不能与像素 flag 同给，`--type pixel` 共存 OK），map 形态（`--heights`/`--widths`）不能与 `--height`/`--width`/`--type` 混用，额外的 `--range` 必须与 map 完整覆盖同一范围，map 键必须与命令维度一致（行数字 / 列字母）、不得重复，值为正整数像素或模式字符串；列宽 < 20px 拒绝（疑似 Excel 字符单位）；`+cols-resize` 不接受 `auto`（列宽不支持自适应）。map 形态在 `+batch-update` 子操作里不可用（它本身就是批量提交）。
 - `DryRun`：所有写操作输出"将要 PATCH 的 range + 受影响 cell 数估算"。
 
-===== 全文完（共 293 行）=====
+===== 全文完（共 294 行）=====

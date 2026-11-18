@@ -1,6 +1,6 @@
 # 报告模式工作流
 
-生成完整季度点评报告。定位是**解释性点评**，不是投资建议。交付物：文本框简短作答 + 独立 HTML 报告（优先发布为飞书妙搭 HTML 页面）。最终对话不粘贴报告全文。
+生成完整季度点评报告。定位是**解释性点评**，不是投资建议。交付物：文本框简短作答 + 独立 HTML 报告。最终对话不粘贴报告全文。
 
 **内部产物目录：** 所有工作文件必须写入 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/`。开始工作前先创建该目录；目录名就是约束：其中任何文件都不得在最终回复中展示、列出、上传、摘要或作为交付物。
 
@@ -50,7 +50,7 @@
 阶段 3  广撒网取数 → _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json（含 claims）→ 门禁 1
 阶段 4  写作决策 → _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__writing-plan.md（含机制分析与当前深度）
 阶段 5  定向补查 → 更新 _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json → 重跑门禁 1
-阶段 6  写 _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html（含读者视角自查）
+阶段 6  写 _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html（含成稿复核）
 阶段 7  HTML 核验与交付（只运行 finalize_html_report.py）
 ```
 
@@ -179,7 +179,7 @@ HTML 源稿应把支撑结论的正文数字、表格关键数字、后续关注
 
 - `{fact:...}` 绑定标记只存在于源稿，`finalize_html_report.py` 会转换成可点击 `[n]` 来源标记，并按同一编号生成「数据来源」。源稿不要手写 `[n]` 或 `[^n]`。
 - `{fact:...}` 只能引用 `claims[].claim_id`，不得引用 `other_facts.name` 或中文事实名。关键 `other_facts` 若要入正文，先补一条 `claims`；未知或非规范 fact 引用会导致 finalize 失败。
-- 无法绑定到 `claims` 的数字，先判断是不是关键证据：是则回到阶段 3 或阶段 5 补 facts；不是则可保留，并在 lint 警告中复核。
+- 无法绑定到 `claims` 的数字，先判断是不是关键证据：是则回到阶段 3 或阶段 5 补 facts；不是则可保留。
 - `usage_type=broker_estimate/broker_forecast/market_view/author_inference` 的 claim，正文必须用「券商估算/机构预计/市场讨论/可能指向」等限定语，不得写成确定事实。
 
 #### 表述规范
@@ -189,24 +189,14 @@ HTML 源稿应把支撑结论的正文数字、表格关键数字、后续关注
 - **环比**：直接写「环比 +X%」，不加括号注释上期基数。
 - **内部标签**：深度0/深度1/深度2/深度3/深度4、当前深度、补到深度、机制候选、假设空间、结论分档、门禁、收入函数——这些严禁出现在正文中。直接写分析内容本身。
 
-#### 读者视角自查（写完后立即执行）
+#### 成稿复核
 
-以**对财报分析感兴趣但不了解你内部工作流的读者**身份通读全文，逐项检查：
+按 [成稿复核](../SKILL.md#成稿复核) 核对源稿。
 
-1. **内部术语残留？** 搜索标签形态：深度0、深度1、深度2、深度3、深度4、当前深度、补到深度、机制候选、假设空间、结论分档、门禁、收入函数、brief。出现任何一个 = 必须改写。
-2. **照搬中间产物？** 把 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html` 与 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__company-brief.md` 对照，如果某段的句式、措辞、结构与 brief 高度雷同，用读者能理解的因果叙事重写。
-3. **像分析文章还是像填模板？** 如果某段读起来是「标签：内容」的格式，改为连贯叙述。
-4. **措辞强度与证据匹配？** 没有充分证据的结论不应使用确定性表述。
-5. **正文关键数字与 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json` / check_facts 输出一致？** 核心证据数字是否有 `{fact:claim_id}`；是否错误引用了 `other_facts.name`；`usage_type` 与正文语气是否匹配，例如券商估算、媒体报道、作者推断是否保留了限定语。若 lint 输出「来源/语气复核」并给出「建议改写」，除非能明确判断为误报，否则按建议改写或补充等价限制语。
-6. **展开的对质真过了门槛？没有删掉后不影响主线理解的段落？**
-7. **三个关注点都交代了裁决状态？**
-
-发现问题 → 修改 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html`，改完再进入阶段 7。
-
-写完 HTML 源稿并完成自查后，必须更新 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/00_RESUME_HERE__NEXT_STEP.md`：
+完成复核后，必须更新 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/00_RESUME_HERE__NEXT_STEP.md`：
 
 ```text
-当前状态：HTML 源稿已完成自查，但尚未生成最终页面。
+当前状态：HTML 源稿已完成复核，但尚未生成最终页面。
 禁止交付：_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html（含 {fact:...} 审计标记）
 下一步必须执行：运行 python3 scripts/finalize_html_report.py _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json --output FINAL_REPORT_HTML/index.html
 最终源稿：_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html
@@ -222,9 +212,7 @@ HTML 源稿应把支撑结论的正文数字、表格关键数字、后续关注
 python3 scripts/finalize_html_report.py _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json --output FINAL_REPORT_HTML/index.html
 ```
 
-2. 打开 `FINAL_REPORT_HTML/index.html`，按 `html-style.md` 在桌面和手机宽度做读者视角检查：首屏有明确判断，正文与数据易读，文末来源链接和风险提示可见；不得出现 `{fact:...}`、`【...】` 占位符、空组件或内部文件名。实际采用的组件须包含有效内容，不为凑版式重复数字。若有图表，确认它们在独立 HTML 中可见。HTML 才是完整报告，不得用简短回答替代。
-3. 优先使用可用的飞书妙搭 HTML 发布能力发布 `FINAL_REPORT_HTML/index.html`，并取得可访问链接。若当前环境不支持 HTML 发布，直接附上该 HTML 文件并说明尚未发布。不要创建飞书云文档来替代 HTML。
-4. 最终文本框先放固定风险提示语，再用 2-4 句话概括主结论、1-2 个关键证据和最重要的判断局限，最后给 HTML 链接或附件。不要粘贴完整报告，也不要列中间产物。文本框中出现的数字也必须来自事实表并与 HTML 一致。
+2. 最终文本框先放固定风险提示语，再用 2-4 句话概括主结论、1-2 个关键证据和最重要的判断局限，最后给 HTML 链接或附件。不要粘贴完整报告，也不要列中间产物。文本框中出现的数字也必须来自事实表并与 HTML 一致。
 
 最终回复示例：
 

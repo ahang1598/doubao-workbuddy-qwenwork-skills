@@ -28,13 +28,35 @@ GITHUB_URL = "https://github.com/GyanD/codexffmpeg/releases/download/8.1.2/ffmpe
 PINNED_SHA = "db580001caa24ac104c8cb856cd113a87b0a443f7bdf47d8c12b1d740584a2ec"
 
 
-def _attempt(key, spec, number, progress):
+# Old upstream addresses are recognized only to migrate frozen tasks to CDN.
+MAC_PACKAGES = {
+    'https://lf6-cdn-tos.douyinstatic.com/obj/livesaas/inspect-lite/ffmpeg/ffmpeg-8.0.1-darwin-arm64.zip': ('804872c84b04438e50e06b48e13e3a6182948139869bf78f5d0d48ab3fc6c4b0', 53886034,
+        'https://lf6-cdn-tos.douyinstatic.com/obj/livesaas/inspect-lite/ffmpeg/ffmpeg-8.0.1-darwin-arm64.zip', '8.0.1'),
+    'https://media.githubusercontent.com/media/zackees/ffmpeg_bins/df95abcb0ce6efff710dda5ef28a2f6f1dc21493/v8.0/darwin_arm64.zip': ('b2da44a8169c4d09a97db996250690c3346f72e4795521d23d3dbb1e72421207', 41925556,
+        'https://lf6-cdn-tos.douyinstatic.com/obj/livesaas/inspect-lite/ffmpeg/ffmpeg-7.0-darwin-arm64.zip', '7.0'),
+    'https://media.githubusercontent.com/media/zackees/ffmpeg_bins/df95abcb0ce6efff710dda5ef28a2f6f1dc21493/v8.0/darwin.zip': ('70fd5b21cb37b6ea97c8b584cf76b3cc6a90179831c9c269811b9716c28605fb', 53079896,
+        'https://lf6-cdn-tos.douyinstatic.com/obj/livesaas/inspect-lite/ffmpeg/ffmpeg-8.0.1-darwin-x64.zip', '8.0.1'),
+}
+
+
+def mac_package(spec):
+    for old,package in MAC_PACKAGES.items():
+        legacy=old.replace('https://media.githubusercontent.com/media/','https://github.com/').replace('/df95abcb','/raw/df95abcb')
+        if (spec.get('url') in (old,legacy,package[2]) and spec.get('version') == package[3]
+                and (spec.get('sha256'),spec.get('bytes')) == package[:2]):return package
+    return None
+
+
+
+def _attempt(key, spec, number, progress, *, supervised=False):
     from runtime import artifacts
     from runtime.model_preparation import environment
     attempt = '.prepare-ffmpeg-' + uuid.uuid4().hex + '-'
+    # A fallback coordinator already owns the POSIX process group for cancellation.
+    shared_group = supervised and os.name != 'nt'
     child = subprocess.Popen([sys.executable, '-m', 'runtime.ffmpeg_install'],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        env=environment(), **process_options())
+        env=environment(), **({} if shared_group else process_options()))
     handlers={}
     state = {'prepare_stage': 'permissions', 'bytes_received': 0, 'prepare_attempts': number}
     changed = time.monotonic()
@@ -103,11 +125,15 @@ def _attempt(key, spec, number, progress):
             failure=artifacts.PreparationError(result['error']['code'],result['error']['stage'],result['error']['retryable'])
             failure.http_status=result['error'].get('http_status')
             failure.network_failure_kind=result['error'].get('network_failure_kind')
+            for field in ('prepare_operation','errno','winerror'):
+                if field in result['error']:setattr(failure,field,result['error'][field])
             failure.diagnostic=result.get('diagnostic',{})
             raise failure
         return Path(result['root']), result['source'], result
     except BaseException as error:
-        try:kill_tree(child)
+        try:
+            if shared_group:child.kill()
+            else:kill_tree(child)
         except (OSError, subprocess.SubprocessError, KeyboardInterrupt, SystemExit):
             try:child.kill()
             except (OSError, KeyboardInterrupt, SystemExit):pass
@@ -176,9 +202,13 @@ def install(request, emit=None):
             root,source=artifacts.ensure_artifact('ffmpeg',request['key'],spec,smoke,progress=progress,prefix=request['prefix'],downloader=download)
             worker_result.update(root=str(root),source=source)
         except artifacts.PreparationError as error:worker_result['error']=error.public()
-        except PermissionError as error:
-            worker_result.update(error={'code':'ARTIFACT_PERMISSION_DENIED','stage':'permissions','retryable':False},
-                          acl_reason=getattr(error,'reason',None))
+        except OSError as error:
+            failure=artifacts.PreparationError(
+                'ARTIFACT_PERMISSION_DENIED' if isinstance(error,PermissionError) else 'ARTIFACT_DISK_ERROR',
+                getattr(error,'prepare_stage',state['prepare_stage']))
+            for field in ('prepare_operation','errno','winerror'):
+                setattr(failure,field,getattr(error,field,None))
+            worker_result.update(error=failure.public(),acl_reason=getattr(error,'reason',None))
         except Exception:worker_result['error']={'code':'FFMPEG_PREPARATION_FAILED','stage':'ffmpeg','retryable':False}
         finally:done.set()
     threading.Thread(target=work,daemon=True).start()
@@ -204,6 +234,8 @@ def install(request, emit=None):
     diagnostic.update(recovery_outcome='failed' if 'error' in result else 'success',
                       recovery_code=result.get('error',{}).get('code','none'),
                       recovery_elapsed_ms=round((time.monotonic()-started)*1000))
+    for field in ('prepare_operation','errno','winerror'):
+        if field in result.get('error',{}):diagnostic[field]=result['error'][field]
     if 'http_status' in result.get('error',{}):diagnostic['http_status']=result['error']['http_status']
     if 'network_failure_kind' in result.get('error',{}):diagnostic['network_failure_kind']=result['error']['network_failure_kind']
     return {**result,'diagnostic':diagnostic,'recovered':resumed or diagnostic['prepare_attempts']>1}
@@ -230,7 +262,12 @@ def console_progress(detail):
 
 
 def migrated_spec(spec):
-    if spec.get('url') == LEGACY_URL and spec.get('version') == '8.1.2' and spec.get('sha256') == PINNED_SHA:
+    mac=mac_package(spec)
+    if mac and mac[3]=='7.0':
+        from runtime.artifacts import CATALOG
+        return json.loads(CATALOG.read_text(encoding='utf-8'))['platforms']['darwin-arm64']['ffmpeg']
+    if mac:return {**spec,'url':mac[2]}
+    if spec.get('url') in (LEGACY_URL,GITHUB_URL) and spec.get('version') == '8.1.2' and spec.get('sha256') == PINNED_SHA:
         return {**spec, 'url': CDN_URL}
     return spec
 
@@ -250,7 +287,7 @@ def observation(reason, detail):
             directory = os.environ.get('INSPECT_USAGE_CONTEXT_DIR')
             task = read(directory) if directory else None
         event_id = runtime_failure(value, task)
-        for field in ('http_status','network_failure_kind','bytes_received','bytes_total'):
+        for field in ('http_status','network_failure_kind','bytes_received','bytes_total','prepare_operation','errno','winerror'):
             _METADATA.pop(field,None)
         record_preparation(value)
         record_runtime_issue('ffmpeg', reason)
@@ -266,18 +303,22 @@ def pinned_package(spec):
     return spec.get('version')=='8.1.2' and spec.get('sha256')==PINNED_SHA and spec.get('bytes')==109728040
 
 
-def ensure(key, spec, progress=None):
+def ensure(key, spec, progress=None, *, supervised=False):
     from runtime import artifacts
+    spec=migrated_spec(spec)
     # Custom manifests keep their original source and retry policy.
     mirrors = pinned_package(spec) and spec.get('url')==CDN_URL
-    attempts = [('cdn',CDN_URL),('cdn',CDN_URL),('gyan',LEGACY_URL),('github',GITHUB_URL)] if mirrors else [('custom',spec.get('url'))]*MAX_ATTEMPTS
+    attempts = [('cdn',CDN_URL),('cdn',CDN_URL),('gyan',LEGACY_URL)] if mirrors else [('custom',spec.get('url'))]*MAX_ATTEMPTS
+    mac = mac_package(spec)
+    if mac:
+        attempts = [('cdn',spec['url'])]*MAX_ATTEMPTS
     started = time.monotonic()
     observation('prepare_started', {'prepare_stage':'permissions','recovery_outcome':'pending','prepare_attempts':1,'download_source':attempts[0][0]})
     for number,(label,url) in enumerate(attempts,1):
         def forward(detail):
             notify(progress,{**detail,'attempt_limit':len(attempts),'download_source':label})
         try:
-            root, source, result = _attempt(key, {**spec,'url':url}, number, forward)
+            root, source, result = _attempt(key, {**spec,'url':url}, number, forward, supervised=supervised)
             observation('prepare_recovered' if result.get('recovered') or number>1 else 'prepare_completed',
                         {**result.get('diagnostic',{}),'recovery_outcome':'success','recovery_code':'none',
                          'download_source':label,'prepare_attempts':number,'recovery_elapsed_ms':round((time.monotonic()-started)*1000)})
@@ -295,20 +336,8 @@ def ensure(key, spec, progress=None):
             observation('prepare_retry', {**detail,'recovery_outcome':'pending'})
             next_label=attempts[number][0]
             notify(progress,{**detail,'prepare_stage':'download','prepare_attempts':number+1,'retry':True,
-                'attempt_limit':len(attempts),'download_source':next_label,'source_changed':next_label!=label})
+                'attempt_limit':len(attempts),'download_source':next_label,'source_changed':attempts[number][1]!=url})
             time.sleep(1 if mirrors else 2**(number-1))
-
-
-class GithubReleaseRedirect(urllib.request.HTTPRedirectHandler):
-    """Allow only the pinned release's HTTPS asset handoff, including its signed query."""
-    def redirect_request(self,req,fp,code,msg,headers,newurl):
-        from runtime import artifacts
-        target=urllib.parse.urlsplit(newurl)
-        if (req.full_url != GITHUB_URL or target.scheme!='https' or
-            target.hostname!='release-assets.githubusercontent.com' or target.port not in (None,443) or
-            target.username or target.password or target.fragment):
-            raise artifacts.PreparationError('ARTIFACT_REDIRECT_REJECTED','download')
-        return super().redirect_request(req,fp,code,msg,headers,newurl)
 
 
 def download(spec, path, progress=None):
@@ -316,18 +345,23 @@ def download(spec, path, progress=None):
     from runtime import artifacts
     if path.is_symlink(): raise artifacts.PreparationError('ARTIFACT_PATH_INVALID','download')
     try:
-        offset = path.stat().st_size if path.exists() else 0
+        with artifacts.artifact_operation('download','inspect_archive'):
+            offset = path.stat().st_size if path.exists() else 0
         if offset >= spec['bytes']:
             if progress:progress(stage='verify_extract')
-            if offset == spec['bytes'] and artifacts.sha256(path) == spec['sha256']:
+            with artifacts.artifact_operation('verify_extract','verify_archive'):
+                valid = offset == spec['bytes'] and artifacts.sha256(path) == spec['sha256']
+            if valid:
                 if progress: progress(stage='download',bytes_received=offset,bytes_total=spec['bytes'],resumed_bytes=offset)
                 return
-            path.unlink(); offset=0
+            with artifacts.artifact_operation('download','remove_archive'):
+                path.unlink()
+            offset=0
         if progress: progress(stage='download',bytes_received=offset,bytes_total=spec['bytes'],resumed_bytes=offset)
         headers={'Accept-Encoding':'identity'}
         if offset: headers['Range']=f'bytes={offset}-'
         request=urllib.request.Request(spec['url'],headers=headers)
-        redirect=GithubReleaseRedirect() if pinned_package(spec) and spec['url']==GITHUB_URL else artifacts.SafeRedirect()
+        redirect=artifacts.SafeRedirect()
         with urllib.request.build_opener(redirect).open(request,timeout=15) as response:
             if response.status == 206 and offset:
                 if response.headers.get('Content-Range') != f"bytes {offset}-{spec['bytes']-1}/{spec['bytes']}":
@@ -339,9 +373,10 @@ def download(spec, path, progress=None):
                 offset=0
             else: raise artifacts.PreparationError('ARTIFACT_HTTP_ERROR','download')
             total=offset
-            with path.open('ab' if offset else 'wb') as out:
+            with artifacts.artifact_operation('download','download_write'), path.open('ab' if offset else 'wb') as out:
                 while True:
-                    chunk=response.read1(64*1024)
+                    with artifacts.artifact_operation('download','download_read'):
+                        chunk=response.read1(64*1024)
                     if not chunk: break
                     total+=len(chunk)
                     if total>spec['bytes']: raise artifacts.PreparationError('ARTIFACT_SIZE_INVALID','download')
@@ -349,9 +384,11 @@ def download(spec, path, progress=None):
                     if progress: progress(stage='download',bytes_received=total,bytes_total=spec['bytes'])
         if total<spec['bytes']: raise ConnectionError()
         if progress: progress(stage='verify_extract')
-        if artifacts.sha256(path)!=spec['sha256']: raise artifacts.PreparationError('ARTIFACT_HASH_INVALID','verify')
+        with artifacts.artifact_operation('verify_extract','verify_archive'):
+            if artifacts.sha256(path)!=spec['sha256']: raise artifacts.PreparationError('ARTIFACT_HASH_INVALID','verify')
     except artifacts.PreparationError:
-        path.unlink(missing_ok=True)
+        with artifacts.artifact_operation('cleanup','remove_archive'):
+            path.unlink(missing_ok=True)
         raise
     except urllib.error.HTTPError as error:
         failure=artifacts.PreparationError('ARTIFACT_HTTP_ERROR','download',error.code in {408,429,500,502,503,504})
@@ -363,8 +400,13 @@ def download(spec, path, progress=None):
         failure.network_failure_kind=('dns' if isinstance(cause,socket.gaierror) else 'tls' if isinstance(cause,ssl.SSLError)
             else 'timeout' if isinstance(cause,TimeoutError) else 'connection' if isinstance(cause,(ConnectionError,http.client.IncompleteRead)) else 'unknown')
         raise failure from None
-    except OSError:
-        raise artifacts.PreparationError('ARTIFACT_DISK_ERROR','download') from None
+    except OSError as error:
+        failure=artifacts.PreparationError(
+            'ARTIFACT_PERMISSION_DENIED' if isinstance(error,PermissionError) else 'ARTIFACT_DISK_ERROR',
+            getattr(error,'prepare_stage','download'))
+        for field in ('prepare_operation','errno','winerror'):
+            setattr(failure,field,getattr(error,field,None))
+        raise failure from None
 
 
 def main():

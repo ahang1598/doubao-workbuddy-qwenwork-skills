@@ -9,6 +9,7 @@ import sys
 import tempfile
 import time
 from urllib.parse import urlsplit
+from urllib.request import url2pathname
 from runtime.store import Store, encode
 from runtime.review_errors import review_error
 from runtime.platform_support import process_options
@@ -27,14 +28,26 @@ def dashboard_delivery(url, *, resumed=False):
         delivery=chat_delivery(resumed=resumed)
         delivery['message']='工作台暂不可用，继续在本次对话交付质检进度、风险和最终结果。'
         return delivery
-    return {
+    local = urlsplit(url)
+    delivery = {
         'required': True,
         'type': 'dashboard_url',
         'url': url,
         'message': ('已请求恢复质检，正在准备。' if resumed else '质检任务已创建，正在准备。') +
-                   '[打开实时质检工作台](<' + url + '>)。页面每 2 秒读取最新质检数据，不启动 HTTP 服务；请打开任务目录中的原文件，保留同目录 data.js。',
+                   '[打开实时质检工作台](<' + url + '>)。页面每 2 秒读取最新质检数据，不启动 HTTP 服务。',
         'must_deliver_before': ['status', 'review-next'],
     }
+    if local.scheme == 'file':
+        delivery['path'] = url2pathname(('//' + local.netloc if local.netloc else '') + local.path)
+        delivery['message'] = ('已请求恢复质检，正在准备。' if resumed else '质检任务已创建，正在准备。') + (
+            '豆包优先通过 present_files 将 delivery.path 指向的原始 monitor.html 交付为文件卡片，使用宿主实际返回的入口。'
+            '不要把裸路径、代码块或猜测的站内地址当成入口；已展示卡片不额外贴 file://。'
+            '保留原位 monitor.html 和同目录 data.js，不单独复制工作台到附件沙箱。'
+            '原位工作台每 2 秒读取最新数据，不启动 HTTP 服务；卡片出现不代表宿主能打开或实时刷新。'
+            '宿主复制附件、无法读取同目录 data.js 或打开失败时，使用原任务 snapshot 交付独立 HTML 快照，说明不会实时刷新；'
+            '附件仍不可用则在 Chat 交付进度并继续原任务，不重新 start。'
+            '其他明确支持本地文件的宿主可使用 delivery.url，保留完整协议和路径编码。')
+    return delivery
 
 
 def chat_delivery(*, resumed=False):
@@ -105,6 +118,8 @@ def chat_report(store,status,report=None):
         'rules': rules,
         'hit_rules': hits,
         'rule_conclusions': report['rule_conclusions'],
+        'remediation': report.get('remediation'),
+        'visual_samples': report.get('visual_samples'),
         'evidence_gaps': status['evidence_gaps'],
         'coverage': report['coverage'] if report.get('report_kind')=='video' else status['coverage'],
         'conclusion': report['conclusion'],
@@ -207,9 +222,14 @@ def start(args, value=None, *, kind="live", notice_batch=None):
     from runtime.task_context import reserve, startup_directory
     # Batch children have their own identity under the already-bound parent.
     folder=(Path(args.task_dir).expanduser() if notice_batch else startup_directory(args.task_dir))
-    if folder is None:folder=Path(tempfile.mkdtemp(prefix='live-inspect-lite-'))/'task'
+    if folder is None:
+        from runtime.platform_support import private_mkdtemp
+        folder=Path(private_mkdtemp(prefix='live-inspect-lite-'))/'task'
     args.task_dir=str(folder)
     task_id=reserve(folder)
+    if (folder / 'inspection.db').exists():
+        from runtime.task_context import TaskAlreadyExists
+        raise TaskAlreadyExists()
     from runtime.local_asr import doctor, resolve_runtime_root
     from runtime.rules import load_rules
     startup_stage('input_validation')
@@ -218,7 +238,7 @@ def start(args, value=None, *, kind="live", notice_batch=None):
     if not isinstance(value,dict):raise InputValidationError('INVALID_PAYLOAD', '启动参数必须是 JSON 对象。')
     allowed={'browser_source','source','name','scenario','max_duration_seconds','segment_seconds','frame_interval_seconds','delivery_mode','asr_policy','image_inspection'}
     if set(value)-allowed:raise InputValidationError('START_UNKNOWN_FIELD', '存在不支持的字段；仅支持 '+', '.join(sorted(allowed))+'。')
-    image_inspection=value.get('image_inspection',False)
+    image_inspection=value.get('image_inspection',kind=='live')
     if type(image_inspection) is not bool:raise InputValidationError('START_IMAGE_INSPECTION_INVALID', 'image_inspection 必须是布尔值 true 或 false，不能是字符串。')
     policy=value.get('asr_policy','remote_first')
     if not isinstance(policy,str) or policy not in {'remote_first','local_first','local_only'}:
@@ -231,6 +251,8 @@ def start(args, value=None, *, kind="live", notice_batch=None):
         if kind!='live':raise InputValidationError('START_UNKNOWN_FIELD','视频不支持 browser_source。')
         from runtime.xiaohongshu_source import prepare_candidate
         browser_source=prepare_candidate(source,value['browser_source'])
+        if browser_source.get('status')=='not_live':
+            raise InputValidationError('INVALID_BROWSER_SOURCE','停播观察只用于已有任务补流。')
     delivery_mode=effective_delivery_mode(value.get('delivery_mode','local_dashboard'))
     scene=value.get('scenario','通用')
     try:rules=load_rules(value.get('scenario','common'))
@@ -239,7 +261,7 @@ def start(args, value=None, *, kind="live", notice_batch=None):
         # 内置规则损坏属于安装问题，不能让用户反复修改正确的输入。
         raise ConfigurationError('START_RULES_UNAVAILABLE', '内置规则读取或校验失败；请修复当前 Skill 安装中的规则文件。') from None
     cloud_live=kind=='live' and is_doubao_cloud()
-    options={k:value.get(k,d) for k,d in [('max_duration_seconds',None),('segment_seconds',30),('frame_interval_seconds',120 if kind=='live' else 10)]}
+    options={k:value.get(k,d) for k,d in [('max_duration_seconds',900 if kind=='live' else None),('segment_seconds',30),('frame_interval_seconds',60 if kind=='live' else 10)]}
     for k,v in options.items():
         if k=='max_duration_seconds' and v is None:continue
         if type(v) is not int or v<=0:
@@ -249,7 +271,7 @@ def start(args, value=None, *, kind="live", notice_batch=None):
         raise InputValidationError('START_SEGMENT_SECONDS_INVALID', 'segment_seconds 必须在 1–'+str(60 if kind=='live' else 180)+' 秒之间。')
     if kind!='live' and options['frame_interval_seconds']>options['segment_seconds']:
         raise InputValidationError('START_FRAME_INTERVAL_INVALID', '视频的 frame_interval_seconds 不能大于 segment_seconds。')
-    if kind=='live':options['frame_interval_seconds']=120
+    if kind=='live':options['frame_interval_seconds']=60
     if cloud_live:
         from runtime.realtime_policy import CLOUD_CAPTURE_SECONDS
         options['max_duration_seconds']=min(options['max_duration_seconds'] or CLOUD_CAPTURE_SECONDS,CLOUD_CAPTURE_SECONDS)
@@ -261,9 +283,11 @@ def start(args, value=None, *, kind="live", notice_batch=None):
     from runtime.artifacts import prepare
     from runtime.asr_router import cloud_available, initialize_cloud
     from runtime.model_preparation import start_check
-    prepared=start_check(defer_model=True)
+    direct_flv=kind=='live' and policy=='remote_first'
+    startup_task = {'capture_route':'flv'} if direct_flv else {'kind':kind}
+    prepared=start_check(task=startup_task,defer_model=True)
     binaries=prepared.get('binaries',{})
-    if not all(binaries.get(n) for n in ('ffmpeg_bin','ffprobe_bin')):
+    if not direct_flv and not all(binaries.get(n) for n in ('ffmpeg_bin','ffprobe_bin')):
         startup_stage('dependency_prepare', 'setup_pending')
         publish_metadata()
         return {'status':'setup_pending','doctor':prepared,'task_id':task_id,'task_dir':str(folder),
@@ -278,7 +302,7 @@ def start(args, value=None, *, kind="live", notice_batch=None):
     result={'runtime':prepared.get('runtime')}
     startup_stage('task_create')
     store=Store.create(folder,name=value.get('name') or ('视频内容质检' if kind=='video' else '直播内容质检'),scenario=scene,source=source,rules=rules,
-                       delivery_mode=delivery_mode,kind=kind,asr_backend="local",notice_batch=notice_batch,
+                       delivery_mode=delivery_mode,kind=kind,asr_backend="local",notice_batch=notice_batch,video_recap_enabled=kind=="video",
                        scenario_selection="confirmed", rules_mode="dynamic" if "scenario" not in value else "fixed",
                        loaded_rule_bundles=[],
                        asr_runtime_root=prepared.get('asr_runtime_root'),
@@ -286,6 +310,7 @@ def start(args, value=None, *, kind="live", notice_batch=None):
                        asr_primary_backend=primary,asr_selection_reason=reason,
                        model_preparation_id=preparation_id,model_waiting=waiting,local_setup_error=setup_error,
                        **binaries,
+                       capture_route='flv' if direct_flv else 'ffmpeg',
                        asr_runtime=None,pipeline_version=2,local_asr_mode='segment',analysis_mode='full_asr',
                        inspection_policy='lite_live_realtime_v2' if kind=='live' else 'lite_video_full_v1',
                        **({'freeze_on_end':True,'review_protocol':'lite_review_v2','review_dispatch_version':2,'review_scope_version':1,'frame_sampling_origin_ms':0,'frame_required':image_inspection and __import__('runtime.full_live',fromlist=['requires_frames']).requires_frames(rules)} if kind=='live' else {}),
@@ -312,11 +337,16 @@ def start(args, value=None, *, kind="live", notice_batch=None):
     delivery['message'] += ' 处理能力准备中，当前尚未采集。'
     delivery['message'] += processing_notice(policy)
     if kind=='live':
-        if cloud_live:
-            seconds=options['max_duration_seconds']
+        seconds=options['max_duration_seconds']
+        if seconds is not None:
             duration=f'{seconds//60}分钟' if seconds%60==0 else f'{seconds}秒'
+        if cloud_live:
             delivery['message'] += (f' 云电脑单次运行有执行额度限制，本次最多检测{duration}。'
                                     '如接近额度上限，会提前停止采集，优先整理已有结果并生成质检报告和复盘报告；报告仅覆盖实际完成检测的内容。')
+        elif seconds is None:
+            delivery['message'] += ' 本次质检到直播结束。'
+        else:
+            delivery['message'] += f' 本次最多检测{duration}。'
         delivery['message'] += ' 如需结束质检，可以直接对我说“结束质检”。我会停止采集，并基于已检测内容继续生成质检报告和复盘报告；请等待报告交付后再关闭任务，直接关闭可能导致报告未生成。'
     delivery=attach_notice(store,delivery)
     next_action='deliver-video-progress' if kind=='video' else 'deliver-dashboard-url' if delivery_mode=='local_dashboard' and dashboard else 'deliver-html-snapshot' if delivery_mode=='html_snapshot' else 'deliver-chat-start-message'
@@ -333,19 +363,21 @@ def start(args, value=None, *, kind="live", notice_batch=None):
 
 def resume_setup(store):
     task=store.task()
+    if task.get('ffmpeg_fallback_status') == 'failed':
+        store.update_task(ffmpeg_fallback_status=None)
     if task.get('inspection_policy')=='lite_live_full_asr_v1':
         store.update_task(optional_frames={},full_asr_cloud_available=None)
     if task.get('pipeline_version')==2 and task.get('asr_startup',{}).get('status')!='selected':
         from runtime.artifacts import prepare
-        common=prepare(task=task,common_only=True)
-        if common['ready']:store.update_task(worker_status='preparing',setup_error=None)
+        common=prepare(task=task,common_only=True,model_only=task.get('capture_route')=='flv')
+        if common['ready']:store.update_task(worker_status='preparing',setup_error=None, runtime_binaries=common['binaries'])
         return common
     if task.get('asr_primary_backend'):
         from runtime.artifacts import prepare
         from runtime.asr_router import initialize_cloud, cloud_available
         from runtime.model_preparation import start_check
         initialize_cloud(store)
-        common=prepare(task=task, common_only=True)
+        common=prepare(task=task, common_only=True,model_only=task.get('capture_route')=='flv')
         if not common['ready']: return common
         store.update_task(runtime_binaries=common['binaries'])
         if task.get('asr_policy')=='remote_first':
@@ -397,6 +429,10 @@ def inspection_continuation(status):
         return {'next_action':'deliver-inspection-result','delivery_required':True,'workflow_complete':False,
                 'message':('未采集到内容，无法生成质检报告和内容复盘。' if status['report_blocked_reason']=='NO_CAPTURED_CONTENT' else '未检测到语音。' if status['report_blocked_reason']=='NO_SPEECH' else '未获得可用语音文字，无法生成质检报告和内容复盘。')+'请交付本次结果，结束轮询；不自动重建任务。'}
     if status['report_ready']:
+        if task.get('kind') == 'video' and task.get('video_recap_enabled'):
+            recap = status.get('recap') or {}
+            if recap.get('available'):
+                return {'next_action':'recap-report','workflow_complete':False}
         recap=status.get('recap') or {}
         if task.get('kind') != 'video' and task.get('review_protocol') == 'lite_review_v2':
             # Availability alone cannot choose which delivery is still missing.
@@ -417,7 +453,7 @@ def inspection_continuation(status):
     if (task.get('kind','live')=='live' and status.get('review_ready_pending')
             and finish.get('mode')!='immediate'):
         return {'next_action':'review-next','workflow_complete':False,
-                'message':'先领取并提交已就绪内容的判定，再按原任务状态恢复剩余媒体；不要仅轮询语音恢复。'}
+                'message':(failure+'；' if failure else '')+'先领取并提交已就绪内容的判定，再按原任务状态恢复剩余媒体；不要仅轮询语音恢复。'}
     if task.get('recovery_state') == 'blocked':
         return {'next_action':'resume','message':'媒体处理自动恢复未成功；请在原任务执行 resume，保留已采集内容并继续判定。'}
     if task.get('recovery_state') == 'worker_unresponsive':
@@ -461,6 +497,7 @@ def wait_status(store, seconds):
     """Wait inside one command, waking for evidence, a stop or an actionable state."""
     if not seconds:return store.status()
     deadline=time.monotonic()+seconds
+    from runtime.xiaohongshu_source import refresh_due
     initial=None
     while True:
         store.finish_tick()
@@ -469,7 +506,7 @@ def wait_status(store, seconds):
         state=(task.get('capture_status'),task.get('worker_status'),task.get('stop_requested'),
                data.get('finishing',{}).get('phase'))
         if initial is None:initial=state
-        if (inspection_continuation(data)['next_action']!='status' or state!=initial
+        if (refresh_due(store,store.task()) or inspection_continuation(data)['next_action']!='status' or state!=initial
                 or time.monotonic()>=deadline):return data
         from runtime.static_delivery import snapshot_due
         if task_delivery_mode(store)=='html_snapshot' and snapshot_due(store):return data
@@ -510,13 +547,16 @@ def main(argv=None):
             p.add_argument('--offset',type=int,default=0)
         if name=='recap-input':
             p.add_argument('--begin',action='store_true')
+            p.add_argument('--regenerate',action='store_true')
             p.add_argument('--offset',type=int,help='Read five recap segments starting at this offset')
         if name in ('resume','start','start-video','recap-submit','review-submit','report-delivery-ack','rules-load'):p.add_argument('--input-file',help='Submit an Agent-authored UTF-8 JSON file; stdin requires EOF within 5 seconds')
         if name in ('report','recap-report'):p.add_argument('--single-file',action='store_true',help='Embed video in HTML instead of using a separate MP4')
         if name=='report':p.add_argument('--allow-partial',action='store_true')
         if name=='review-next':p.add_argument('--include-deferred',action='store_true')
         if name in ('review-submit','rules-load'):p.add_argument('--next',action='store_true',dest='claim_next')
-        if name=='rules-load':p.add_argument('--dispatcher-id',default='main')
+        if name=='rules-load':
+            p.add_argument('--dispatcher-id',default='main')
+            p.add_argument('--limit',type=int,choices=range(1,21))
     for name in ('batch-create','batch-next','batch-status','batch-stop'):
         p = sub.add_parser(name)
         p.add_argument('--batch-dir',required=True)
@@ -559,11 +599,10 @@ def main(argv=None):
                 from runtime.stop_signal import request
                 request(args.task_dir,origin='agent',reason=args.reason,instruction=args.user_instruction)
             store=Store(args.task_dir)
-            from runtime.realtime_policy import cloud_limited, protect_cloud
+            recap_source = None
+            from runtime.realtime_policy import cloud_limited
             if args.command=='stop' and args.reason=='execution_limit' and (args.immediate or not (is_doubao_cloud() or cloud_limited(store.task()))):
                 raise ValueError('execution limit requires cloud live drain')
-            if args.command in {'status','review-next','review-submit','rules-load','resume','snapshot'}:
-                protect_cloud(store)
             publish_metadata(store.task())
             if args.command=='worker':
                 from runtime.media import run_worker
@@ -590,16 +629,20 @@ def main(argv=None):
                 data['recap']={k:v for k,v in recap_report(store).items() if k in ('status','available','message','needs_resume','terminal_failure','recovery_attempts','recovery_blocked')}
             elif args.command=='recap-input':
                 from runtime.recap import recap_input, submission_contract
-                data=recap_input(store,args.begin)
+                data=recap_input(store,args.begin,regenerate=args.regenerate)
                 data={'next_action':'recap-report' if data['recap']['available'] else
-                      'write-recap-result-and-submit' if args.begin else 'recap-input --begin',
+                      'write-recap-result-and-submit' if args.begin or args.regenerate else 'recap-input --begin',
                       'submission_contract':submission_contract(store,data),**data}
-                if args.offset is not None or len(encode(data).encode()) > 24000:
+                # Large inputs use bounded_output's complete file; page only on request.
+                if args.offset is not None:
                     from runtime.report_delivery import evidence_page
                     data=evidence_page(data,store.root,args.offset or 0)
                     data['next_action']=('recap-report' if data['recap']['available'] else
                         'recap-input --begin' if data['recap']['status'] != 'generating' else
                         'read-recap-evidence-pages' if data['next_offset'] is not None else 'write-recap-result-and-submit')
+                else:
+                    from runtime.report_delivery import recap_brief
+                    data=recap_brief(store,data)
                 if data['recap'].get('recovery_blocked'):
                     data['next_action']='blocked'
                 if data['recap'].get('terminal_failure'):
@@ -619,7 +662,10 @@ def main(argv=None):
                 if task_delivery_mode(store)!='chat' and (data['available'] or final_failure):
                     if data['available']:
                         from runtime.media import build_recording
-                        build_recording(store)
+                        if build_recording(store) is False:
+                            print(encode({'ok':False,'command':args.command,'error':{'code':'OPERATION_FAILED',
+                                'message':'回放正在由另一导出任务生成，请稍后重试。','retryable':True,'next_action':args.command}}))
+                            return 1
                     from runtime.static_delivery import safe_export
                     result=safe_export(store,single_file=args.single_file)
                     data.update(result)
@@ -663,7 +709,7 @@ def main(argv=None):
                     data=store.load_rule_bundle(value)
                     record_rule_load_gap(store,value)
                     if args.claim_next:
-                        data=store.claim(limit=20 if store.task().get('inspection_policy')=='lite_live_realtime_v2' else 4,dispatcher_id=args.dispatcher_id)
+                        data=store.claim(limit=args.limit or (20 if store.task().get('inspection_policy')=='lite_live_realtime_v2' else 4),dispatcher_id=args.dispatcher_id)
                 except ValueError as error:
                     detail=RULE_LOAD_ERRORS.get(str(error))
                     if detail is None:raise
@@ -706,6 +752,7 @@ def main(argv=None):
             elif args.command=='refresh-credentials':
                 from runtime.mediakit import sync_credentials
                 data={'status':'not_required','backend':'local'} if store.task().get('asr_backend')=='local' and store.task().get('asr_policy') not in {'remote_first','local_first'} else sync_credentials(store)
+                data['next_action']='status'
             elif args.command=='asr-reconcile':
                 from runtime.mediakit import reconcile_submission
                 data=reconcile_submission(store,read_input())
@@ -713,8 +760,12 @@ def main(argv=None):
                 from runtime.xiaohongshu_source import save_candidate
                 value=read_input(args.input_file)
                 if not isinstance(value,dict) or set(value)!={'browser_source'}:raise ValueError('resume input requires browser_source only')
-                save_candidate(store,value['browser_source'])
-                data={'status':'source_candidate_supplied','task_id':store.task_id,'next_action':'status'}
+                if save_candidate(store,value['browser_source'],ignore_finished=True):
+                    data={'status':'source_candidate_supplied','task_id':store.task_id,'next_action':'status',
+                          'message':'浏览器观察已交给原采集进程，正在验证直播状态。'}
+                else:
+                    data={'status':'source_refresh_closed','task_id':store.task_id,'next_action':'status',
+                          'message':'采集已收到结束或停止确认，沿原任务收尾。'}
             elif args.command=='resume' and store.task().get('media_frozen'):
                 ensure_watcher(store)
                 status=store.status()
@@ -748,12 +799,13 @@ def main(argv=None):
                       'delivery_required':True,'delivery':delivery,
                       'next_action':next_action,'after_delivery_next_action':delivery.get('after_delivery_command','status')}
             elif args.command=='report-delivery-ack':
-                if store.task().get('kind')=='video':
+                receipt = read_submission(args.input_file)
+                if store.task().get('kind')=='video' and receipt.get('kind') != 'recap':
                     from runtime.video_report import acknowledge_report
-                    data=acknowledge_report(store,read_submission(args.input_file))
+                    data=acknowledge_report(store,receipt)
                 else:
                     from runtime.report_completion import acknowledge as acknowledge_completion
-                    data=acknowledge_completion(store,read_submission(args.input_file))
+                    data=acknowledge_completion(store,receipt)
             elif args.command=='report' and store.task().get('kind')=='video':
                 from runtime.video_report import video_report
                 data=video_report(store,allow_partial=args.allow_partial,mode=task_delivery_mode(store),single_file=args.single_file)
@@ -790,7 +842,10 @@ def main(argv=None):
                               'coverage':status['coverage'],'evidence_gaps':status['evidence_gaps']}
                     else:
                         from runtime.media import build_recording
-                        build_recording(store)
+                        if build_recording(store) is False:
+                            print(encode({'ok':False,'command':args.command,'error':{'code':'OPERATION_FAILED',
+                                'message':'回放正在由另一导出任务生成，请稍后重试。','retryable':True,'next_action':args.command}}))
+                            return 1
                         from runtime.static_delivery import safe_export
                         result=safe_export(store,single_file=args.single_file)
                         item=next((a for a in result['artifacts'] if a['type']=='quality'),None)
@@ -837,31 +892,34 @@ def main(argv=None):
         if args.command=='report':
             from runtime.recap import recap_report, recap_input, submission_contract
             recap=recap_report(store)
-            if data.get('status')=='ready' and store.task().get('kind')!='video' and recap_source is not None:
+            if data.get('status')=='ready' and recap_source is not None:
                 data['submission_contract']=submission_contract(store,recap_source)
                 data['recap_input']=recap_source
-            if data.get('status')=='ready' and store.task().get('kind')!='video' and recap_source is None and not recap['available'] and recap['status'] != 'blocked' and not recap.get('terminal_failure'):
+            if data.get('status')=='ready' and recap.get('status') != 'unsupported' and recap_source is None and not recap['available'] and recap['status'] != 'blocked' and not recap.get('terminal_failure'):
                 data['recap_retry']={'retryable':True,'next_action':'recap-input --begin',
                     'message':'质检报告已就绪；无需等待交付确认，执行 recap-input --begin 获取复盘证据与合同。导出或附件受阻先交付完整 Chat 正文并继续复盘；禁止猜测证据 ID，不要结束当前执行。'}
             data['recap']={k:v for k,v in recap.items() if k in ('status','available','message','needs_resume','terminal_failure','recovery_attempts','recovery_blocked')}
             data['workflow_complete']=bool(recap['available'])
+            if store.task().get('video_recap_enabled'):
+                from runtime.report_completion import completion
+                data['workflow_complete'] = completion(store)['workflow_complete']
             data['quality_report_status']=data.get('status') if data.get('status') in {'ready','failed'} else 'not_ready'
             review_artifact=next((a for a in data.get('artifacts',[]) if a['type']=='review' and a.get('status')=='ready'),None)
             data['review_report_url']=Path(review_artifact['path']).as_uri() if review_artifact and data.get('delivery_mode')=='local_dashboard' and recap['available'] else None
-            data['after_delivery_next_action']=('recap-report' if recap['available'] or recap['status']=='blocked' or recap.get('terminal_failure') else 'write-recap-result-and-submit' if recap_source is not None else 'recap-input --begin') if data['quality_report_status']=='ready' and store.task().get('kind')!='video' else data.get('after_delivery_next_action')
-            if data['quality_report_status']=='ready' and store.task().get('kind')!='video':
+            data['after_delivery_next_action']=('recap-report' if recap['available'] or recap['status']=='blocked' or recap.get('terminal_failure') else 'write-recap-result-and-submit' if recap_source is not None else 'recap-input --begin') if data['quality_report_status']=='ready' and recap.get('status') != 'unsupported' else data.get('after_delivery_next_action')
+            if data['quality_report_status']=='ready' and recap.get('status') != 'unsupported':
                 data['next_action']=data['after_delivery_next_action']
-                data['delivery']['message']+=' 用中间消息交付质检报告，并执行 next_action，生成或复用本次直播复盘并交付；质检导出或交付失败不能阻塞复盘生成，可用完整 Chat 正文降级交付；不得在仅交付质检报告时结束执行或要求用户再次确认。'
+                data['delivery']['message']+=' 用中间消息交付质检报告，并执行 next_action，生成或复用本次内容复盘并交付；质检导出或交付失败不能阻塞复盘生成，可用完整 Chat 正文降级交付；不得在仅交付质检报告时结束执行或要求用户再次确认。'
         if args.command=='recap-submit':
             data['next_action']='recap-input --begin' if data.get('status')=='failed' and not data.get('terminal_failure') else 'recap-report'
-        if args.command=='recap-report' and store.task().get('kind')!='video':
+        if args.command=='recap-report':
             data['workflow_complete']=bool(data.get('available') and store.status()['report_ready'])
             data['delivery_required']=bool(data.get('available') or data.get('status')=='blocked' or final_failure)
             data['next_action']=('blocked' if data.get('recovery_blocked') else
                                  'deliver-recap-report' if data.get('available') else
                                  'deliver-inspection-result' if data.get('status')=='blocked' or final_failure else
                                  'recap-input --begin' if data.get('status')=='failed' else 'report')
-        if args.command in ('stop','status','resume','report','recap-input','recap-report','recap-submit','review-next','review-submit') and store.task().get('review_protocol') == 'lite_review_v2':
+        if args.command in ('stop','status','resume','report','recap-input','recap-report','recap-submit','review-next','review-submit') and (store.task().get('review_protocol') == 'lite_review_v2' or (store.task().get('video_recap_enabled') and args.command != 'report')):
             from runtime.report_completion import completion
             data.update(completion(store))
             if args.command in {'report','recap-report'}:
@@ -882,10 +940,13 @@ def main(argv=None):
                     continuation['next_action'] = data['next_action'] = data['completion_next_action']
         if args.command=='report' and data.get('status')=='ready' and store.task().get('kind')=='video':
             data['delivery']['message']=(
-                '请交付视频质检报告的 HTML 附件、结论、风险证据及覆盖缺口；如有 media 附件，随报告交付并保留相对目录。不交付实时工作台。' if data['delivery_mode']!='chat' else '请直接交付视频质检报告、结论、风险证据及覆盖缺口，不交付实时工作台。')
+                '请交付视频质检报告的 HTML 附件、结论、风险证据及覆盖缺口；如有 media 附件，随报告交付并保留相对目录。不交付实时工作台。' if data['delivery_mode']!='chat' else '请直接交付视频质检报告、结论、风险证据及覆盖缺口，不交付实时工作台。') + ' 随后继续生成并交付带评分的复盘报告。'
         if args.command=='report' and data.get('status')=='ready':
             from runtime.report_delivery import compact_report
-            data=compact_report(store,data)
+            try:
+                data=compact_report(store,data)
+            except OSError:
+                pass  # Keep the complete Chat fallback if optional compaction cannot write.
         if args.command in ('report','status','recap-report'):
             # Keep continuation visible before large report/evidence payloads.
             first=('next_action','workflow_complete','after_delivery_next_action','recap','submission_contract')
@@ -936,16 +997,20 @@ def main(argv=None):
                 data['delivery_required'] = True
                 if args.command in ('report','recap-report','snapshot'):
                     data['next_action'] = 'retry-artifact-export'
-        if store is not None and store.task().get('kind','live')=='live' and args.command in ('report','recap-report'):
+        if store is not None and (store.task().get('kind','live')=='live' or args.command=='recap-report') and args.command in ('report','recap-report'):
             from runtime.report_delivery import public_live_report, attach_report_delivery
             if args.command=='recap-report':data=public_live_report(data)
+            task = store.task()
+            if task.get('playback_status') == 'failed' and task.get('playback_archive') and not any(
+                    a.get('type') == 'media' for a in data.get('artifacts', [])):
+                from runtime.static_delivery import media_file, artifact
+                archive = media_file(store, task['playback_archive'])
+                if archive:
+                    data.setdefault('artifacts', []).append(artifact(archive, 'media', data.get('version', 0)))
             attach_report_delivery(data, args.command)
-        if (store is not None and store.task().get('kind','live') == 'live'
-                and store.task().get('review_protocol') == 'lite_review_v2'
-                and args.command in ('stop','status','resume','review-next','review-submit','rules-load',
-                                     'report','recap-input','recap-submit','recap-report','report-delivery-ack')):
-            from runtime.live_continuation import annotate
-            annotate(data, data.get('workflow_complete', False), store=store)
+        if store is not None and args.command in ('report','recap-report'):
+            from runtime.report_delivery import retain_local_reports
+            retain_local_reports(store, data)
         if store is not None and args.command in ('status','report','recap-report'):
             from runtime.capture_diagnostics import attach
             attach(store,data,include_diagnostics=getattr(args,'include_diagnostics',False))
@@ -954,17 +1019,26 @@ def main(argv=None):
             data.update(observe(store,recover=False))
             if args.command=='resume' and data.get('report_checkpoint'):
                 data['next_action']=data['report_checkpoint']['next_action']
-        if store is not None and store.task().get('source_refresh_required') and not store.task().get('stop_requested'):
-            data['source_refresh']={'next_action':'refresh-live-source','deadline':store.task().get('source_refresh_deadline'),'command_argv':['resume','--task-dir',str(store.root),'--input-file','<browser-source.json>'],'instruction':'优先读取宿主 browser-use 或 browser-use-automation-mac Skill，使用其声明的 plane=bu 内置浏览器执行器观测本次页面 FLV；不要调用外部 Chrome DevTools。按 references/browser-stream-fallback.md 生成 browser_source 并提交原任务。无资源观测能力或超过期限即按原任务收尾，不反复搜索工具，不导出 Cookie。'}
-            if data.get('next_action')=='status':data['next_action']='refresh-live-source'
-        first=('source_end_reason','live_source_status','capture_status_text','capture_failure','diagnostic_delivery','snapshot_check','delivery_required','delivery','snapshot_delivery','snapshot_events','artifact_status','artifacts',
+        if store is not None:
+            from runtime.xiaohongshu_source import attach_refresh
+            attach_refresh(store,data)
+            if args.command in ('start','resume','status') and store.task().get('kind','live')=='live':
+                from runtime.diagnostics import capture_status_text
+                data['capture_status_text']=capture_status_text(store.task())
+        if (store is not None and store.task().get('kind','live') == 'live'
+                and store.task().get('review_protocol') == 'lite_review_v2'
+                and args.command in ('start','stop','status','resume','review-next','review-submit','rules-load',
+                                     'report','recap-input','recap-submit','recap-report','report-delivery-ack','refresh-credentials')):
+            from runtime.live_continuation import annotate
+            annotate(data, data.get('workflow_complete', False), store=store)
+        first=('source_end_reason','live_source_status','capture_status_text','source_refresh','capture_failure','diagnostic_delivery','snapshot_check','delivery_required','delivery','snapshot_delivery','snapshot_events','artifact_status','artifacts',
                'delivery_ack_contract','next_action','workflow_complete','poll_after_seconds','continuation_instruction','after_delivery_next_action')
         data={**{key:data[key] for key in first if key in data},
               **{key:value for key,value in data.items() if key not in first}}
         if store is not None:publish_metadata(store.task())
         from runtime.sampling import enabled
         from runtime.report_delivery import bounded_output
-        envelope=bounded_output(store,args.command,data) if store is not None and enabled(store.task()) else {'ok':True,'command':args.command,'data':data}
+        envelope=bounded_output(store,args.command,data) if store is not None and (enabled(store.task()) or args.command=='recap-input') else {'ok':True,'command':args.command,'data':data}
         if store is None and (args.command.startswith('batch-') or args.command in ('start','start-video')):
             from types import SimpleNamespace
             result_root=getattr(args,'batch_dir',None) or data.get('task_dir')
@@ -1000,6 +1074,20 @@ def main(argv=None):
                                     *(['--user-instruction',args.user_instruction] if args.user_instruction else [])],
                     'message':'停止信号已保存，采集进程将独立响应；在原任务重试 stop 同步状态并继续双报告，不重建任务、不手工杀进程。'}}))
                 return 1
+        if args.command == 'report-delivery-ack' and isinstance(error, ValueError) and str(error) == 'report artifact not exported':
+            from runtime.report_completion import completion
+            print(encode({'ok': False, 'command': args.command, 'error': {
+                'code': 'OPERATION_FAILED', 'message': '报告文件缺失或证据版本不一致。不要改写版本号反复确认；按 delivery_next_action 重新导出并展示后，用最新合同确认。复盘可按 generation_next_action 独立继续。若导出版本反复变化，检查后台与当前命令是否使用同一份运行代码。',
+                'retryable': False}, 'data': completion(store)}))
+            return 1
+        from runtime.task_context import TaskAlreadyExists
+        if isinstance(error,TaskAlreadyExists) and args.command in ('start','start-video'):
+            publish_metadata(error_code=error.code)
+            print(encode({'ok':False,'command':args.command,**context,'error':{
+                'code':error.code,'retryable':False,'next_action':'status',
+                'command_argv':['status','--task-dir',str(Path(args.task_dir).expanduser().resolve())],
+                'message':'原目录已有质检任务，本次启动参数未应用。请先查询原任务 status，再按回执继续判定、收尾或交付；不要重复 start、删除原目录或覆盖已有报告。'}}))
+            return 1
         from runtime.review_errors import ReviewError
         if isinstance(error,(InputValidationError,ConfigurationError)):
             # 回执与埋点共用异常上的固定分类，不解析异常文字，也不上报原始输入。
@@ -1038,9 +1126,10 @@ def main(argv=None):
             publish_metadata(error_code=error.code)
             print(encode({'ok':False,'command':args.command,**context,'error':{'code':error.code}}));return 1
         from runtime.xiaohongshu_live import XiaohongshuLiveError
-        if isinstance(error,XiaohongshuLiveError):
+        from runtime.bilibili_live import BilibiliLiveError
+        if isinstance(error,(XiaohongshuLiveError,BilibiliLiveError)):
             publish_metadata(error_code=error.code)
-            print(encode({'ok':False,'command':args.command,**context,'error':{'code':error.code,'retryable':error.retryable,'next_action':'status' if args.command=='resume' else args.command,'message':{'BROWSER_SOURCE_TASK_CLOSED':'任务已结束、停止或冻结，未验证本次候选；保留原目录完成收尾，不能据此认定流地址无效。','BROWSER_SOURCE_TIMEOUT':'浏览器补流交接已超时；保留原任务收尾，不能据此认定直播停播或流地址不可读。','INVALID_BROWSER_SOURCE':'浏览器候选格式、房间或观测时间不符合要求；核对后在原任务期限内重新提交。'}.get(error.code,'小红书来源暂不可用；按具体错误码检查，不能据此认定停播。')}}));return 1
+            print(encode({'ok':False,'command':args.command,**context,'error':{'code':error.code,'retryable':error.retryable,'next_action':'status' if args.command=='resume' else args.command,'message':{'BROWSER_SOURCE_TASK_CLOSED':'任务已结束、停止或冻结，未验证本次候选；保留原目录完成收尾，不能据此认定流地址无效。','BROWSER_SOURCE_TIMEOUT':'本轮浏览器补流已超时，请查原任务 status，按回执继续重连或收尾；尚未确认停播。','INVALID_BROWSER_SOURCE':'浏览器候选格式、房间或观测时间不符合要求；核对后在原任务期限内重新提交。'}.get(error.code,'直播来源暂不可用；按具体错误码检查，不能据此认定停播。')}}));return 1
         from runtime.platform_support import PrivateDirectoryError
         if isinstance(error,PrivateDirectoryError):
             # 透传底层已分类的安全阶段，让普通命令与判定 worker 保留相同诊断信息。
@@ -1052,6 +1141,15 @@ def main(argv=None):
         code=('TASK_BINDING_MISMATCH' if getattr(error,'code',None)=='TASK_BINDING_MISMATCH' else
               'PERMISSION_DENIED' if isinstance(error,PermissionError) else
               'INVALID_INPUT' if isinstance(error,(ValueError,KeyError,TypeError)) else 'RUNTIME_UNAVAILABLE')
+        if args.command in {'review-next','review-submit'} and code in {'RUNTIME_UNAVAILABLE','PERMISSION_DENIED'}:
+            from runtime.bridge import error_facts
+            if isinstance(error, sqlite3.Error):
+                code = 'REVIEW_STORAGE_UNAVAILABLE'
+            if store is not None:
+                context = {'data':{'task_id':store.task_id}}
+            detail = {'code':code, **error_facts(error), 'next_action':'review-state'}
+            print(encode({'ok':False,'command':args.command,**context,'error':detail}))
+            return 1
         detail=review_error(error, fallback=args.command=='review-submit' and isinstance(error,(ValueError,KeyError,TypeError)),protocol_v2=bool(store is not None and store.task().get("review_protocol")=="lite_review_v2"))
         if detail is not None:
             publish_metadata(error_code=detail['code'])

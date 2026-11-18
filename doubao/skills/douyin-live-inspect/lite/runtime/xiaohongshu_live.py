@@ -25,7 +25,8 @@ def validate_url(value):
         if u.hostname=='xhslink.com' and u.scheme=='http' and u.port in (None,80) and not u.username and not u.password:
             u=u._replace(scheme='https',netloc='xhslink.com');value=urlunsplit(u)
         if u.scheme!='https' or u.username or u.password or u.port not in (None,443):raise ValueError()
-        if u.hostname=='www.xiaohongshu.com' and re.fullmatch(r'/livestream/[0-9]+/?',u.path):return 'https://www.xiaohongshu.com'+u.path.rstrip('/')
+        room=re.fullmatch(r'/livestream/(?:dynpath[A-Za-z0-9]+/)?([0-9]+)/?',u.path)
+        if u.hostname=='www.xiaohongshu.com' and room:return 'https://www.xiaohongshu.com/livestream/'+room[1]
         if u.hostname=='xhslink.com' and re.fullmatch(r'/[A-Za-z0-9_/-]+',u.path):return value
     except ValueError:pass
     raise XiaohongshuLiveError('INVALID_INPUT')
@@ -65,9 +66,9 @@ def parse_room(payload,now=None):
     return {'status':'ready','sourceType':'xiaohongshu','streamUrl':urls[0],'candidates':urls}
 
 
-def fetch(url, *, timeout=8, cancel=None, probe=False):
+def fetch(url, *, timeout=8, cancel=None, probe=False, platform='xiaohongshu'):
     args=[sys.executable,'-I',str(Path(__file__).with_name('xiaohongshu_http.py'))]
-    payload=json.dumps({'url':url,'timeout':max(.1,timeout),'probe':probe}).encode()
+    payload=json.dumps({'url':url,'timeout':max(.1,timeout),'probe':probe,'platform':platform}).encode()
     deadline=time.monotonic()+timeout
     with subprocess.Popen(args,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL) as process:
         try:
@@ -104,36 +105,53 @@ def validate_browser(page,value,now=None):
     try:
         at=value['captured_at']
         if type(at) is not int or at>now+5000 or now-at>120000 or validate_url(value['page_url'])!=page:raise ValueError()
+        if value.get('status') == 'not_live' and set(value) == {'page_url','captured_at','status'}:
+            return {'status':'not_live','sourceType':'xiaohongshu','sourceMethod':'browser'}
         url=candidate(value['stream_url'],now)
         if not url:raise ValueError()
         return {'status':'ready','streamUrl':url,'sourceType':'xiaohongshu','sourceMethod':'browser'}
     except (KeyError,TypeError,ValueError,XiaohongshuLiveError):raise XiaohongshuLiveError('INVALID_BROWSER_SOURCE') from None
 
 
+def probe_failure(response):
+    status=response.get('status')
+    if type(status) is int and 400<=status<=599:
+        return {'kind':'http_error','http_status':status}
+    return {'kind':'invalid_response'}
+
+
 def resolve_live(value, *, browser_source=None, transport=fetch, cancel=None, timeout_ms=15000):
     deadline=time.monotonic()+timeout_ms/1000
     page=resolve_page(value,transport=transport,deadline=deadline,cancel=cancel)
-    try:
-        room=page.rsplit('/',1)[-1]
-        response=transport('https://live-room.xiaohongshu.com/api/sns/red/live/web/v1/room/current_room_info?room_id='+room+'&source=web_live&client_type=1',timeout=max(.1,deadline-time.monotonic()),cancel=cancel)
-        if response.get('status')!=200:raise XiaohongshuLiveError('XHS_AUTH_REQUIRED' if response.get('status') in (401,403) else 'XHS_FETCH_FAILED',{'kind':'http_error','http_status':response.get('status')})
-        try:payload=json.loads(response['body'])
-        except (ValueError,KeyError):raise XiaohongshuLiveError('XHS_PAGE_UNAVAILABLE') from None
-        source=parse_room(payload)
-        if source['status']=='not_live':return source
-        for url in source['candidates']:
-            left=deadline-time.monotonic()
-            if left<=0:break
-            try:
-                if transport(url,timeout=left,cancel=cancel,probe=True).get('ready'):
-                    return {'status':'ready','streamUrl':url,'sourceType':'xiaohongshu','sourceMethod':'anonymous'}
-            except XiaohongshuLiveError as error:
-                if error.code=='SOURCE_CANCELLED':raise
-        raise XiaohongshuLiveError('XHS_STREAM_UNAVAILABLE')
-    except XiaohongshuLiveError as error:
-        if browser_source is None or error.code in ('INVALID_INPUT','SOURCE_CANCELLED'):raise
-    result=validate_browser(page,browser_source)
-    left=deadline-time.monotonic()
-    if left<=0:raise XiaohongshuLiveError('XHS_FETCH_FAILED',{'kind':'network_timeout'})
-    if not transport(result['streamUrl'],timeout=min(8,left),cancel=cancel,probe=True).get('ready'):raise XiaohongshuLiveError('XHS_STREAM_UNAVAILABLE')
-    return result
+    # A current browser observation already identifies the stream; do not spend its
+    # validity window retrying an unrelated anonymous API before probing it.
+    if browser_source is not None:
+        result=validate_browser(page,browser_source)
+        if cancel and cancel():raise XiaohongshuLiveError('SOURCE_CANCELLED')
+        left=deadline-time.monotonic()
+        if left<=0:raise XiaohongshuLiveError('XHS_FETCH_FAILED',{'kind':'network_timeout'})
+        if result['status']=='not_live':return result
+        response=transport(result['streamUrl'],timeout=min(8,left),cancel=cancel,probe=True)
+        if not response.get('ready'):
+            raise XiaohongshuLiveError('XHS_STREAM_UNAVAILABLE',probe_failure(response))
+        return result
+    room=page.rsplit('/',1)[-1]
+    response=transport('https://live-room.xiaohongshu.com/api/sns/red/live/web/v1/room/current_room_info?room_id='+room+'&source=web_live&client_type=1',timeout=max(.1,deadline-time.monotonic()),cancel=cancel)
+    if response.get('status')!=200:raise XiaohongshuLiveError('XHS_AUTH_REQUIRED' if response.get('status') in (401,403) else 'XHS_FETCH_FAILED',{'kind':'http_error','http_status':response.get('status')})
+    try:payload=json.loads(response['body'])
+    except (ValueError,KeyError):raise XiaohongshuLiveError('XHS_PAGE_UNAVAILABLE') from None
+    source=parse_room(payload)
+    if source['status']=='not_live':return source
+    diagnostic=None
+    for url in source['candidates']:
+        left=deadline-time.monotonic()
+        if left<=0:break
+        try:
+            response=transport(url,timeout=left,cancel=cancel,probe=True)
+            if response.get('ready'):
+                return {'status':'ready','streamUrl':url,'sourceType':'xiaohongshu','sourceMethod':'anonymous'}
+            diagnostic=probe_failure(response)
+        except XiaohongshuLiveError as error:
+            if error.code=='SOURCE_CANCELLED':raise
+            diagnostic=error.source_failure
+    raise XiaohongshuLiveError('XHS_STREAM_UNAVAILABLE',diagnostic)

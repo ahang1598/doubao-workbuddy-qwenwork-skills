@@ -51,12 +51,12 @@ export function validateReviewDocument(report, target = {}) {
   if ((target.task_id !== undefined && validateTaskId(target.task_id) !== taskId)
     || (target.project_name !== undefined && validateProjectName(target.project_name) !== project)) invalid('Report does not belong to the requested task/project', 'TASK_BINDING_MISMATCH');
   const analysis = report.modules?.content_analysis;
-  if (!object(report.live) || !nonempty(report.live.title) || report.live.review_type !== 'live'
+  if (!object(report.live) || !nonempty(report.live.title) || !['live','video'].includes(report.live.review_type)
     || !optionalText(report.live, ['duration_text', 'account_name', 'scenario_name', 'vid'])
     || !Array.isArray(report.metrics) || !report.metrics.every(row => object(row) && nonempty(row.label)
       && (typeof row.value === 'string' || (typeof row.value === 'number' && Number.isFinite(row.value))) && optionalText(row, ['sub_label']))
     || !object(report.content) || !Array.isArray(report.content.tabs)
-    || !validRows(report.content.segments, [1, 2, 3, 4]) || !report.content.segments.length
+    || !validRows(report.content.segments, [1, 2, 3, 4]) || (!report.content.segments.length && !(analysis?.status === 'degraded' && analysis?.scoring?.status === 'unavailable'))
     || !object(report.display_flags) || !object(analysis) || analysis.module_code !== 'content_analysis'
     || !['success', 'degraded'].includes(analysis.status) || !validRows(analysis.semantic_segments)) invalid('Incomplete report document');
   for (const key of ['conclusion', 'summary', 'data_scope_note']) if (!nonempty(analysis[key])) invalid(`Report analysis.${key} is required`);

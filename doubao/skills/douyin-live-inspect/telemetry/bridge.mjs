@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // Node 命令行桥接入口：启动 Lite Python 命令，或通过管道接收并转发 Python 方法请求。
 // 只负责进程入口和通信分派，不推导任务结果或统计状态。
+import reporter from './utils/reporter.mjs';
+import { liteContract } from './commands/fields.mjs';
 import { runLiteCommand } from './commands/lite.mjs';
 import { reportRuntimeFailure } from './diagnostics/events.mjs';
 import { pending, submit, send, startSpool } from './diagnostics/outbox.mjs';
@@ -9,6 +11,13 @@ import { readMessages } from './utils/io.mjs';
 
 async function dispatchPython(method, facts = {}, context = {}) {
   switch (method) {
+    case 'review_command': {
+      if (!['review-next','review-submit'].includes(facts.command) || typeof facts.ok !== 'boolean') return;
+      const extra = liteContract.commandMetadata(facts.command, { ...liteContract.diagnosticFields(facts), task_id:facts.task_id, error_detail:facts.error_detail,
+        ...(facts.ok ? {} : {error_code:facts.error_code}) });
+      return reporter.reportEvent(facts.command, extra, {toolName:'douyin-live-inspect-lite',
+        failure:facts.ok ? undefined : new Error(extra.error_code || 'OPERATION_FAILED')});
+    }
     case 'send':
       return send(facts.events, context, facts.wait);
     case 'submit':

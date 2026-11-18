@@ -1,6 +1,5 @@
 """有界、无 Cookie 的小红书 HTTP 子进程；只输出脱敏错误。"""
 import http.client
-import ipaddress
 import json
 import socket
 import ssl
@@ -9,6 +8,7 @@ from urllib.parse import urlsplit, urljoin
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from http_fetch import _https_context, failure_kind
+from media_network import resolve_addresses
 
 
 def flv_media(data):
@@ -26,15 +26,15 @@ def flv_media(data):
     return False
 
 
-def request(value, timeout, probe=False):
+def request(value, timeout, probe=False, platform='xiaohongshu'):
     for hop in range(4):
         u=urlsplit(value)
-        hosts={'www.xiaohongshu.com','xhslink.com','live-room.xiaohongshu.com'}
+        hosts=({'live.bilibili.com','b23.tv','api.live.bilibili.com'} if platform=='bilibili'
+               else {'www.xiaohongshu.com','xhslink.com','live-room.xiaohongshu.com'})
         if (u.scheme not in ('http','https') or u.username or u.password or u.port not in (None,80,443)
                 or (not probe and (u.scheme!='https' or u.hostname not in hosts))):raise ValueError()
-        addresses=socket.getaddrinfo(u.hostname,u.port or (443 if u.scheme=='https' else 80),type=socket.SOCK_STREAM)
-        ips=[ipaddress.ip_address(a[4][0]) for a in addresses]
-        if not ips or any(not ip.is_global or ip.is_multicast or ip.is_reserved for ip in ips):raise ValueError()
+        addresses=resolve_addresses(u.hostname,u.port or (443 if u.scheme=='https' else 80),
+                                    resolver=socket.getaddrinfo,type=socket.SOCK_STREAM)
         selected=addresses[0]
         sock=socket.socket(selected[0],socket.SOCK_STREAM);sock.settimeout(timeout)
         conn=None
@@ -70,6 +70,6 @@ if __name__=='__main__':
         raw=sys.stdin.buffer.read(65537)
         if len(raw)>65536:raise ValueError()
         value=json.loads(raw)
-        result=request(value['url'],value['timeout'],value.get('probe',False))
+        result=request(value['url'],value['timeout'],value.get('probe',False),value.get('platform','xiaohongshu'))
     except Exception as error:result={'error':'XHS_FETCH_FAILED','diagnostic':{'kind':failure_kind(error)}}
     print(json.dumps(result))

@@ -28,7 +28,7 @@ function detailText(row) {
   if (detailReport !== state.report) { detailReport = state.report; detailCache = new WeakMap(); }
   if (detailCache.has(row)) return detailCache.get(row);
   const report = state.report;
-  const gaps = (report.coverage?.gaps || []).filter(g => g.start_ms < row.end_time && g.end_ms > row.start_time);
+  const gaps = (report.coverage?.gaps || []).filter(g => (report.identity?.kind !== "live" || window.LiteUI.reportGapDetail(g)) && g.start_ms < row.end_time && g.end_ms > row.start_time);
   const refs = new Set((report.evidence || []).filter(e => e.start_ms < row.end_time && e.end_ms > row.start_time).map(e => e.id));
   const analysis = report.document.modules?.content_analysis || {};
   const notes = Object.entries(report.references || {}).flatMap(([key, groups]) => groups.flatMap((ids, i) => {
@@ -49,6 +49,14 @@ function contentDetails(row) {
   const detail = detailText(row);
   if (!detail.title && !detail.paragraphs.length) return "";
   return `<details class="detail"><summary>查看分析详情</summary>${detail.title ? `<h4>${escapeHtml(detail.title)}</h4>` : ""}${detail.paragraphs.map(text => `<p>${escapeHtml(text)}</p>`).join("")}</details>`;
+}
+
+function segmentImages(row) {
+  const urls = row.period_image ? [row.period_image] : row.frame_images;
+  if (!urls?.length) return "";
+  const label = row.period_image ? "该时段画面" : "画面证据";
+  return `${row.period_image ? "<p>该时段画面</p>" : ""}<div class="images">${urls.map(url =>
+    `<button type="button" data-preview="${escapeHtml(url)}" aria-label="查看${label}"><img src="${escapeHtml(url)}" alt="${label}" loading="lazy"></button>`).join("")}</div>`;
 }
 
 function renderContent() {
@@ -76,12 +84,25 @@ function renderContent() {
   });
   window.LiteUI.renderRows(byId("timeline"), rows,
       (row) =>
-        `<li class="segment"><div class="timeRow"><span class="dot"></span>${timeButton(row.start_time, row.end_time)}</div><article class="segmentBody"><div class="segmentTitle"><h3>${escapeHtml(row.title || "语音识别内容")}</h3><div class="tags">${row.tags.map((tag) => `<span class="${tag.includes("问题") || tag.includes("违规") ? "problemTag" : tag.includes("高光") ? "highlightTag" : "tag"}">${escapeHtml(tag)}</span>`).join("")}</div></div><p>${escapeHtml(row.content)}</p>${contentDetails(row)}${row.frame_images?.length ? `<div class="images">${row.frame_images.map((url) => `<button type="button" data-preview="${escapeHtml(url)}" aria-label="查看画面证据"><img src="${escapeHtml(url)}" alt="该时间段的质检画面证据" loading="lazy"></button>`).join("")}</div>` : ""}</article></li>`,
+        `<li class="segment"><div class="timeRow"><span class="dot"></span>${timeButton(row.start_time, row.end_time)}</div><article class="segmentBody"><div class="segmentTitle"><h3>${escapeHtml(row.title || "语音识别内容")}</h3><div class="tags">${row.tags.map((tag) => `<span class="${tag.includes("问题") || tag.includes("违规") ? "problemTag" : tag.includes("高光") ? "highlightTag" : "tag"}">${escapeHtml(tag)}</span>`).join("")}</div></div><p>${escapeHtml(row.content)}</p>${contentDetails(row)}${segmentImages(row)}</article></li>`,
     );
   byId("timeline-end").textContent = rows.length
     ? "没有更多数据了"
     : "当前筛选下没有内容片段";
   byId("analysis-body").scrollTop = 0;
+}
+function renderConclusionScore(score) {
+  const box = byId("conclusion-score");
+  const detail = byId("scoring-details");
+  box.hidden = !Number.isFinite(score?.total);
+  detail.hidden = !score;
+  if (!score) { box.innerHTML = ""; detail.innerHTML = ""; return; }
+  const statuses = {not_applicable:"不适用", insufficient:"证据不足"};
+  const refs = items => items.map(e => `<p>${Number.isFinite(e.start_ms) ? timeButton(e.start_ms, e.end_ms ?? e.start_ms) : "无时间定位"} ${escapeHtml(e.text || e.quote || "")}</p>`).join("");
+  box.innerHTML = !box.hidden ? `<span class="scoreEyebrow">综合评分</span><div class="scoreNumber">${score.total.toFixed(1)}<small>/ 10</small></div>` : "";
+  detail.innerHTML = `<h2>分项评分</h2><p>${escapeHtml(score.message)}</p>
+    ${score.cap === null ? "" : `<p>已识别 ${score.high_risk_count} 项高风险，综合分上限 ${score.cap.toFixed(1)} 分</p>`}
+    <table class="scoreTable"><thead><tr><th>维度</th><th>评分</th><th>依据</th></tr></thead><tbody>${score.dimensions.map(d => `<tr><td>${escapeHtml(d.name)}</td><td>${d.score === null ? statuses[d.status] : d.score + " / 10"}</td><td>${escapeHtml(d.reason)}${d.evidence.length ? `<details class="detail"><summary>查看评分证据</summary>${refs(d.evidence)}</details>` : ""}</td></tr>`).join("")}</tbody></table>`;
 }
 function renderReport(report) {
   state.report = report;
@@ -91,6 +112,7 @@ function renderReport(report) {
   if (!report.available) return;
   const doc = report.document;
   const analysis = doc.modules.content_analysis;
+  renderConclusionScore(analysis.scoring);
   const media = report.identity.kind === "video" ? "视频" : "直播";
   document.title = `${doc.live.title} · 复盘`;
   byId("report-title").textContent = `${media}复盘报告`;
@@ -105,7 +127,7 @@ function renderReport(report) {
     : "无有效内容";
   byId("data-title").textContent = `${media}数据`;
   byId("playback-title").textContent = `${media}回放`;
-  byId("conclusion").textContent = analysis.conclusion + (report.coverage?.gaps?.length ? ` ${report.coverage.message} ${[...new Set(report.coverage.gaps.map(g => g.reason).filter(Boolean))].join("；")}` : "");
+  byId("conclusion").textContent = analysis.conclusion + (report.identity.kind === "live" ? ` ${window.LiteUI.reportScope(report)}` : report.coverage?.gaps?.length ? ` ${report.coverage.message} ${[...new Set(report.coverage.gaps.map(g => g.reason).filter(Boolean))].join("；")}` : "");
   for (const [key, title] of [
     ["highlights", "表现亮点"],
     ["problems", "主要问题"],
@@ -184,9 +206,13 @@ document.addEventListener("click", (event) => {
     byId("playback-tip").textContent = "该时段未录制，无法定位";
     return;
   }
-  window.LiteUI.seek(byId("video"), at);
-  byId("video").focus({ preventScroll: true });
-  byId("video").scrollIntoView({
+  const video = byId("video");
+  window.LiteUI.seek(video, at);
+  video.play().catch(error => {
+    if (error.name !== "AbortError") byId("playback-tip").textContent = "回放未能开始，请点击播放器重试";
+  });
+  video.focus({ preventScroll: true });
+  video.scrollIntoView({
     block: "center",
     behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
       ? "auto"

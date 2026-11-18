@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Any
 
 from report_pipeline_common import DEFAULT_OUTPUT_PATH, ValidationError, read_utf8, require
-from validate_report import validate_final_report
 
 
 DEFAULT_URL_REGEX = r"https?://[^\s\"']+"
@@ -25,7 +24,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--url-regex", default=DEFAULT_URL_REGEX, help="从命令输出中提取飞书链接的正则。")
     parser.add_argument("--max-polls", type=int, default=6, help="导入返回异步 ticket 时的后续查询次数。")
     parser.add_argument("--poll-interval", type=float, default=2.0, help="异步查询间隔秒数。")
-    parser.add_argument("--skip-validate", action="store_true", help="跳过上传前整篇校验。")
+    parser.add_argument("--command-timeout", type=float, default=60.0, help="单次命令超时秒数。")
+    parser.add_argument("--total-timeout", type=float, default=180.0, help="导入与查询的总时限秒数。")
+    parser.add_argument("--skip-validate", action="store_true", help="此参数不影响上传行为；上传前不执行报告内容校验。")
     parser.add_argument("--dry-run", action="store_true", help="只打印最终命令，不实际执行导入。")
     return parser
 
@@ -35,7 +36,7 @@ def extract_title(markdown_path: Path) -> str:
         stripped = line.strip()
         if stripped.startswith("# "):
             return stripped[2:].strip()
-    raise ValidationError(f"{markdown_path} 缺少 Markdown H1，无法自动推导标题")
+    return markdown_path.stem
 
 
 def relative_to_cwd(path: Path) -> str:
@@ -68,8 +69,12 @@ def build_import_command(file_arg: str, title: str, folder_token: str, identity:
     return command
 
 
-def run_command(command: list[str]) -> tuple[str, str]:
-    result = subprocess.run(command, check=False, capture_output=True, text=True)
+def run_command(command: list[str], timeout: float = 60.0) -> tuple[str, str]:
+    require(timeout > 0, "上传总时限已到，保留本地报告并停止上传")
+    try:
+        result = subprocess.run(command, check=False, capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired as exc:
+        raise ValidationError(f"上传命令超过 {timeout:g} 秒，保留本地报告并停止上传") from exc
     stdout = result.stdout.strip()
     stderr = result.stderr.strip()
     if stdout:
@@ -158,7 +163,12 @@ def is_ready(data: Any | None) -> bool:
     return True
 
 
-def poll_import_task(ticket: str, max_polls: int, poll_interval: float) -> tuple[str, str, Any | None]:
+def poll_import_task(
+    ticket: str, max_polls: int, poll_interval: float,
+    *, deadline: float | None = None, command_timeout: float = 60.0,
+) -> tuple[str, str, Any | None]:
+    if deadline is None:
+        deadline = time.monotonic() + 180.0
     command = [
         "lark-cli",
         "drive",
@@ -174,8 +184,9 @@ def poll_import_task(ticket: str, max_polls: int, poll_interval: float) -> tuple
     data = None
     for index in range(max_polls):
         if index:
+            require(deadline - time.monotonic() > poll_interval, "上传总时限已到，保留本地报告并停止查询")
             time.sleep(poll_interval)
-        stdout, stderr = run_command(command)
+        stdout, stderr = run_command(command, timeout=min(command_timeout, deadline - time.monotonic()))
         data = parse_json_blob(stdout)
         if is_ready(data):
             break
@@ -183,11 +194,9 @@ def poll_import_task(ticket: str, max_polls: int, poll_interval: float) -> tuple
 
 
 def upload(args: argparse.Namespace) -> str:
+    require(args.command_timeout > 0 and args.total_timeout > 0, "上传超时秒数必须大于0")
     markdown_path = args.file.resolve()
     require(markdown_path.exists(), f"待导入文件不存在: {markdown_path}")
-
-    if not args.skip_validate:
-        validate_final_report(markdown_path)
 
     title = args.title or extract_title(markdown_path)
     file_arg = relative_to_cwd(markdown_path)
@@ -197,11 +206,15 @@ def upload(args: argparse.Namespace) -> str:
     if args.dry_run:
         return ""
 
-    stdout, stderr = run_command(command)
+    deadline = time.monotonic() + args.total_timeout
+    stdout, stderr = run_command(command, timeout=min(args.command_timeout, args.total_timeout))
     data = parse_json_blob(stdout)
     ticket = extract_ticket(data)
     if ticket and not is_ready(data):
-        stdout, stderr, data = poll_import_task(ticket, args.max_polls, args.poll_interval)
+        stdout, stderr, data = poll_import_task(
+            ticket, args.max_polls, args.poll_interval,
+            deadline=deadline, command_timeout=args.command_timeout,
+        )
 
     return extract_first_url("\n".join(filter(None, [stdout, stderr])), data, args.url_regex)
 

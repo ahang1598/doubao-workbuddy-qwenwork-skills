@@ -228,6 +228,14 @@ RRULE:FREQ=...
 - `UNTIL` 使用本地基本格式，例如 `UNTIL=20261231T235900`；不得省略秒字段，也不得带 `Z` 或 offset。
 - 不生成 `BYSECOND`、`WKST` 或其他未明确支持的扩展字段。
 
+#### 多个执行时间与 BYSETPOS
+
+- `BYHOUR` 与 `BYMINUTE` 生成小时和分钟的全部组合；组合已准确覆盖需求时，不要添加 `BYSETPOS`。
+- `BYSETPOS` 在整个 `FREQ` 周期内按时间升序选位置：`DAILY` 按天、`WEEKLY` 按周、`MONTHLY` 按月，不会在周期内的每一天重新选取。禁止用 `FREQ=WEEKLY;BYSETPOS=1,2` 或 `1,4` 表达“每个工作日两次”。
+- 当前服务端不支持 `FREQ=DAILY` 与 `BYDAY` 组合，禁止生成 `DAILY+BYDAY`。每天都执行且不限制星期时，仍可使用 `DAILY`。
+- 每个周一至周五执行多个配对时间时，使用 `FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR`。需要排除多余时分组合时，按整周候选集合计算完整的 `BYSETPOS` 列表，必须覆盖每个目标日期。这里的周一至周五不包含法定节假日判断。
+- 创建或修改规则前，按所选 `FREQ` 展开完整周期的候选集合；涉及多个星期时，至少核对下一完整周的全部执行时间，确认无遗漏、无额外触发，不能只校验首次或创建当天。
+
 #### deadline 规则
 
 - RRULE 包含 `COUNT` 或 `UNTIL` 时，不要传 `deadline`。
@@ -269,6 +277,27 @@ RRULE:FREQ=DAILY;BYSETPOS=1,4;BYHOUR=11,14;BYMINUTE=0,30
 `11:00、11:30、14:00、14:30`，再由 `BYSETPOS=1,4` 精确保留
 `11:00、14:30`。不得省略 `BYSETPOS` 而额外创建 `11:30、14:00`，
 也不得误判为必须拆成两个任务。
+
+每个周一至周五 09:00、16:00 执行，优先使用一条 cron：
+
+```text
+0 9,16 * * 1-5
+```
+
+需要使用 RRULE 时，写为 `FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;BYHOUR=9,16;BYMINUTE=0`，
+配合完整的 `DTSTART` 行，不添加 `BYSETPOS`。
+
+每个周一至周五 10:00、14:30 执行：
+
+```text
+DTSTART:20261123T100000
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;BYHOUR=10,14;BYMINUTE=0,30;BYSETPOS=1,4,5,8,9,12,13,16,17,20
+```
+
+每个工作日候选为 `10:00、10:30、14:00、14:30`，整周共 20 个候选；
+按整周选第 `1,4,5,8,9,12,13,16,17,20` 个，分别保留周一至周五每天的 `10:00、14:30`。
+下一完整周应有 10 次，周末不执行。若只写 `BYSETPOS=1,4`，只会保留周一的两次。
+示例日期仅用于说明；实际创建时必须根据 `get_current_time` 计算 DTSTART。
 
 每天执行并在本地时间 2026-12-31 23:59 后结束：
 

@@ -103,7 +103,7 @@ def state(store, task, segments, connection, status=None, *, reviewed=None):
         code = task.get('source_error_code')
         # Only explicit transport evidence refines a generic resolver failure.
         detail = (task.get('capture_diagnostic') or {}).get('source_failure') or {}
-        if (code in {'XHS_FETCH_FAILED','XHS_PAGE_UNAVAILABLE','XHS_AUTH_REQUIRED','XHS_STREAM_UNAVAILABLE','XHS_LIVE_STATE_UNKNOWN','INVALID_BROWSER_SOURCE','DOUYIN_FETCH_FAILED', 'DOUYIN_PAGE_UNAVAILABLE', 'DOUYIN_FLV_UNAVAILABLE', 'DOUYIN_RESOLVER_UNAVAILABLE'}
+        if (code in {'BILI_FETCH_FAILED', 'BILI_PAGE_UNAVAILABLE', 'BILI_AUTH_REQUIRED', 'BILI_STREAM_UNAVAILABLE', 'BILI_LIVE_STATE_UNKNOWN', 'BILI_ROOM_UNAVAILABLE', 'BILI_REPLAY_UNSUPPORTED', 'XHS_FETCH_FAILED','XHS_PAGE_UNAVAILABLE','XHS_AUTH_REQUIRED','XHS_STREAM_UNAVAILABLE','XHS_LIVE_STATE_UNKNOWN','INVALID_BROWSER_SOURCE','DOUYIN_FETCH_FAILED', 'DOUYIN_PAGE_UNAVAILABLE', 'DOUYIN_FLV_UNAVAILABLE', 'DOUYIN_RESOLVER_UNAVAILABLE'}
                 and detail.get('kind') in {'dns_error', 'tls_error', 'network_timeout', 'connection_error'}):
             code = 'NETWORK_ERROR'
         outcome, failure_stage, failure_reason = 'failed', 'inspection', code if code and code != 'none' else 'TASK_FAILED'
@@ -162,10 +162,17 @@ def payload(record, current, dims):
 
 def source_dimensions(task):
     dims = dimensions(task)
-    if (task.get('kind') == 'live' and task.get('capture_status') == 'failed'
-            and task.get('source_error_code') in {'XHS_FETCH_FAILED','XHS_PAGE_UNAVAILABLE','XHS_AUTH_REQUIRED','XHS_STREAM_UNAVAILABLE','XHS_LIVE_STATE_UNKNOWN','BROWSER_SOURCE_TIMEOUT','BROWSER_SOURCE_TASK_CLOSED','INVALID_BROWSER_SOURCE','DOUYIN_FETCH_FAILED', 'DOUYIN_PAGE_UNAVAILABLE',
+    if (task.get('kind') == 'live' and (task.get('capture_status') == 'failed' or
+            (task.get('capture_status') == 'running' and task.get('capture_reconnecting')))
+            and task.get('source_error_code') in {'BILI_FETCH_FAILED', 'BILI_PAGE_UNAVAILABLE', 'BILI_AUTH_REQUIRED', 'BILI_STREAM_UNAVAILABLE', 'BILI_LIVE_STATE_UNKNOWN', 'BILI_ROOM_UNAVAILABLE', 'BILI_REPLAY_UNSUPPORTED', 'XHS_FETCH_FAILED','XHS_PAGE_UNAVAILABLE','XHS_AUTH_REQUIRED','XHS_STREAM_UNAVAILABLE','XHS_LIVE_STATE_UNKNOWN','BROWSER_SOURCE_TIMEOUT','BROWSER_SOURCE_TASK_CLOSED','INVALID_BROWSER_SOURCE','DOUYIN_FETCH_FAILED', 'DOUYIN_PAGE_UNAVAILABLE',
                 'DOUYIN_FLV_UNAVAILABLE', 'DOUYIN_RESOLVER_UNAVAILABLE'}):
         from runtime.http_fetch import safe_failure
+        if task.get('source_handoff_stage') in {'waiting_candidate','candidate_failed'}:
+            dims['source_handoff_stage'] = task['source_handoff_stage']
+            from runtime.context import ENUMS
+            cause = task.get('source_handoff_error')
+            if task['source_error_code']=='BROWSER_SOURCE_TIMEOUT' and cause in ENUMS['source_error_code']:
+                dims['source_handoff_error'] = cause
         diagnostic = task.get('capture_diagnostic')
         detail = safe_failure(diagnostic.get('source_failure') if isinstance(diagnostic, dict) else None)
         if detail:

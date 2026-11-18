@@ -27,6 +27,10 @@ function liteProjection(s, e) {
   const qualityDelivered = !!e.quality_ready && e.quality_delivery === 'ready';
   const recapInsufficient = e.recap_status === 'insufficient' ||
     (e.recap_status === 'blocked' && e.flow_result === 'insufficient' && e.failure_stage === 'recap');
+  // A delivered no-content notice after a confirmed end is not a failed recap.
+  const endedEmpty = s.kind === 'live' && e.flow_result === 'insufficient' && !e.quality_ready &&
+    e.failure_reason === 'NO_CAPTURED_CONTENT' &&
+    ['offline','end_requested','user_stop','duration_limit','execution_limit'].includes(e.source_end_reason);
   const recapDelivered = !recapInsufficient && e.recap_delivery === 'ready';
   return {
     complete: true, pending: false, created: true, inspected,
@@ -35,7 +39,7 @@ function liteProjection(s, e) {
     qualityDelivered, recapDelivered, workflowSuccess: e.workflow_success === 1,
     failed: !inspected && e.flow_result === 'failed' ? 'inspection'
       : e.quality_ready && e.quality_delivery === 'failed' ? 'quality'
-      : !recapInsufficient && e.recap_delivery === 'failed' ? 'recap' : undefined,
+      : !endedEmpty && !recapInsufficient && e.recap_delivery === 'failed' ? 'recap' : undefined,
     insufficient: !e.quality_ready && e.flow_result === 'insufficient' ? 'quality'
       : recapInsufficient ? 'recap' : undefined,
     failure_stage: STAGES.has(e.failure_stage) ? e.failure_stage : 'none',

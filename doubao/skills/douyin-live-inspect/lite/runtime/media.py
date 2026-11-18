@@ -6,7 +6,7 @@ contract; capture and preparation use separate Store instances per thread.
 """
 import concurrent.futures
 import contextlib
-from runtime.platform_support import fcntl, nofollow_open, private_directory, private_file
+from runtime.platform_support import fcntl, nofollow_open, private_directory, private_file, private_temporary_directory
 from urllib.parse import urlsplit
 import csv
 import json
@@ -70,6 +70,27 @@ def stop_requested(store, cancel=None):
     return store.should_stop() or (cancel is not None and cancel.is_set())
 
 
+def capture_end_reason(store, task):
+    from runtime.stop_signal import read
+    reason = task.get('stop_reason')
+    if reason in {'duration_limit','execution_limit'}:
+        return reason
+    if reason == 'user_request':return 'user_stop'
+    intent = (task.get('stop_audit') or {}).get('reason') or (read(store.root) or {}).get('reason')
+    if intent == 'user_request':
+        return 'user_stop'
+    if intent == 'execution_limit':
+        return intent
+    return 'end_requested' if task.get('live_ended_at') else 'unknown'
+
+
+def finish_capture(store, task):
+    store.update_task(capture_status='ended' if task.get('live_ended_at') else 'stopped',
+                      live_source_status=task.get('live_source_status','unknown'),
+                      source_end_reason=capture_end_reason(store,task), source_error_code='none',
+                      capture_error=None, capture_diagnostic=None)
+
+
 def media_command(args, *, store=None, **kwargs):
     from runtime.finishing import enabled, closed
     if store is None or not enabled(store.task()):
@@ -80,6 +101,9 @@ def media_command(args, *, store=None, **kwargs):
         timeout=min(timeout,max(0,store.finish_tick().get('media_deadline_at',float('inf'))-time.time()))
         if timeout<=0:raise subprocess.TimeoutExpired(args,timeout)
     kwargs.pop('capture_output', None)
+    payload = kwargs.pop('input', None)
+    if payload is not None:
+        kwargs['stdin'] = subprocess.PIPE
     if store.task().get('media_frozen') or closed(store.finish_tick()) or live_backlog.remaining(store.task(),timeout)<=0:raise subprocess.TimeoutExpired(args, timeout)
     from runtime.platform_support import media_popen
     with media_popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **process_options(), **kwargs) as process:
@@ -90,15 +114,15 @@ def media_command(args, *, store=None, **kwargs):
                 process.communicate()
                 raise subprocess.TimeoutExpired(args, timeout)
             try:
-                stdout, stderr = process.communicate(timeout=.2)
+                stdout, stderr = process.communicate(input=payload, timeout=.2)
                 return subprocess.CompletedProcess(args, process.returncode, stdout, stderr)
             except subprocess.TimeoutExpired:
-                pass
+                payload = None  # communicate resumes its buffered write on the next poll.
 
 
 def probe(path, task, store=None, *, timeout=30):
     p = media_command([config(task, 'ffprobe_bin', 'ffprobe'), '-v', 'error',
-                        '-show_format', '-show_streams', '-of', 'json', str(path)],
+                        '-show_format', '-show_streams', '-show_data_hash', 'sha256', '-of', 'json', str(path)],
                        capture_output=True, text=True, timeout=timeout, store=store)
     if p.returncode:
         raise RuntimeError('Media probe failed')
@@ -152,10 +176,21 @@ class XiaohongshuResolveError(SourceError):
         self.source_failure=error.source_failure
 
 
-def resolve_xiaohongshu(store,cancel=None):
-    from runtime.xiaohongshu_live import resolve_live, XiaohongshuLiveError
-    from runtime.xiaohongshu_source import take_candidate
-    stopped=lambda:stop_requested(store,cancel)
+class BilibiliResolveError(SourceError):
+    def __init__(self,error):
+        from runtime.bilibili_live import ERRORS
+        super().__init__(error.code if error.code in ERRORS | {'INVALID_INPUT','SOURCE_CANCELLED'} else 'BILI_FETCH_FAILED', error.retryable)
+        self.source_failure=error.source_failure
+
+
+def resolve_platform_live(store,cancel=None):
+    from runtime.xiaohongshu_source import take_candidate, source_module
+    from runtime.xiaohongshu_live import XiaohongshuLiveError as XhsError
+    module=source_module(store.task()['source'])
+    resolve_live=module.resolve_live
+    error_type=getattr(module,'BilibiliLiveError',XhsError)
+    wrapped_error=BilibiliResolveError if error_type is not XhsError else XiaohongshuResolveError
+    stopped=lambda:stop_requested(store,cancel) or bool(store.task().get('live_ended_at'))
     deadline=None
     last=None
     attempts=0
@@ -163,24 +198,30 @@ def resolve_xiaohongshu(store,cancel=None):
         while not stopped() and attempts<6:
             attempts+=1
             browser=take_candidate(store)
+            if browser is not None:store.update_task(source_refresh_required=False)
             try:
-                result=resolve_live(store.task()['source'],browser_source=browser,cancel=stopped,
-                                    timeout_ms=15000)
-                store.update_task(source_refresh_required=False,live_source_status='not_live' if result['status']=='not_live' else 'live',source_error_code='none',source_end_reason='offline' if result['status']=='not_live' else 'unknown')
+                budget = 15000 if browser is not None or deadline is None else min(15000,max(1,(deadline-time.monotonic())*1000))
+                result=resolve_live(store.task()['source'],browser_source=browser,cancel=stopped,timeout_ms=budget)
+                if stopped():raise error_type('SOURCE_CANCELLED')
+                store.update_task(source_refresh_required=False,source_handoff_stage=None,source_handoff_error=None,live_source_status='not_live' if result['status']=='not_live' else 'live',source_error_code='none',source_end_reason='offline' if result['status']=='not_live' else 'unknown')
                 return result
-            except XiaohongshuLiveError as error:
+            except (error_type, XhsError) as error:
                 last=error
-                if error.code in {'INVALID_INPUT','SOURCE_CANCELLED'}:raise
+                if error.code in {'INVALID_INPUT','SOURCE_CANCELLED','BILI_REPLAY_UNSUPPORTED','BILI_ROOM_UNAVAILABLE'}:raise
                 if deadline is None:deadline=time.monotonic()+180
-                store.update_task(source_refresh_required=True,source_refresh_deadline=time.time()+max(0,deadline-time.monotonic()),source_error_code=error.code)
+                store.update_task(source_refresh_required=True,source_refresh_deadline=time.time()+max(0,deadline-time.monotonic()),source_error_code=error.code,
+                                  source_handoff_error=error.code,source_handoff_stage='candidate_failed' if browser is not None else 'waiting_candidate')
             # The existing worker waits; resume only supplies a fresh candidate, never another worker.
-            while not stopped() and time.monotonic()<deadline and not (store.root/'.browser-source.json').exists():time.sleep(.2)
+            # Reserve one anonymous recheck within the original deadline for transient transport failures.
+            wake = deadline-20 if attempts == 1 and browser is None and last.retryable else deadline
+            while not stopped() and time.monotonic()<wake and not (store.root/'.browser-source.json').exists():time.sleep(.2)
+            if stopped():raise error_type('SOURCE_CANCELLED')
             if time.monotonic()>=deadline and not (store.root/'.browser-source.json').exists():
                 if browser is not None:raise last
-                raise XiaohongshuLiveError('BROWSER_SOURCE_TIMEOUT')
+                raise error_type('BROWSER_SOURCE_TIMEOUT',last.source_failure)
         if not stopped() and last is not None:raise last
-        raise XiaohongshuLiveError('SOURCE_CANCELLED')
-    except XiaohongshuLiveError as error:raise XiaohongshuResolveError(error) from None
+        raise error_type('SOURCE_CANCELLED')
+    except (error_type, XhsError) as error:raise wrapped_error(error) from None
     finally:
         store.update_task(source_refresh_required=False)
         from runtime.platform_support import file_lock
@@ -201,27 +242,44 @@ def resolve_with_retry(store, cancel=None, *, recovering=False):
             return {'status': 'ended'}
         try:
             source = store.task()['source']
-            if urlsplit(source).hostname in {'www.xiaohongshu.com','xhslink.com'}:
-                return resolve_xiaohongshu(store,cancel)
-            if urlsplit(source).hostname not in {'live.douyin.com', 'www.douyin.com', 'v.douyin.com'}:
+            host = urlsplit(source).hostname
+            if host in {'www.xiaohongshu.com','xhslink.com','live.bilibili.com','b23.tv'}:
+                return resolve_platform_live(store,cancel)
+            if host not in {'live.douyin.com', 'www.douyin.com', 'v.douyin.com'}:
                 return {'status': 'ready', 'streamUrl': source}
             left=deadline-time.monotonic() if deadline is not None else 30
             if left<=0:raise last_error or DouyinResolveError('DOUYIN_FETCH_FAILED',True)
-            resolved = resolve_douyin(source, cancel=lambda:stop_requested(store,cancel),
+            from runtime.xiaohongshu_source import DOUYIN_ROOM_HOSTS, take_candidate, prepare_candidate
+            from runtime.xiaohongshu_live import XiaohongshuLiveError
+            browser = None
+            if host in DOUYIN_ROOM_HOSTS and (store.root/'.browser-source.json').exists():
+                try:
+                    browser = prepare_candidate(source, take_candidate(store))
+                except XiaohongshuLiveError:
+                    pass  # Expired observations fall back to the original room resolver.
+            if browser:
+                resolved = {'status':'ready', 'streamUrl':browser['stream_url']}
+            else:
+                resolved = resolve_douyin(source, cancel=lambda:stop_requested(store,cancel),
                                       timeout_ms=min(5000 if recovering else 15000,left*500))
+            if store.task().get('live_ended_at'):return {'status':'ended'}
             if stop_requested(store,cancel):raise SourceError('SOURCE_CANCELLED')
-            if deadline is not None and time.monotonic()>=deadline:
+            if resolved['status']!='not_live' and deadline is not None and time.monotonic()>=deadline:
                 raise last_error or DouyinResolveError('DOUYIN_FETCH_FAILED',True)
-            store.update_task(live_source_status='not_live' if resolved['status']=='not_live' else 'live',
+            store.update_task(source_refresh_required=False, live_source_status='not_live' if resolved['status']=='not_live' else 'live',
                               source_error_code='none', source_end_reason='offline' if resolved['status']=='not_live' else 'unknown')
             return resolved
         except (SourceError, OSError, subprocess.SubprocessError) as error:
             last_error=error
+            if store.task().get('live_ended_at'):return {'status':'ended'}
             if stop_requested(store,cancel):raise SourceError('SOURCE_CANCELLED')
+            if isinstance(error, DouyinResolveError) and error.code != 'INVALID_INPUT' and host in DOUYIN_ROOM_HOSTS:
+                store.update_task(source_refresh_required=True, source_refresh_deadline=time.time()+180,
+                                  source_error_code=error.code)
             transient_page=(recovering and isinstance(error,DouyinResolveError)
                             and error.code=='DOUYIN_PAGE_UNAVAILABLE'
                             and not error.source_failure.get('http_status'))
-            if isinstance(error, XiaohongshuResolveError):raise
+            if isinstance(error, (XiaohongshuResolveError, BilibiliResolveError)):raise
             if isinstance(error, SourceError) and not error.retryable and not transient_page:
                 raise
             store.log('source_retry', getattr(error, 'code', type(error).__name__))
@@ -323,7 +381,6 @@ def extract_audio(store, segment, folder):
 
 def prepare_segment(task_dir, segment):
     """Compatibility entry point for one synchronous preparation attempt."""
-    import tempfile
     store = Store(task_dir, capture=True).for_session()
     operations = []
     if segment.get('frame_status', 'pending') == 'pending':
@@ -331,7 +388,7 @@ def prepare_segment(task_dir, segment):
     if segment.get('asr_status', 'pending') == 'pending' and not segment.get('audio_file'):
         operations.append(('audio', extract_audio))
     for kind, extract in operations:
-        with tempfile.TemporaryDirectory(dir=store.root, prefix='.media-prep-') as temporary:
+        with private_temporary_directory(dir=store.root, prefix='.media-prep-') as temporary:
             try:
                 fields, error, files = extract(store, segment, Path(temporary))
                 for source, target in files:
@@ -373,13 +430,19 @@ def ingest_closed(store, session):
         from runtime.realtime import recording_segments
         spans=[{'start_ms':s['start_ms'],'end_ms':s['end_ms']} for s in recording_segments(store)]
         if spans != task.get('capture_spans'):
-            store.update_task(capture_spans=spans)
+            if spans and task.get('capture_reconnecting'):
+                store.update_task(capture_spans=spans, capture_reconnecting=False, live_source_status='live')
+            else:
+                store.update_task(capture_spans=spans)
         return
     for segment in closed_segments(store, session):
         try:
             store.add_segment(*segment)
         except (ValueError, OSError):
             continue
+        if task.get('capture_reconnecting'):
+            store.update_task(capture_reconnecting=False, live_source_status='live')
+            task['capture_reconnecting'] = False
 
 
 def recover_capture_tail(store, session):
@@ -536,9 +599,20 @@ def capture_session(store, source, base_ms, index, seek=0, cancel=None, bridge=N
     if primary is not None:
         log_failure(primary,stage='capture_session')
         raise primary
-    try:store.log('capture_process_exit', f'Capture process exit code {process.returncode}')
+    try:
+        store.log('capture_process_exit', f'Capture process exit code {process.returncode}')
+        if task.get('kind')=='live' and not stop_requested(store,cancel) and not store.task().get('live_ended_at'):
+            store.log('capture_transport_end',json.dumps({'route':'ffmpeg','start_index':index,
+                      'start_ms':base_ms,**(detail or {})}))
     except Exception as error:log_failure(error,stage='capture_diagnostic_log')
     return process.returncode, is_404
+
+
+def wait_reconnect(store, cancel, seconds):
+    for _ in range(seconds * 4):
+        if stop_requested(store, cancel) or store.task().get('live_ended_at') or (store.root/'.browser-source.json').exists():
+            return
+        time.sleep(.25)
 
 
 def capture(task_dir, cancel=None, bridge=None):
@@ -549,14 +623,14 @@ def capture(task_dir, cancel=None, bridge=None):
     try:
         for journal in sorted((store.root / 'media').glob('session-*.json')):
             ingest_closed(store, json.loads(journal.read_text(encoding='utf-8')))
+        from runtime.flv_capture import recover
+        recover(store)
         task = store.task()
         if task.get('capture_status') in ('ended', 'stopped'):
             return
         if stop_requested(store, cancel):
-            reason = (task['stop_reason'] if task.get('stop_reason') in {'duration_limit','execution_limit'} else
-                      'user_stop' if (task.get('stop_audit') or {}).get('reason')=='user_request' else 'unknown')
-            store.update_task(capture_status='stopped', live_source_status=task.get('live_source_status','unknown'),
-                              source_end_reason=reason, source_error_code=task.get('source_error_code','none'))
+            if task.get('capture_status') == 'failed':return  # A later stop cannot erase an earlier capture failure.
+            finish_capture(store,store.task())
             return
         store.update_task(capture_status='running', live_source_status='unknown',
                           source_end_reason='unknown', source_error_code='none',
@@ -571,7 +645,7 @@ def capture(task_dir, cancel=None, bridge=None):
         end = max((s['end_ms'] for s in segments), default=0)
         index = max((s['index'] for s in segments), default=-1) + 1
         # Do not overwrite an orphaned unclosed file on restart.
-        disk_indices = [int(p.stem.split('-')[-1]) for p in (store.root / 'media').glob('segment-*.mp4')]
+        disk_indices = [int(p.name.split('-')[-1].split('.')[0]) for p in (store.root / 'media').glob('segment-*.*')]
         index = max([index, *[i + 1 for i in disk_indices]])
         epoch_file = store.root / 'media' / 'capture-clock.json'
         if epoch_file.exists():
@@ -581,60 +655,139 @@ def capture(task_dir, cancel=None, bridge=None):
             atomic_json(epoch_file, {'epoch': epoch})
         store.update_task(capture_start_ms=0, capture_end_ms=None, capture_epoch=epoch)
         failures, consecutive_404, resolved = 0, 0, None
+        received_media = bool(end)
+        recovering = received_media
+        room_host = urlsplit(task['source']).hostname
+        platform_room = room_host in {'live.douyin.com','www.douyin.com','v.douyin.com',
+                                      'live.bilibili.com','b23.tv','www.xiaohongshu.com','xhslink.com'}
+        previous_url = None
         while not stop_requested(store, cancel) and not store.task().get('live_ended_at'):
             if resolved is None:
-                resolved = resolve_with_retry(store, cancel)
+                try:
+                    resolved = resolve_with_retry(store, cancel, recovering=recovering)
+                except (DouyinResolveError, BilibiliResolveError, XiaohongshuResolveError) as error:
+                    if ((not received_media and (not platform_room or error.code == 'BILI_REPLAY_UNSUPPORTED'))
+                            or error.code in {'INVALID_INPUT', 'SOURCE_CANCELLED', 'BROWSER_SOURCE_TASK_CLOSED'}):
+                        raise
+                    from runtime.diagnostics import failure_details
+                    store.update_task(capture_reconnecting=True, live_source_status='unknown',
+                                      source_error_code=error.code, capture_diagnostic=failure_details(error),
+                                      capture_observed_ms=max(end, round((time.time()-epoch)*1000)))
+                    store.log('source_retry', error.code)
+                    wait_reconnect(store, cancel, 30)
+                    continue
                 if resolved['status'] in {'not_live','ended'}:
-                    store.update_task(capture_status='ended')
+                    if resolved['status']=='ended':finish_capture(store,store.task())
+                    else:store.update_task(capture_status='ended')
                     store.log('capture_ended', 'Live resolver reports offline' if resolved['status']=='not_live' else 'Capture end requested')
                     return
+            # Raw stream inputs lack a room resolver and keep their original startup budget.
+            if failures >= 3 and not received_media and not platform_room:
+                if failures != 3 or resolved['streamUrl'] == previous_url:
+                    raise SourceError('STREAM_RETRY_EXHAUSTED')
             before = len(recording_segments(store)) if task.get('pipeline_version')==2 else len(store.segments())
             # Offset includes downtime/reconnect gaps; never concatenate wall-clock gaps away.
             base = max(end, round((time.time() - epoch) * 1000))
             store.update_task(capture_observed_ms=base)
-            code, is_404 = capture_session(store, resolved['streamUrl'], base, index, cancel=cancel,bridge=bridge)
+            from runtime import flv_capture
+            from runtime.flv import Unsupported
+            pull_task = store.task()
+            if flv_capture.enabled(pull_task):
+                try:
+                    code,is_404=flv_capture.session(store,resolved['streamUrl'],base,index,cancel)
+                except (BrokenPipeError, ConnectionResetError, subprocess.TimeoutExpired):
+                    code, is_404 = 1, False
+                except Unsupported as error:
+                    event = dict(route='flv', stage='parser', reason=str(error), start_ms=base, start_index=index)
+                    if error.packet_ms is not None:
+                        event.update(previous_ms=error.previous_ms, packet_ms=error.packet_ms)
+                    try:store.log('capture_transport_end', json.dumps(event))
+                    except Exception as log_error:
+                        from runtime.diagnostics import log_failure
+                        log_failure(log_error, stage='capture_diagnostic_log')
+                    # Persist the format switch before preparing the fallback.
+                    segments=recording_segments(store)
+                    end=max((s['end_ms'] for s in segments),default=end)
+                    received_media = bool(received_media or end or
+                                          store.task().get('capture_last_input_at') != pull_task.get('capture_last_input_at'))
+                    recovering = received_media
+                    store.update_task(capture_route='ffmpeg', capture_route_reason=str(error),
+                                      capture_reconnecting=received_media, live_source_status='unknown')
+                    from runtime.media_fallback import ensure
+                    class CaptureCancel:
+                        def is_set(self):return stop_requested(store,cancel)
+                    if not ensure(store,CaptureCancel(),'capture_format'):
+                        if not platform_room:
+                            raise RuntimeError('FFMPEG_FALLBACK_UNAVAILABLE') from None
+                        # A fresh source may be readable by the direct FLV slicer.
+                        store.update_task(capture_route='flv', capture_reconnecting=True)
+                        wait_reconnect(store, cancel, 30)
+                    resolved=None
+                    index=max([s['index']+1 for s in segments]+[index+1])
+                    continue
+            else:
+                if store.task().get('capture_route_reason') and not config(store.task(),'ffmpeg_bin',None):
+                    if not platform_room:
+                        raise RuntimeError('FFMPEG_FALLBACK_UNAVAILABLE')
+                    store.update_task(capture_route='flv', capture_reconnecting=True)
+                    resolved = None
+                    wait_reconnect(store, cancel, 30)
+                    continue
+                try:
+                    code, is_404 = capture_session(store, resolved['streamUrl'], base, index, cancel=cancel,bridge=bridge)
+                except (BrokenPipeError, ConnectionResetError, subprocess.TimeoutExpired):
+                    code, is_404 = 1, False
             bridge=None
             store.update_task(capture_observed_ms=max(base, round((time.time() - epoch) * 1000)))
             segments = recording_segments(store) if task.get('pipeline_version')==2 else store.segments()
             end = max((s['end_ms'] for s in segments), default=end)
             index = max((s['index'] for s in segments), default=index) + 1
             # Even unsuccessful attempts may leave an unclosed orphan at this index.
-            for orphan in (store.root / 'media').glob('segment-*.mp4'):
-                index = max(index, int(orphan.stem.split('-')[-1]) + 1)
+            for orphan in (store.root / 'media').glob('segment-*.*'):
+                index = max(index, int(orphan.name.split('-')[-1].split('.')[0]) + 1)
             if stop_requested(store, cancel) or store.task().get('live_ended_at'):
                 break
             consecutive_404 = consecutive_404 + 1 if is_404 else 0
             failures = 0 if len(segments) > before else failures + 1
+            current = store.task()
+            received_media = bool(received_media or end or current.get('capture_active_span')
+                                  or (flv_capture.enabled(pull_task) and
+                                      current.get('capture_last_input_at') != pull_task.get('capture_last_input_at')))
+            if code and failures >= 3:
+                diagnostic = current.get('capture_process_diagnostic') or {}
+                if diagnostic.get('category') in {'encoder_unavailable', 'permission_denied', 'ffmpeg_configuration_error'}:
+                    if not platform_room:
+                        raise SourceError('STREAM_RETRY_EXHAUSTED')
+                    if task.get('pipeline_version') == 2:
+                        store.update_task(capture_route='flv')
+            previous_url = resolved['streamUrl']
+            recovering = True
+            if received_media or platform_room:
+                store.update_task(capture_reconnecting=True, live_source_status='unknown')
             if consecutive_404 >= 2 or not is_404:
-                resolved = resolve_with_retry(store, cancel, recovering=True)
-                if resolved['status'] in {'not_live','ended'}:
-                    store.update_task(capture_status='ended')
-                    store.log('capture_ended', 'Live resolver reports offline' if resolved['status']=='not_live' else 'Capture end requested')
-                    return
-            if failures >= 3:
-                raise SourceError('STREAM_RETRY_EXHAUSTED')
+                resolved = None
+            if failures >= 3 and platform_room and room_host != 'v.douyin.com':
+                store.update_task(source_refresh_required=True, source_refresh_deadline=time.time()+180)
             store.log('capture_reconnect', 'Live source interrupted; reconnecting')
-            for _ in range(20):
-                if stop_requested(store, cancel):
-                    break
-                time.sleep(.25)
-        current = store.task()
-        reason = (current['stop_reason'] if current.get('stop_reason') in {'duration_limit','execution_limit'} else
-                  'user_stop' if (current.get('stop_audit') or {}).get('reason')=='user_request' else current.get('source_end_reason','unknown'))
-        store.update_task(capture_status='ended' if current.get('live_ended_at') else 'stopped', source_end_reason=reason)
+            wait_reconnect(store, cancel, 30 if failures >= 3 else 5)
+        finish_capture(store,store.task())
     except Exception as error:
         from runtime.diagnostics import failure_details, log_failure
         capture_error = error
-        log_failure(error, stage='capture')
         try:
-            stopped = stop_requested(store, cancel)
+            # Internal cancellation cannot turn a storage failure into a normal stop.
+            stopped = not isinstance(error, sqlite3.Error) and stop_requested(store, cancel)
             current = store.task()
+            if isinstance(error,SourceError) and (stopped or current.get('live_ended_at')):
+                finish_capture(store,current)
+                capture_error = None
+                return
+            log_failure(error, stage='capture')
             if stopped:
-                reason = (current['stop_reason'] if current.get('stop_reason') in {'duration_limit','execution_limit'} else
-                          'user_stop' if (current.get('stop_audit') or {}).get('reason')=='user_request' else current.get('source_end_reason','unknown'))
+                reason = capture_end_reason(store,current)
             else:
                 reason = ('stream_retry_exhausted' if isinstance(error, SourceError) and error.code=='STREAM_RETRY_EXHAUSTED' else
-                          'source_resolution_failed' if isinstance(error, (DouyinResolveError,XiaohongshuResolveError)) else 'capture_failed')
+                          'source_resolution_failed' if isinstance(error, (DouyinResolveError,XiaohongshuResolveError,BilibiliResolveError)) else 'capture_failed')
             store.update_task(capture_status='stopped' if stopped else 'failed',
                               source_end_reason=reason,
                               live_source_status=current.get('live_source_status','unknown') if stopped else 'unknown',
@@ -653,7 +806,9 @@ def capture(task_dir, cancel=None, bridge=None):
                 # Acquisition owns the end of coverage, before review draining.
                 end = max((s['end_ms'] for s in store.segments()), default=0)
                 if epoch is not None:
-                    end = max(end, round(((store.task().get('capture_last_input_at') or time.time()) - epoch) * 1000))
+                    current = store.task()
+                    until = time.time() if current.get('capture_reconnecting') else current.get('capture_last_input_at') or time.time()
+                    end = max(end, current.get('capture_observed_ms', 0), round((until - epoch) * 1000))
                 if store.task().get('capture_start_ms') is not None:
                     store.update_task(capture_end_ms=end, capture_observed_ms=end)
             except Exception as secondary:
@@ -663,20 +818,81 @@ def capture(task_dir, cancel=None, bridge=None):
                     raise
 
 
+def _flv_has_video(store, segment):
+    if not segment['media_file'].endswith('.flv'):
+        return False
+    with (store.root/segment['media_file']).open('rb') as stream:
+        header = stream.read(5)
+    return len(header) == 5 and header[:4] == b'FLV\x01' and bool(header[4] & 1)
+
+
+def _browser_recording(path, task, details, command_store=None):
+    if not any(s.get('codec_name') == 'hevc' for s in details['streams']):
+        return details
+    # Upgrade both newly muxed and previously exported HEVC recordings atomically.
+    fd, name = tempfile.mkstemp(suffix='.mp4', dir=path.parent)
+    os.close(fd)
+    converted = Path(name)
+    try:
+        command = [config(task, 'ffmpeg_bin', 'ffmpeg'), '-nostdin', '-v', 'error',
+                   '-y', '-xerror', '-i', str(path), '-map', '0:v:0', '-map', '0:a:0?',
+                   '-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2',
+                   '-c:v', 'libx264', '-preset', 'veryfast', '-pix_fmt', 'yuv420p',
+                   '-c:a', 'copy', '-movflags', '+faststart', str(converted)]
+        timeout = max(600, float(details['format']['duration']) * 2)
+        media_command(command, capture_output=True, timeout=timeout, store=command_store).check_returncode()
+        original_ms = float(details['format']['duration']) * 1000
+        details = probe(converted, task, command_store)
+        if not any(s.get('codec_name') == 'h264' for s in details['streams']) or not _duration_matches(details, original_ms):
+            raise ValueError('Invalid H.264 recording')
+        converted.replace(path)
+        return details
+    finally:
+        converted.unlink(missing_ok=True)
+
+
+def _archive_flv_segments(store):
+    import hashlib
+    import zipfile
+
+    media = store.root / 'media'
+    clips = sorted((p for p in media.glob('segment-*.flv')
+                    if re.fullmatch(r'segment-[0-9]+', p.stem)
+                    and not p.is_symlink() and p.is_file()), key=lambda p: int(p.stem[8:]))
+    if not clips:
+        return None
+    # Closed clips are atomically published. Repeated report exports reuse the same archive.
+    identity = [(p.name, p.stat().st_size, p.stat().st_mtime_ns) for p in clips]
+    digest = hashlib.sha256(repr(identity).encode()).hexdigest()[:24]
+    directory = private_directory(private_directory(store.root / 'html') / 'media')
+    target = directory / f'recording-segments-{digest}.zip'
+    if not target.is_file():
+        with tempfile.NamedTemporaryFile(dir=directory, prefix='.segments-', delete=False) as tmp:
+            temporary = Path(tmp.name)
+        try:
+            with zipfile.ZipFile(temporary, 'w', zipfile.ZIP_STORED) as archive:
+                for clip in clips:
+                    archive.write(clip, clip.name)
+            os.replace(temporary, target)
+        finally:
+            temporary.unlink(missing_ok=True)
+    return str(target.relative_to(store.root))
+
+
 def build_recording(store):
     """Playback is optional report output; its failure cannot fail inspection."""
-    if live_backlog.enabled(store.task()):
-        # Optional concatenation cannot hold live completion; retain original chunks.
-        store.update_task(playback_status='segments_only')
-        return
-    try:
-        # The report may become ready before the capture guardian closes its last MP4.
-        if store.task().get('media_frozen'):
-            deadline = time.monotonic() + 35
-            while store.task().get('capture_status') == 'running' and time.monotonic() < deadline:
-                time.sleep(.2)
-        from runtime.platform_support import file_lock
-        with file_lock(store.root/'.recording-export.lock', timeout=600):
+    from runtime.platform_support import file_lock
+    # The report may become ready before the capture guardian closes its last MP4.
+    if store.task().get('media_frozen'):
+        deadline = time.monotonic() + 35
+        while store.task().get('capture_status') == 'running' and time.monotonic() < deadline:
+            time.sleep(.2)
+    with contextlib.ExitStack() as stack:
+        try:
+            stack.enter_context(file_lock(store.root/'.recording-export.lock', timeout=600))
+        except TimeoutError:
+            return False  # Another exporter owns both the output and its status.
+        try:
             task = store.task()
             if task.get('capture_status') in {'stopped','ended','failed'}:
                 # Recover recording metadata only; frozen inspection stays sealed.
@@ -684,20 +900,85 @@ def build_recording(store):
                     recover_capture_tail(store, json.loads(journal.read_text(encoding='utf-8')))
             playback = task.get('playback_file')
             if playback and (store.root/playback).is_file():
-                if task.get('pipeline_version') != 2: return
                 from runtime.realtime import recording_segments
-                if [s['id'] for s in recording_segments(store)] == [s['segment_id'] for s in task.get('playback_map', [])]: return
+                segments = recording_segments(store) if task.get('pipeline_version') == 2 else store.segments()
+                timeline = task.get('playback_map') or []
+                cached_ids = {row['segment_id'] for row in timeline}
+                if task.get('pipeline_version') != 2 or all(s['id'] in cached_ids for s in segments):
+                    if playback == 'media/recording.mp4':
+                        from runtime.media_fallback import ensure
+                        if not ensure(store, None, 'playback'):
+                            raise RuntimeError('Playback FFmpeg preparation failed')
+                        expected = timeline[-1].get('media_end_ms') if timeline else None
+                        try:
+                            path = store.root/playback
+                            task = store.task()
+                            details = probe(path, task)
+                            if not _duration_matches(details, expected) or not details.get('streams'):
+                                raise ValueError('Invalid cached recording')
+                            if not any(s.get('codec_type') == 'video' for s in details['streams']) and any(_flv_has_video(store, s) for s in segments):
+                                raise ValueError('Cached recording lost the source video track')
+                            details = _browser_recording(path, task, details)
+                            if not _duration_matches(details, expected):
+                                raise ValueError('Converted recording duration differs from its timeline')
+                        except (RuntimeError, ValueError, OSError, subprocess.SubprocessError):
+                            if not segments:raise
+                            _build_recording(store)
+                            return
+                        if task.get('playback_status') == 'failed':
+                            store.update_task(playback_status='ready', playback_diagnostic=None)
+                    return
             _build_recording(store)
-    except Exception as error:
-        from runtime.diagnostics import failure_details
-        diagnostic = failure_details(error)
-        try:
-            store.update_task(playback_status='failed', playback_diagnostic=diagnostic)
-            store.log('recording_failed', 'Combined recording unavailable; per-segment media retained')
-        except Exception:
-            # The same DB may be unavailable. Preserve a safe diagnostic without
-            # replacing the inspection exception or echoing paths/SQL/credentials.
-            print(json.dumps({'event':'recording_failed','diagnostic':diagnostic}), file=sys.stderr)
+        except Exception as error:
+            from runtime.diagnostics import failure_details
+            diagnostic = failure_details(error)
+            try:
+                archive = None
+                try:
+                    archive = _archive_flv_segments(store)
+                except (OSError, ValueError, OverflowError):
+                    diagnostic['archive_status'] = 'failed'
+                store.update_task(playback_status='failed', playback_diagnostic=diagnostic, playback_archive=archive)
+                store.log('recording_failed', 'Combined recording unavailable; per-segment media retained')
+            except Exception:
+                # The same DB may be unavailable. Preserve a safe diagnostic without
+                # replacing the inspection exception or echoing paths/SQL/credentials.
+                print(json.dumps({'event':'recording_failed','diagnostic':diagnostic}), file=sys.stderr)
+
+
+def _duration_matches(details, expected_ms):
+    # Allow container rounding and encoder padding, but not cumulative timestamp drift.
+    duration_ms = float(details['format'].get('duration', 0)) * 1000
+    return duration_ms > 0 and (expected_ms is None or abs(duration_ms - expected_ms) <= 500)
+
+
+def _normalize_recording_parts(paths, inputs, durations, folder, task, command_store):
+    videos = [s for info in inputs for s in info['streams'] if s['codec_type'] == 'video']
+    if videos:
+        width, height = ((videos[0][key] + 1) // 2 * 2 for key in ('width','height'))
+    has_audio = any(s['codec_type'] == 'audio' for info in inputs for s in info['streams'])
+    parts = []
+    for index,(path,info,ms) in enumerate(zip(paths,inputs,durations)):
+        types = {s['codec_type'] for s in info['streams']}
+        cmd = [config(task,'ffmpeg_bin','ffmpeg'), '-nostdin','-v','error','-xerror','-i',str(path)]
+        video, audio = '0:v:0', '0:a:0'
+        if videos and 'video' not in types:
+            cmd += ['-f','lavfi','-i',f'color=s={width}x{height}:r=30']
+            video = '1:v:0'
+        if has_audio and 'audio' not in types:
+            cmd += ['-f','lavfi','-i','anullsrc=r=48000:cl=stereo']
+            audio = '1:a:0'
+        if videos:
+            cmd += ['-map',video,'-vf',f'scale={width}:{height}:force_original_aspect_ratio=decrease,'
+                    f'pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,tpad=stop_mode=clone:stop=-1',
+                    '-c:v','libx264','-preset','veryfast','-pix_fmt','yuv420p','-video_track_timescale','90000']
+        if has_audio:
+            cmd += ['-map',audio,'-af','apad','-c:a','aac','-ar','48000','-ac','2']
+        part = folder/f'{index}.mp4'
+        media_command(cmd + ['-t',str(ms / 1000),str(part)], capture_output=True,
+                      timeout=max(600, ms / 500), store=command_store).check_returncode()
+        parts.append(part)
+    return parts
 
 
 def _build_recording(store):
@@ -706,35 +987,64 @@ def _build_recording(store):
         from runtime.realtime import recording_segments
         segments=recording_segments(store)
     else:segments = sorted(store.segments(), key=lambda s: s['index'])
+    if store.task().get('pipeline_version') == 2:
+        previous = {row['segment_id'] for row in store.task().get('playback_map', [])}
+        if previous.difference(s['id'] for s in segments):
+            raise ValueError('Source segments missing for recording rebuild')
     if not segments:
         store.update_task(playback_status='segments_only')
         return
+    if store.task().get('kind','live') == 'live' or any(s['media_file'].endswith('.flv') for s in segments):
+        # Playback prepares its own tools after capture, independently of ASR.
+        from runtime.media_fallback import ensure
+        if not ensure(store, None, 'playback'):
+            raise RuntimeError('Playback FFmpeg preparation failed')
     # Playback packaging is report output, outside the inspection drain deadline.
     command_store=None if store.task().get('pipeline_version')==2 or store.task().get('media_frozen') else store
-    listing = store.root / 'media' / 'concat.txt'
-    # All media_file values here were produced locally, never supplied as ffmpeg syntax.
-    listing.write_text(''.join("file '" + str((store.root / s['media_file']).resolve()).replace("'", "'\\''")
-                               + "'\n" for s in segments), encoding='utf-8')
+    task = store.task()
+    paths = [store.root / segment['media_file'] for segment in segments]
+    inputs = [probe(path, task, command_store) for path in paths]
+    for segment, info in zip(segments, inputs):
+        if _flv_has_video(store, segment) and not any(
+                s.get('codec_type') == 'video' and s.get('codec_name') not in (None, 'unknown', 'none')
+                and s.get('width', 0) > 0 and s.get('height', 0) > 0 for s in info['streams']):
+            raise ValueError('Source FLV video track is unreadable')
+    durations = [round(float(info['format']['duration']) * 1000) for info in inputs]
     destination = store.root / 'media' / 'recording.mp4'
     fd, name = tempfile.mkstemp(prefix='recording-', suffix='.mp4', dir=destination.parent)
     os.close(fd)
     temporary = Path(name)
     try:
-        p = media_command([config(store.task(), 'ffmpeg_bin', 'ffmpeg'), '-nostdin', '-v', 'error',
-                            '-y', '-f', 'concat', '-safe', '0', '-i', str(listing), '-c', 'copy',
-                            '-movflags', '+faststart', str(temporary)], capture_output=True, timeout=600, store=command_store)
+        with private_temporary_directory(prefix='recording-parts-', dir=destination.parent) as folder:
+            folder = Path(folder)
+            keys = ('codec_type','codec_name','extradata_hash','time_base','width','height','pix_fmt',
+                    'sample_aspect_ratio','sample_rate','channel_layout','channels')
+            signatures = {tuple(tuple(stream.get(k) for k in keys) for stream in info['streams']) for info in inputs}
+            if len(signatures) > 1:
+                paths = _normalize_recording_parts(paths, inputs, durations, folder, task, command_store)
+            listing = folder/'concat.txt'
+            listing.write_text(''.join("file '" + str(path.resolve()).replace("'", "'\\''") +
+                                       f"'\nduration {ms / 1000:.3f}\n" for path,ms in zip(paths,durations)), encoding='utf-8')
+            p = media_command([config(task, 'ffmpeg_bin', 'ffmpeg'), '-nostdin', '-v', 'error',
+                               '-y', '-f', 'concat', '-safe', '0', '-i', str(listing), '-c', 'copy',
+                               '-movflags', '+faststart', str(temporary)], capture_output=True, timeout=600, store=command_store)
         if p.returncode:
             raise RuntimeError('Recording mux failed')
-        details = probe(temporary, store.task(), command_store)
+        details = probe(temporary, task, command_store)
+        if not _duration_matches(details, sum(durations)):
+            raise ValueError('Muxed recording duration differs from its timeline')
+        details = _browser_recording(temporary, task, details, command_store)
         if not details.get('streams') or float(details['format']['duration']) <= 0:
             raise ValueError('Recording output is not playable')
+        if not any(s.get('codec_type') == 'video' for s in details['streams']) and any(_flv_has_video(store, s) for s in segments):
+            raise ValueError('Recording lost the source video track')
         offset, mapping = 0, []
-        for s in segments:
-            # Container duration (including encoder padding) is the actual concatenation span.
-            duration = round(float(probe(store.root / s['media_file'], store.task(), command_store)['format']['duration']) * 1000)
+        for s, duration in zip(segments, durations):
             mapping.append({'segment_id': s['id'], 'start_ms': s['start_ms'], 'end_ms': s['end_ms'],
                             'media_start_ms': offset, 'media_end_ms': offset + duration})
             offset += duration
+        if not _duration_matches(details, offset):
+            raise ValueError('Recording duration differs from its timeline')
         atomic_json(store.root / 'media' / 'recording-timeline.json', mapping)
         temporary.replace(destination)
         store.update_task(playback_file='media/recording.mp4', playback_map=mapping, playback_status='ready', playback_diagnostic=None)
@@ -850,6 +1160,7 @@ def _run_worker(task_dir, cancel, warmed_bridge=None):
                 recover_spools(store,cancel)
             acquisition = threading.Thread(target=capture_fn, args=(task_dir, cancel,warmed_bridge) if store.task().get('pipeline_version')==2 else (task_dir,cancel), daemon=True)
             acquisition.start()
+        store.asr_upload_slots = threading.BoundedSemaphore(2)
         asr_concurrency = 10 if store.task().get('inspection_policy')=='lite_live_realtime_v2' else 2 if store.task().get('pipeline_version')==2 else 1 if local else max(1, int(config(store.task(), 'asr_concurrency', 2)))
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as frame_pool, \
                 concurrent.futures.ThreadPoolExecutor(max_workers=2) as audio_pool, \
@@ -1010,6 +1321,11 @@ def run_worker(task_dir, *, supervised=False):
             if store.task().get('pipeline_version')==2:
                 from runtime.model_preparation import select_backend
                 ready,bridge=select_backend(store,cancel)
+                if ready and store.task().get('capture_route')=='flv' and store.task().get('asr_primary_backend')=='local':
+                    from runtime.media_fallback import ensure
+                    ready=ensure(store,cancel,'local_backend')
+                    store.update_task(capture_route='ffmpeg',capture_route_reason='cloud_unavailable')
+                    if not ready:store.update_task(worker_status='setup_pending',setup_error='ASR_RUNTIME_UNAVAILABLE')
                 if ready:
                     media_started=True
                     _run_worker(task_dir,cancel,bridge)

@@ -1,0 +1,32 @@
+{
+  "version": "3.0.0",
+  "skill_name": "doubao-market-hotspot",
+  "default_mode": "auto",
+  "modes": {
+    "传导模式": {},
+    "路径模式": {},
+    "快速判断": {}
+  },
+  "loading_profile": "references/loading-profile.json",
+  "deterministic_tool": "scripts/event_claim_engine.py",
+  "tool_contract": "references/deterministic-tool-contract.md",
+  "conditional_tool_policy": "普通问答无需运行脚本；仅在复杂多源检索规划、多时点证据冻结或定量复算有实际需要时按需调用。",
+  "search_router": "scripts/search_router.py",
+  "delivery_tiers": {
+    "direct": {
+      "format": "as_requested_or_direct_answer",
+      "label": "焦点直答",
+      "modes": ["快速判断"]
+    },
+    "brief": {
+      "format": "as_requested_or_focused_impact_analysis",
+      "label": "专题拆解",
+      "modes": ["传导模式", "路径模式"]
+    },
+    "full": {
+      "format": "as_requested_by_user_and_capability",
+      "label": "深度研究材料",
+      "modes": ["传导模式", "路径模式"]
+    }
+  }
+}

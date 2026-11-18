@@ -30,7 +30,7 @@
 
 ## Examples
 
-从视频子目录执行以下 JavaScript 函数。`sourceUrl` 由宿主在受控内存中提供，不把实际 URL 粘进脚本、命令文本、临时文件或调试输出。示例按当前 Schema 先预检、再只创建一次；调用方只能接收白名单结果。宿主无法安全传递时按 [回退规则](../../references/auth-recovery.md#正式版不可用时回退-lite) 处理。
+从视频子目录执行以下 JavaScript 函数。`sourceUrl` 由宿主在受控内存中提供，不把实际 URL 粘进脚本、命令文本、临时文件或调试输出。示例按当前 Schema 先预检、再只创建一次；调用方只能接收白名单结果。宿主无法安全传递时按 [正式版续办规则](../../references/auth-recovery.md#正式版受阻时续办) 处理。
 
 ```javascript
 import { spawnSync } from 'node:child_process';

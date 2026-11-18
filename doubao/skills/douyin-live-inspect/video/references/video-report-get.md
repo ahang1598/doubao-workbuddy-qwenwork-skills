@@ -46,3 +46,7 @@
 # 先按精确 Schema 查询任务与服务端报告，确认报告就绪后生成远端链接
 printf '%s\n' '{"kind":"video","environment":"online","project_name":"<project>","task_id":<id>}' | node ../scripts/report-link.mjs
 ```
+
+## 内容复盘与评分
+
+质检报告交付后，使用根目录 scripts/ecommerce-review-prepare.mjs，传入 kind:"video" 及原任务身份。该入口读取 GetVideoReport，沿用 references/ecommerce-review.md 的分析和 references/review-scoring.md 的评分。将同一次分析写成 JSON，用 scripts/ecommerce-review-render.mjs 和本次 render_context_id 输出 HTML 复盘附件（format:"html", delivery_mode:"chat"）。此附件是内容复盘，原质检报告仍交付服务端链接。视频复盘不调用直播 UploadReport，也不构造直播控制台复盘链接；尚未验证视频远端复盘保存能力。接口没有可用转写时填写 degraded、空 segments、九项证据不足，报告显示无法评分及原因，不编造字幕或分数。

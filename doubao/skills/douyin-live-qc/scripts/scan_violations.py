@@ -16,6 +16,7 @@ Usage:
     python3 scan_violations.py transcript.txt --category software --json
 """
 import argparse
+from qc_telemetry import observe
 import json
 import re
 import sys
@@ -237,11 +238,12 @@ def main():
                         help="product category (default: general)")
     args = parser.parse_args()
 
-    with open(args.transcript, encoding="utf-8") as handle:
-        text = handle.read()
+    with observe("scan", "scan_error"):
+        with open(args.transcript, encoding="utf-8") as handle:
+            text = handle.read()
 
-    hits = scan(text, args.category)
-    sop = check_sop(text, args.category)
+        hits = scan(text, args.category)
+        sop = check_sop(text, args.category)
 
     if args.json:
         print(json.dumps({

@@ -2,15 +2,15 @@
 
 ## 搜索工具
 
-你有两种搜索方式，按需选用：
+按数据类型选择工具：
 
 | 工具 | 用途 | 适用场景 |
 |------|------|---------|
 | `seed_finance_lookup` | 查询专业金融数据库 | 财务数据、一致预期 |
 | `seed_finance_search` | 搜索金融资料 | 财报原文、券商研报、公司公告、机构观点 |
-| `general_search` | 通用网页搜索 | 其他信息的补充搜索 |
+| `general_search` | 通用网页搜索 | 文本检索不可用时补充搜索 |
 
-财务数据和一致预期优先用 `seed_finance_lookup`；财报原文、券商研报、公司公告和机构观点优先用 `seed_finance_search`；其他信息可用 `general_search` 补充。
+财务数据和一致预期优先用 `seed_finance_lookup`；财报原文、券商研报、公司公告和机构观点优先用 `seed_finance_search`；`seed_finance_search` 不可用时再用 `general_search`。
 
 ---
 

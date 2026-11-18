@@ -56,10 +56,10 @@
 <h2>分模块解读</h2>
 {{abnormal_detail_modules}}
 
-{{trend_or_single_visualization_section}}
+{{trend_or_single_summary_section}}
 
-<h1>四、风险与异常分布可视化 ⚠️</h1>
-{{risk_distribution_charts}}
+<h1>四、风险与异常分布汇总 ⚠️</h1>
+{{abnormal_distribution_summary}}
 <h2>风险分层表</h2>
 <table>
   <thead>
@@ -76,12 +76,12 @@
 </table>
 <table>
   <tr>
-    <th>可视化主题</th>
-    <th>图表类型</th>
+    <th>汇总主题</th>
+    <th>指标类别</th>
     <th>数据依据</th>
     <th>解读要点</th>
   </tr>
-  {{visualization_rows}}
+  {{summary_rows}}
 </table>
 
 <h1>五、综合健康分析</h1>
@@ -98,8 +98,8 @@
 {{medical_plan}}
 <h2>复查与随访</h2>
 {{follow_up_plan}}
-<h2>动作示意图</h2>
-{{action_illustrations}}
+<h2>管理步骤与 SVG 示意</h2>
+{{action_svg_or_steps}}
 <h2>营养饮食</h2>
 {{nutrition_plan}}
 <h2>运动健身</h2>
@@ -111,9 +111,9 @@
 <h2>用户报告来源</h2>
 {{user_report_sources}}
 <h2>外部参考文档</h2>
-<p>以下参考文档用于支持报告中的医学解释、阈值、分级、随访和健康管理建议；链接已在输出前检查可访问性。</p>
+<p>以下参考文档用于支持报告中的医学解释、阈值、分级、随访和健康管理建议。</p>
 <ul>
-  {{external_reference_links}}
+  {{external_reference_sources}}
 </ul>
 <h2>计算说明</h2>
 {{calculation_sources}}

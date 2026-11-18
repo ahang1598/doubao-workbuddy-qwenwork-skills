@@ -10,7 +10,7 @@
 
 ## 数据获取
 
-使用 `/seed_finance_search` 获取财报日历、盈利预测、预测修正、行情、估值和公司行动数据；产品、监管和管理层事件以一手公告为准。涉及近期新闻、供应链、国际或监管事件时，同时读取 `capability-market-news-context.md`。
+使用 `/seed_finance_lookup` 获取财报日历、盈利预测、预测修正、行情、估值和公司行动数据；产品、监管和管理层事件以一手公告为准。涉及近期新闻、供应链、国际或监管事件时，同时读取 `capability-market-news-context.md`。
 
 ## 所需输入
 

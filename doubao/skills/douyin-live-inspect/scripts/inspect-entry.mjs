@@ -124,26 +124,41 @@ try {
               },
               { env: { ...process.env, INSPECT_ENTRY_PROBE: '1' } },
             );
-    if (
-      !existing &&
-      values.mode !== result.data.route &&
-      ['lite', 'formal'].includes(result.data.route)
-    )
-      await telemetry.withContext({}, (current) =>
-        current.versionSelected({ mode: result.data.route, context }),
-      );
+    if (values.mode === 'formal' && result.data.next_action === 'login_required') {
+      const { detectRuntimeMode } = await import('../runtime/runtime-mode.mjs');
+      if (detectRuntimeMode().mode === 'cloud') {
+        const { runLogin } = await import('../runtime/auth-login.mjs');
+        const { publicLoginError, localLoginStatus } = await import('../runtime/auth-local-login.mjs');
+        const profile = result.data.profile ?? values.profile ?? 'default';
+        try {
+          if ((await localLoginStatus(profile))?.status !== 'pending') {
+            const login = await runLogin({ profile, remote: true, entryTask: context.task_dir }, { output: { write() {} } });
+            result.data.authorization_url = login.authorization_url;
+            result.data.next_action = 'deliver_authorization_link';
+            result.data.message = `[登录火山引擎并授权](${login.authorization_url})。在“授权成功”弹窗点击“复制授权码”，回到云电脑，在授权结果输入框中粘贴并提交。提交后回到当前对话回复“已授权”。`;
+          } else {
+            result.data.next_action = 'await_local_authorization';
+            result.data.message = '请沿用已交付的同机授权链接，等待原回调。';
+          }
+        } catch (error) {
+          result.ok = false;
+          Object.assign(result.data, { route: 'blocked', reason: 'authorization_start_failed',
+            next_action: 'resolve_blocker', error: publicLoginError(error) });
+        }
+      }
+    }
     await telemetry.withContext({}, (current) =>
       current.operationCompleted({
         operation: 'entry',
         kind: values.kind,
         existing,
-        result,
+        result: { ok: result.ok, data: { route: result.data.route } },
       }),
     );
     Object.assign(result.data, {
       ...(context.task_id && result.data.route !== 'formal' ? { task_id: context.task_id } : {}),
       [values['batch-dir'] ? 'batch_dir' : 'task_dir']: context.task_dir,
-      ...(!existing && result.data.route === 'lite' && values.kind
+      ...(!existing && values.mode === 'lite' && result.data.route === 'lite' && values.kind
         ? {
             start_command_argv: values['batch-dir']
               ? ['batch-create', '--batch-dir', context.task_dir]

@@ -109,7 +109,7 @@ https://api.crossref.org/works?query.bibliographic={crossref_cluster}&filter=typ
 
 PubMed 条件通道、Europe PMC MED、Crossref 尽量在同一补充阶段执行。任一入口不可用、返回 0 条或解析失败时直接跳过；不要为补齐“三路成功”循环重试。只有关键概念明显缺口时，才在可用入口缩短概念簇扩展一次。入口返回的大 `total-results` 只说明匹配总量，不要求读取全部结果；按当前窗口、相关性和可见页筛选。
 
-PubMed、PubMed Central/PMC、Europe PMC、Crossref 是数据库、全文库或检索来源，不是期刊。无论 PubMed 结果来自 MCP 还是参数化 URL，`record_source` 都写 `PubMed`，不能把 `pubmed-medical-literature` 或 MCP 名称写成期刊。把真实期刊写入 `journal_name`。期刊字段按以下顺序批量补全，不逐篇回读：
+PubMed、PubMed Central/PMC、Europe PMC、Crossref 是数据库、全文库或检索来源，不是期刊。无论 PubMed 结果来自 MCP 还是参数化 URL，`record_source` 都写 `PubMed`，不能把 `pubmed-medical-literature` 或 MCP 名称写成期刊。把真实期刊写入 `journal_name`。期刊字段按以下顺序批量补全：
 
 1. Europe PMC `resultType=core` 的 `journalInfo.journal.title`，其次 `journalTitle`；
 2. PubMed ESummary 的 `fulljournalname`，其次 `source` 期刊缩写；

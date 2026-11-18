@@ -3,6 +3,7 @@
 A detached supervisor bounds the child's lifetime. Only the child publishes caches;
 media workers merely observe its state and never own or stop its process tree.
 """
+import errno
 import hashlib
 import json
 import os
@@ -65,37 +66,66 @@ def environment():
 
 _launch_lock = threading.Lock()
 
+def preparation_facts(issue):
+    from runtime.context import DIAGNOSTIC_ENUMS
+    stage = issue.get('stage')
+    facts = {'prepare_stage': stage if stage in DIAGNOSTIC_ENUMS['prepare_stage'] else 'unknown'}
+    for key in ('errno', 'winerror'):
+        value = issue.get(key)
+        if type(value) is int and 0 <= value <= 2**53-1:
+            facts[key] = value
+    return facts
+
+
 def ensure(task):
     """确保任务所需资源已准备完成，状态写入可恢复文件而不是依赖当前进程内存。"""
     # Also serialize threads: OS file locks alone are not a portable thread mutex.
     with _launch_lock:
         return _ensure(task)
 
+def launch_worker(action, job_id, generation, env):
+    for attempt in range(2):
+        try:
+            return subprocess.Popen([sys.executable, '-m', 'runtime.model_preparation', action, job_id, generation],
+                                    env=env, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                    stderr=subprocess.DEVNULL, **process_options())
+        except OSError as error:
+            if attempt or error.errno not in (errno.EINTR, errno.EAGAIN):
+                raise
+
+
 def _ensure(task):
     job_id = identity(task)
-    private_directory(artifacts.cache_root())
-    root = private_directory(job_root(job_id))
-    with file_lock(root / 'launch.lock'):
+    with artifacts.artifact_operation('permissions','cache_permissions'):
+        private_directory(artifacts.cache_root())
+        root = private_directory(job_root(job_id))
+    with artifacts.artifact_operation('lock','acquire_lock'), file_lock(root / 'launch.lock'):
         current = status(job_id)
         if current['status'] in ACTIVE: return current
         # An OS lock closes the stale heartbeat/relaunch race. A live old child
         # can never overwrite a replacement job or download alongside it.
+        stage = 'lock'
         try:
             with file_lock(root / 'run.lock', timeout=0):
                 request = {'artifact_specs': {'asr': task['artifact_specs']['asr']}}
+                stage = 'write_state'
                 write(root / 'request.json', request)
                 generation=uuid.uuid4().hex
                 current = {'generation':generation,'id': job_id, 'status': 'queued', 'stage': 'queued',
                            'heartbeat': time.time(), 'started_at': time.time(), 'code': None}
                 write(root / 'state.json', current)
-                subprocess.Popen([sys.executable, '-m', 'runtime.model_preparation', 'supervise', job_id, generation],
-                                 env=environment(), stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                                 stderr=subprocess.DEVNULL, **process_options())
-        except TimeoutError:
-            return {**current, 'status': 'preparing'}
-        except OSError:
-            current.update(status='failed', code='MODEL_PREPARATION_START_FAILED', retryable=True)
-            write(root / 'state.json', current)
+                stage = 'launch_worker'
+                launch_worker('supervise', job_id, generation, environment())
+        except OSError as error:
+            if stage == 'lock' and isinstance(error, TimeoutError):
+                return {**current, 'status': 'preparing'}
+            current.update(status='failed', code='MODEL_PREPARATION_START_FAILED', stage=stage,
+                           retryable=not isinstance(error, PermissionError),
+                           errno=error.errno, winerror=getattr(error, 'winerror', None))
+            try:
+                write(root / 'state.json', current)
+            except OSError:
+                pass  # The caller can still report the original failure if the cache is unwritable.
         return current
 
 
@@ -122,24 +152,31 @@ def execute(job_id, generation):
             done.set(); pulse.join()
             issue = (result.get('issues') or [{}])[0]
             progress(status='ready' if result['ready'] else 'failed', stage='ready' if result['ready'] else issue.get('stage'),
-                     code=issue.get('code'), retryable=issue.get('retryable', False))
+                     code=issue.get('code'), retryable=issue.get('retryable', False),
+                     **{k:issue[k] for k in ('errno','winerror') if k in issue})
         except Exception:
             done.set(); pulse.join()
             progress(status='failed', code='MODEL_PREPARATION_FAILED', retryable=True)
 
 
 def supervise(job_id, generation):
-    child = subprocess.Popen([sys.executable, '-m', 'runtime.model_preparation', 'execute', job_id, generation],
-                             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                             env={**os.environ,'INSPECT_PREPARATION_CHILD':'1'}, **process_options())
+    failure = {'code':'MODEL_PREPARATION_INTERRUPTED', 'retryable':True}
     try:
-        child.wait(timeout=MAX_SECONDS)
-    except subprocess.TimeoutExpired:
-        kill_tree(child); child.wait()
+        child = launch_worker('execute', job_id, generation,
+                              {**os.environ,'INSPECT_PREPARATION_CHILD':'1'})
+    except OSError as error:
+        failure.update(code='MODEL_PREPARATION_START_FAILED', stage='launch_worker',
+                       retryable=not isinstance(error, PermissionError), errno=error.errno,
+                       winerror=getattr(error, 'winerror', None))
+    else:
+        try:
+            child.wait(timeout=MAX_SECONDS)
+        except subprocess.TimeoutExpired:
+            kill_tree(child); child.wait()
     with file_lock(job_root(job_id) / 'launch.lock'):
         current = status(job_id)
         if current.get('generation')==generation and (current['status'] in ACTIVE or current.get('code') == 'MODEL_PREPARATION_INTERRUPTED'):
-            current.update(status='failed', code='MODEL_PREPARATION_INTERRUPTED', retryable=True)
+            current.update(status='failed', **failure)
             write(job_root(job_id) / 'state.json', current)
 
 
@@ -167,22 +204,26 @@ def inspect(task=None):
 
 def start_check(task=None, *, defer_model=False):
     """Prepare shared binaries only; a cold model never blocks the caller."""
-    common = artifacts.prepare(task=task, common_only=True)
+    direct=(task or {}).get('capture_route')=='flv'
+    common = artifacts.prepare(task=task, common_only=True, model_only=direct)
     if not common['ready']: return common
     if defer_model:
         return {**common,'ready':False,'waiting':True,'model_preparation':{'status':'pending'}}
     frozen = {**(task or {}), 'artifact_specs': common['artifact_specs'], 'runtime_binaries': common['binaries']}
-    check = artifacts.prepare(task=frozen, install=False)
+    check = artifacts.prepare(task=frozen, install=False, model_only=direct)
     if check['ready']: return check
-    # Only a recoverable missing/invalid managed cache can start a download.
+    # Dependency repair shares the detached, bounded model preparation job.
     issue = (check.get('issues') or [{}])[0]
-    if issue.get('code') != 'ARTIFACT_CACHE_MISSING': return check
+    from runtime.asr_environment import DEPENDENCY_ERRORS
+    if issue.get('code') not in DEPENDENCY_ERRORS | {'ARTIFACT_CACHE_MISSING'}: return check
     try: state = ensure(frozen)
-    except (OSError, ValueError, artifacts.PreparationError):
-        check['issues']=[{'code':'MODEL_PREPARATION_START_FAILED','stage':'prepare','retryable':True}]
+    except (OSError, ValueError, artifacts.PreparationError) as error:
+        check['issues']=[{'code':'MODEL_PREPARATION_START_FAILED','stage':getattr(error,'prepare_stage','unknown'),
+                          'errno':getattr(error,'errno',None),'winerror':getattr(error,'winerror',None),
+                          'retryable':not isinstance(error, PermissionError)}]
         return check
     if state['status']=='failed':
-        check['issues']=[{'code':state.get('code'),'stage':state.get('stage','prepare'),'retryable':state.get('retryable',False)}]
+        check['issues']=[{k:state[k] for k in ('code','stage','retryable','errno','winerror') if k in state}]
     check['model_preparation'] = state
     check['waiting'] = state['status'] in ACTIVE or state['status'] == 'ready'
     return check
@@ -245,7 +286,8 @@ def record_backup(store, check, *, observed=None):
         try:
             from runtime.bridge import runtime_failure
             runtime_failure({'failure_component':'asr','failure_reason':'prepare_failed',
-                             'recovery_outcome':'failed','recovery_code':code or 'ASR_RUNTIME_UNAVAILABLE'}, task)
+                             'recovery_outcome':'failed','recovery_code':code or 'ASR_RUNTIME_UNAVAILABLE',
+                             **preparation_facts((check.get('issues') or [{}])[0])}, task)
         except Exception:pass
 
 
@@ -292,6 +334,7 @@ def select_backend(store, cancel, *, budget=15, total_budget=90):
             safe_code=code  # Node validates the optional diagnostic boundary.
             runtime_failure({'failure_component':'asr','failure_reason':'prepare_timeout' if code=='ASR_STARTUP_TIMEOUT' else 'prepare_failed',
                 'recovery_outcome':'failed','recovery_code':safe_code,
+                **preparation_facts(((check or {}).get('issues') or [{'stage':phase}])[0]),
                 'recovery_elapsed_ms':max(0,round((time.monotonic()-overall_deadline+total_budget)*1000))},store.task())
         except Exception:pass
     def preparing(stage):
@@ -374,7 +417,7 @@ def select_backend(store, cancel, *, budget=15, total_budget=90):
                 download_complete=time.monotonic()<=deadline or (cloud_done and not cloud.get('ready'))
             if download_complete:preparing('verifying')
             if state['status']=='failed':
-                check={**check,'waiting':False,'issues':[{'code':state.get('code')}]}
+                check={**check,'waiting':False,'issues':[state]}
             elif state['status']=='ready' and download_complete and not checking:
                 checking=True;start_probe()
         expired=deadline is not None and not download_complete and time.monotonic()>=deadline

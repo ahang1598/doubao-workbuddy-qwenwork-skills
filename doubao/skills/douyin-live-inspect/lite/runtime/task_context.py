@@ -11,6 +11,10 @@ FILE = '.task-context.json'
 ID = re.compile(r'[0-9a-f]{32}', re.I)
 
 
+class TaskAlreadyExists(FileExistsError):
+    code = 'TASK_ALREADY_EXISTS'
+
+
 class TaskBindingError(ValueError):
     code = 'TASK_BINDING_MISMATCH'
 

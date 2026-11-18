@@ -14,6 +14,7 @@ Requires: websocket-client, requests, a Chrome running with
 --remote-debugging-port=9222 and a logged-in Douyin session.
 """
 import argparse
+from qc_telemetry import observe
 import json
 import re
 import sys
@@ -206,7 +207,10 @@ def main():
                         help="number of scroll rounds to load more results (default 4)")
     args = parser.parse_args()
 
-    results = search_live(args.keyword, scroll_rounds=args.scroll)
+    with observe("search", "search_error") as fact:
+        results = search_live(args.keyword, scroll_rounds=args.scroll)
+        if not results:
+            fact.update(outcome="empty", reason="no_matches")
 
     if not results:
         print("[info] no live rooms found for this keyword", file=sys.stderr)

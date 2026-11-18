@@ -1,6 +1,7 @@
 """Small OS boundary shared by media workers, downloads and credential storage."""
 # 核心实现模块：负责本模块声明的检测、状态处理或交付边界；敏感输入和原始响应不进入日志。
 import contextlib
+import errno
 import ntpath
 import os
 from pathlib import Path
@@ -28,7 +29,9 @@ else:
                 try:
                     msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
                     return
-                except OSError:
+                except OSError as error:
+                    if error.errno not in (errno.EACCES, errno.EAGAIN, errno.EDEADLK):
+                        raise
                     if mode & _Locks.LOCK_NB: raise BlockingIOError('resource locked') from None
                     time.sleep(.1)
     fcntl = _Locks()
@@ -55,11 +58,12 @@ $ErrorActionPreference='Stop'
 try {
   $p=$env:INSPECT_PRIVATE_PATH
   $user=[System.Security.Principal.WindowsIdentity]::GetCurrent().User
-  $system=New-Object System.Security.Principal.SecurityIdentifier('S-1-5-18')
+  $sids=@($env:INSPECT_PRIVATE_SIDS.Split(';') | ForEach-Object { New-Object System.Security.Principal.SecurityIdentifier($_) })
+  if ($user.Value -ne $env:INSPECT_PRIVATE_USER -or $user.Value -notin $sids.Value) { throw 'execution identity changed' }
   function ValidAcl($acl) {
     $rules=@($acl.GetAccessRules($true,$true,[System.Security.Principal.SecurityIdentifier]))
-    if (!$acl.AreAccessRulesProtected -or $rules.Count -ne 2) { return $false }
-    foreach ($sid in @($user,$system)) {
+    if (!$acl.AreAccessRulesProtected -or $rules.Count -ne $sids.Count) { return $false }
+    foreach ($sid in $sids) {
       $found=@($rules | Where-Object { $_.IdentityReference.Value -eq $sid.Value -and $_.AccessControlType -eq 'Allow' -and $_.FileSystemRights -eq 'FullControl' -and $_.InheritanceFlags -eq 'ContainerInherit,ObjectInherit' -and $_.PropagationFlags -eq 'None' })
       if ($found.Count -ne 1) { return $false }
     }
@@ -67,19 +71,40 @@ try {
   }
   $dir=New-Object System.IO.DirectoryInfo($p)
   [Console]::Error.WriteLine('ACL_READ')
-  $acl=$dir.GetAccessControl([System.Security.AccessControl.AccessControlSections]::Access)
-  if (!(ValidAcl $acl)) {
+  # Existing reparse points anywhere in the path must never redirect ACL writes.
+  for ($item=$dir; $null -ne $item; $item=$item.Parent) {
+    $item.Refresh()
+    if ($item.Exists -and ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) { throw 'link not allowed' }
+  }
+  $exists=$dir.Exists
+  if ($exists -and $env:INSPECT_PRIVATE_NEW -eq '1') { throw 'directory already exists' }
+  if ($exists) {
+    $owner=$dir.GetAccessControl([System.Security.AccessControl.AccessControlSections]::Owner).GetOwner([System.Security.Principal.SecurityIdentifier]).Value
+    if ($owner -notin @($user.Value,'S-1-5-18','S-1-5-32-544')) { throw 'untrusted owner' }
+  }
+  if ($exists) { $acl=$dir.GetAccessControl([System.Security.AccessControl.AccessControlSections]::Access) }
+  if (!$exists -or !(ValidAcl $acl)) {
     $acl=New-Object System.Security.AccessControl.DirectorySecurity
     $acl.SetAccessRuleProtection($true,$false)
-    foreach ($sid in @($user,$system)) {
+    foreach ($sid in $sids) {
       $rule=New-Object System.Security.AccessControl.FileSystemAccessRule($sid,'FullControl','ContainerInherit,ObjectInherit','None','Allow')
       $acl.AddAccessRule($rule)
     }
     if (!(ValidAcl $acl)) { throw 'invalid DACL' }
-    [Console]::Error.WriteLine('ACL_APPLY')
-    $dir.SetAccessControl($acl)
+    if ($exists) {
+      [Console]::Error.WriteLine('ACL_APPLY')
+      $dir.SetAccessControl($acl)
+    } else {
+      # .NET applies the DACL at creation, before any private data can be written.
+      [Console]::Error.WriteLine('ACL_CREATE')
+      $dir.Create($acl)
+    }
   }
   [Console]::Error.WriteLine('ACL_VERIFY')
+  $dir.Refresh()
+  if ($dir.Attributes -band [System.IO.FileAttributes]::ReparsePoint) { throw 'link not allowed' }
+  $owner=$dir.GetAccessControl([System.Security.AccessControl.AccessControlSections]::Owner).GetOwner([System.Security.Principal.SecurityIdentifier]).Value
+  if ($owner -notin @($user.Value,'S-1-5-18','S-1-5-32-544')) { throw 'untrusted owner' }
   if (!(ValidAcl ($dir.GetAccessControl([System.Security.AccessControl.AccessControlSections]::Access)))) { throw 'verification failed' }
   [Console]::Write('ACL_VERIFIED')
 } catch {
@@ -128,19 +153,24 @@ def windows_acl_stage(output):
     if isinstance(output, bytes):output = output.decode('utf-8', errors='replace')
     # stderr 只取最后一个白名单阶段；没有标记表示进度未知，不推断系统根因。
     stages = [line.strip() for line in (output or '').splitlines()
-              if line.strip() in {'ACL_READ', 'ACL_APPLY', 'ACL_VERIFY'}]
+              if line.strip() in {'ACL_READ', 'ACL_CREATE', 'ACL_APPLY', 'ACL_VERIFY'}]
     return stages[-1] if stages else 'ACL_STARTUP'
 
 
-def windows_private_directory(path):
+def windows_private_directory(path, *, create_only=False):
     import tempfile
     reason = 'acl_apply_failed'
     detail = None
     # 用阶段变量隔离错误来源，共用一个捕获/上报出口；必须在对应操作前切换阶段。
     stage = 'ACL_STARTUP'
     try:
+        from runtime.windows_token import current_private_identity
+        try:
+            user, sids = current_private_identity()
+        except (OSError, ValueError):
+            raise PrivateDirectoryError('acl_apply_failed', 'ACL_TOKEN_UNSUPPORTED') from None
         result = subprocess.run([windows_powershell(),'-NoProfile','-NonInteractive','-Command',WINDOWS_PRIVATE_ACL],
-            env={**os.environ,'INSPECT_PRIVATE_PATH':str(path)}, capture_output=True, timeout=15, shell=False)
+            env={**os.environ,'INSPECT_PRIVATE_PATH':str(path), 'INSPECT_PRIVATE_USER':user, 'INSPECT_PRIVATE_SIDS':';'.join(sids), 'INSPECT_PRIVATE_NEW':'1' if create_only else '0'}, capture_output=True, timeout=15, shell=False)
         stage = windows_acl_stage(result.stderr)
         if result.returncode:
             # 非零退出可能发生于回读验证；不能全部当成 ACL 应用失败。
@@ -179,18 +209,41 @@ def private_directory(path):
     path = Path(path)
     if path.is_symlink() or (path.exists() and getattr(path.lstat(), 'st_file_attributes', 0) & 0x400):
         raise ValueError('private directory cannot be a link')
-    try:path.mkdir(parents=True, exist_ok=True, mode=0o700)
-    except OSError:
-        if os.name == 'nt':
-            from runtime.bridge import record_runtime_issue
-            record_runtime_issue('windows_acl','acl_apply_failed')
-            raise PrivateDirectoryError('acl_apply_failed') from None
-        raise
     if os.name == 'nt':
         windows_private_directory(path)
-    elif path.stat().st_mode & 0o077:
-        raise ValueError('directory must be private (0700)')
+    else:
+        path.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if path.stat().st_mode & 0o077:
+            raise ValueError('directory must be private (0700)')
     return path
+
+
+def private_mkdtemp(*, prefix='inspect-', dir=None):
+    import tempfile
+    if os.name != 'nt':
+        return tempfile.mkdtemp(prefix=prefix, dir=dir)
+    import secrets
+    path = Path(dir or tempfile.gettempdir()) / (prefix + secrets.token_hex(16))
+    windows_private_directory(path, create_only=True)
+    return str(path)
+
+
+def private_temporary_directory(*, prefix='inspect-', dir=None):
+    import shutil
+    import tempfile
+    if os.name != 'nt':
+        return tempfile.TemporaryDirectory(prefix=prefix, dir=dir)
+    # Create eagerly so callers classify preparation failures separately from cleanup.
+    path = private_mkdtemp(prefix=prefix, dir=dir)
+    @contextlib.contextmanager
+    def cleanup():
+        try:
+            yield path
+        finally:
+            # No permission resets or recursive repair of an old directory.
+            if os.path.exists(path):
+                shutil.rmtree(path)
+    return cleanup()
 
 
 def private_file(info):

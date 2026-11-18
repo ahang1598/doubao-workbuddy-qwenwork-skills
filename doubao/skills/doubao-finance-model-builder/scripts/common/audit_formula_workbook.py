@@ -13,6 +13,7 @@ def main() -> None:
     parser.add_argument("workbook")
     parser.add_argument("contract")
     parser.add_argument("output")
+    parser.add_argument("--inspect-output", type=Path, help="Write the original workbook's structure snapshot")
     parser.add_argument("--recalculate", choices=["auto", "required", "off"], default="auto")
     parser.add_argument("--timeout", type=int, default=60)
     parser.add_argument("--soffice", help="LibreOffice soffice executable; also accepts SOFFICE_PATH")
@@ -26,6 +27,7 @@ def main() -> None:
         recalculate=args.recalculate,
         timeout=args.timeout,
         soffice_path=args.soffice,
+        inspect_output=args.inspect_output,
     )
     Path(args.output).write_text(
         json.dumps(result, ensure_ascii=False, indent=2) + "\n",

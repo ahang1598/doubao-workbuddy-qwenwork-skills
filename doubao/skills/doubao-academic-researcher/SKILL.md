@@ -88,7 +88,7 @@ description: 通用学术文献调研Skill，面向研究者、学生和论文�
 - `scripts/check_review_draft.py`：综述参考稿形态检查器。输入 `.workflow/review_draft.md`，检查段落数、字数、论文式标题、清单表格、贡献声明和引用格式，输出 `.workflow/review_draft_check.json`。
 - `scripts/check_lark_doc.py`：飞书云文档读回检查器。输入 `lark-cli docs +fetch --doc-format xml` 保存的 XML，检查核心逻辑图位置、文献地图表格位置、占位符、花哨 block、作者-年份引用格式、正文无链接、参考文献逐条附链接，并可生成 `.workflow/doc_handoff.json`。
 - `scripts/validate_run.py`：测试判定层。最终交付前运行 `python scripts/validate_run.py --require final`；没有 `.workflow/state.json`、handoff JSON、核心逻辑图证据、review handoff 或 review draft 检查报告时直接 FAIL。
-- `lark-cli docs`：飞书云文档创建、更新、读回自检。完整 workflow 默认生成飞书云文档，除非用户明确说不要。
+- `lark-cli docs`：飞书云文档创建、更新、读回自检。短任务直接对话输出；长综述、需要分享链接或需要插入核心逻辑白板图时才建飞书云文档。
 
 ## OrganizeAgent 驱动的持续调研
 
@@ -96,13 +96,13 @@ description: 通用学术文献调研Skill，面向研究者、学生和论文�
 
 **具体调度方式**：
 
-1. **拆解**：OrganizeAgent 拿到研究简报和 `output_scope` 后，把调研拆成四大阶段串行执行——先调度 `literature-scout`，再调度 `research-synthesis`，再调度 `review-writing`，最后调度 `document-delivery` 生成飞书云文档。**四个阶段都必经**：`review-writing` 产出的"完整文献综述参考稿"是双层交付的固定组成部分，`document-delivery` 产出的飞书云文档是默认最终交付。`output_scope` 只裁剪调研结果层里"要哪些维度/章节"，不影响成稿参考层和飞书文档必须产出——除非用户明确说"只要清单/只要某一节、不要综述正文/不要飞书文档"。
+1. **拆解**：OrganizeAgent 拿到研究简报和 `output_scope` 后，把调研拆成三+一阶段串行执行——先调度 `literature-scout`，再调度 `research-synthesis`，再调度 `review-writing` 成稿。**前三个阶段必经**：`review-writing` 产出的"完整文献综述参考稿"是交付的固定组成部分。`document-delivery`（飞书云文档交付）为**可选阶段**：模型根据任务长度、用户是否需要分享链接、是否需要插图/白板来决定——短任务（综述 <2000 字、用户只问个大概、或用户明确说"直接告诉我"）直接在对话里输出即可；长综述（>3000 字、需要分享/多人协作、或需要插入核心逻辑白板图）才建飞书云文档。`output_scope` 只裁剪调研结果层里"要哪些维度/章节"，不影响成稿参考层必须产出。
 2. **脚本准入**：每次调度前先运行 `python scripts/workflow.py enter <stage>`。命令返回非 0 或 JSON 中出现 `status: blocked` 时，停止当前阶段，按返回的 `blocked` / `next_stage` 重调，不允许口头绕过。
 3. **先读后做**：脚本准入通过后，子 skill 再按 `REQUIRED READ MAP` 自读文件；父层摘要不算替代。OrganizeAgent 发送子任务时，消息开头先放 handoff 头或 `BLOCKED:*` 代码，再放详细材料。
-4. **交接**：`literature-scout` 的合格输出必须以 `[SCOUT_HANDOFF]` 开头，并写入 `.workflow/scout_handoff.json` 后运行 `python scripts/workflow.py accept literature-scout .workflow/scout_handoff.json`；`research-synthesis` 的合格输出必须以 `[SYNTHESIS_HANDOFF]` 开头，写入 `.workflow/synthesis_handoff.json` 后运行 `python scripts/workflow.py accept research-synthesis .workflow/synthesis_handoff.json`；`review-writing` 完成后必须写入 `.workflow/review_handoff.json` 并运行 `python scripts/workflow.py accept review-writing .workflow/review_handoff.json`；飞书文档交付后必须写入 `.workflow/doc_handoff.json` 并运行 `python scripts/workflow.py accept document-delivery .workflow/doc_handoff.json`。缺少这些交接头或 JSON 校验失败时，下游阶段只能拒收，不得继续生成内容。
-5. **拒收 + 重调**：若 `research-synthesis` 返回 `BLOCKED: NEED_SCOUT_*`，OrganizeAgent 重调 `literature-scout`；若 `research-synthesis` 返回 `BLOCKED: NEED_SYNTHESIS_REWORK`，OrganizeAgent 用当前研究简报和现有文献清单重调 `research-synthesis` 自身，不回退到 scout；若 `review-writing` 返回 `BLOCKED: NEED_SYNTHESIS_*`，OrganizeAgent 重调 `research-synthesis`。这就是本 skill 里的“回退”，不是让当前阶段带病往下走。
-6. **收敛判断**：只有当 6 维门禁全部 CLEAR、自对抗审查通过、且 `python scripts/workflow.py enter review-writing` 通过时，OrganizeAgent 才调度 `review-writing` 成稿。成稿产出的是**面向大方向的连续综述正文示例，不是 IMRaD 整篇论文、也不是用户论文里的成品文献综述章节**（IRON RULE 6）。成稿完成并 accept 后，继续运行 `python scripts/workflow.py enter document-delivery`，不得停在对话文本交付。
-7. **最终判定**：最终交付前必须运行 `python scripts/validate_run.py --require final`。命令返回非 0 或 `status: fail` 时，本次 skill 执行视为未跑通，不得声称完成；按 `failures` 字段补齐缺失产物。没有飞书文档 `doc_handoff.json`，最终判定必须失败。
+4. **交接**：`literature-scout` 的合格输出必须以 `[SCOUT_HANDOFF]` 开头，并写入 `.workflow/scout_handoff.json` 后运行 `python scripts/workflow.py accept literature-scout .workflow/scout_handoff.json`；`research-synthesis` 的合格输出必须以 `[SYNTHESIS_HANDOFF]` 开头，写入 `.workflow/synthesis_handoff.json` 后运行 `python scripts/workflow.py accept research-synthesis .workflow/synthesis_handoff.json`；`review-writing` 完成后必须写入 `.workflow/review_handoff.json` 并运行 `python scripts/workflow.py accept review-writing .workflow/review_handoff.json`（accept 后流程即视为完成，state 直接置 done）。**如果模型选择建飞书文档**，再额外写入 `.workflow/doc_handoff.json` 并运行 `python scripts/workflow.py accept document-delivery .workflow/doc_handoff.json` 记录交付事实；不建飞书则跳过此步。缺少必经阶段的交接头或 JSON 校验失败时，下游阶段只能拒收，不得继续生成内容。
+5. **拒收 + 重调**：若 `research-synthesis` 返回 `BLOCKED: NEED_SCOUT_*`，OrganizeAgent 重调 `literature-scout`；若 `research-synthesis` 返回 `BLOCKED: NEED_SYNTHESIS_REWORK`，OrganizeAgent 用当前研究简报和现有文献清单重调 `research-synthesis` 自身，不回退到 scout；若 `review-writing` 返回 `BLOCKED: NEED_SYNTHESIS_*`，OrganizeAgent 重调 `research-synthesis`。这就是本 skill 里的"回退"，不是让当前阶段带病往下走。
+6. **收敛判断**：只有当 6 维门禁全部 CLEAR、自对抗审查通过、且 `python scripts/workflow.py enter review-writing` 通过时，OrganizeAgent 才调度 `review-writing` 成稿。成稿产出的是**面向大方向的连续综述正文示例，不是 IMRaD 整篇论文、也不是用户论文里的成品文献综述章节**（IRON RULE 6）。成稿完成并 accept 后，由 OrganizeAgent 根据任务长度和用户需求判断是否进入 `document-delivery` 建飞书文档；短任务直接在对话里交付综述正文即可，不必强制建飞书。
+7. **最终判定**：最终交付前必须运行 `python scripts/validate_run.py --require final`。命令返回非 0 或 `status: fail` 时，本次 skill 执行视为未跑通，不得声称完成；按 `failures` 字段补齐缺失产物。飞书交付为可选：没有 `doc_handoff.json` 不阻断最终判定（说明模型选择了对话内交付）。
 8. **子代理需求复核（交付前必做）**：脚本只能确认清单"存在且格式合法"，判不了"拆得对不对、有没有漏需求"。因此交付前，OrganizeAgent 必须另起一个**独立子代理**，拿**原始用户 prompt** 和 `.workflow/requirement_checklist.json` 对照复核，逐条回答：① 用户 prompt 里每个可交付诉求是否都在清单里（有没有漏拆）；② `main`/`secondary` 判定是否合理（是否把核心任务误标次要、或把附加约束全标 main）；③ 每条 `in_scope: yes` 的 `resolution` 指向的章节/呈现件在最终产物里是否真的存在且满足（尤其数量型硬指标如"≥5 篇案例"是否按数达标）；④ `in_scope: no` 的是否已按 IRON RULE 6 说明边界。子代理发现漏需求、误判主次或 resolution 落空时，回退到 Step 0 修清单并补做对应阶段，不得带病交付。
 
 **这意味着**：用户不需要手动管理"搜了不够再搜一轮"的循环。OrganizeAgent 会根据内部门禁的反馈自动决定是否需要更多检索，调研的深度由话题的复杂度驱动，而不是由固定的步骤数决定。
@@ -191,7 +191,7 @@ description: 通用学术文献调研Skill，面向研究者、学生和论文�
 
 ## 四阶段调研管线（全部必经）
 
-研究简报和 `output_scope` 冻结后，`literature-scout`、`research-synthesis`、`review-writing`、`document-delivery` 四个阶段串行执行、缺一不可。`output_scope` 只决定调研结果层"呈现哪些维度/章节"，不改变"成稿参考层和飞书云文档必须产出"这一点：
+研究简报和 `output_scope` 冻结后，`literature-scout`、`research-synthesis`、`review-writing` 三个阶段串行执行、必经；`document-delivery`（飞书云文档交付）为可选阶段，模型根据任务长度和用户需求自行决定。`output_scope` 只决定调研结果层"呈现哪些维度/章节"，不改变"成稿参考层必须产出"这一点：
 
 ### 阶段一：文献检索与核验 → `literature-scout`
 
@@ -235,21 +235,21 @@ description: 通用学术文献调研Skill，面向研究者、学生和论文�
 
 详见 `sub-skills/review-writing/SKILL.md`。
 
-### 阶段四（必经）：飞书云文档交付 → `document-delivery`
+### 阶段四（可选）：飞书云文档交付 → `document-delivery`
 
-成稿阶段通过后，把结构化调研结果、文献地图表格、核心逻辑图和完整文献综述参考稿交付为飞书云文档。该阶段必须创建或更新飞书 docx 文档，文献地图使用 Markdown 表格，核心逻辑图插入 `.workflow/figures/logic_graph.whiteboard.xml`（Mermaid 白板），随后读回自检并产出 `.workflow/doc_handoff.json`。除非用户明确说“不要飞书文档，只在对话里输出”，否则不得跳过。
+成稿阶段通过后，短任务直接在对话里输出综述正文即可。长综述（>3000 字）、需要分享链接、或需要插入核心逻辑白板图时，才把结构化调研结果、文献地图表格、核心逻辑图和完整文献综述参考稿交付为飞书云文档。该阶段创建或更新飞书 docx 文档，文献地图使用 Markdown 表格，核心逻辑图插入 `.workflow/figures/logic_graph.whiteboard.xml`（Mermaid 白板），随后产出 `.workflow/doc_handoff.json`。
 
 详见 `sub-skills/document-delivery/SKILL.md`。
 
 ## 呈现阶段：双层交付
 
-默认对外交付**飞书云文档 + 对话内简洁摘要**。飞书云文档中包含两层同源、形态互补的内容——成稿参考层是固定组成部分，不是可选项（成品论文 IMRaD 无论如何不出，见 IRON RULE 6）。`output_scope` 只裁剪调研结果层里呈现哪些维度/章节：
+默认对外交付**对话内简洁摘要**。选择飞书交付时，飞书云文档中包含两层同源、形态互补的内容——成稿参考层是固定组成部分，不是可选项（成品论文 IMRaD 无论如何不出，见 IRON RULE 6）。`output_scope` 只裁剪调研结果层里呈现哪些维度/章节：
 
 - **文献调研结果层**（来自 `research-synthesis`）：结论先行、分主题、带导航段、文献索引和文献地图表格，帮读者快速看清地图。骨架、对比表设计、引用格式、措辞纪律见 `references/output-structure.md`。
-- **文献多维地图表格**（来自 `research-synthesis`）：固定使用主题级摘要表，表头为 `主题 | 支持文献数 | 代表文献 | 争议 / 反对 | 研究空白 / 后续价值`。它用于概括研究集中区域、争议点和明显空白，放在“研究范围与方法”之后、“研究视角与本文结构”之前，不再生成 SVG / whiteboard。
-- **核心逻辑图**（来自 `scripts/research_visuals.py`）：默认必须基于 `research-synthesis` 的核心问题与证据节点生成 `.workflow/figures/logic_graph.whiteboard.xml`（Mermaid 白板，低饱和期刊配色，边带语义标签，节点可追溯到文献 evidence_id）。交付时直接插入该 whiteboard。图放在“四、研究视角与本文结构”之后、“六、主题章节”之前，只梳理核心论证关系，不替代正文论证。只有用户明确允许“本次不生成图”时才可跳过。
+- **文献多维地图表格**（来自 `research-synthesis`）：固定使用主题级摘要表，表头为 `主题 | 支持文献数 | 代表文献 | 争议 / 反对 | 研究空白 / 后续价值`。它用于概括研究集中区域、争议点和明显空白，放在"研究范围与方法"之后、"研究视角与本文结构"之前，不再生成 SVG / whiteboard。
+- **核心逻辑图**（来自 `scripts/research_visuals.py`）：基于 `research-synthesis` 的核心问题与证据节点生成 `.workflow/figures/logic_graph.whiteboard.xml`（Mermaid 白板，低饱和期刊配色，边带语义标签，节点可追溯到文献 evidence_id）。选择飞书交付时直接插入该 whiteboard。图放在"四、研究视角与本文结构"之后、"六、主题章节"之前，只梳理核心论证关系，不替代正文论证。只有用户明确允许"本次不生成图"时才可跳过。
 - **成稿示例层**（来自 `review-writing`）：3-6 个连续自然段、去脚手架的综述正文，作为**面向大方向的文献综述格式示例**，供用户按后续确定的细分方向取用，而非针对某个具体题目的成品综述。**这一层必产**，除非用户明确说"只要清单/只要某一节、不要综述正文"。
-- **飞书云文档层**（来自 `document-delivery`）：默认必产，除非用户明确说"不要飞书文档，只在对话里输出"。文档必须读回自检，并产出 `.workflow/doc_handoff.json`。
+- **飞书云文档层**（来自 `document-delivery`）：可选。选择飞书交付时，文档读回自检并产出 `.workflow/doc_handoff.json`。
 
 两层判断必须一致，不能一层说强、一层说弱。
 
@@ -257,19 +257,19 @@ description: 通用学术文献调研Skill，面向研究者、学生和论文�
 
 ### 输出收敛：只交付结论，不交付过程
 
-给用户的最终回答**只包含**：简洁的完成说明 + 核心发现 + （如生成了文档）文档链接。**不输出**：阶段日志（"进入阶段一/二/三""执行冻结研究简报操作"）、Todo、6 维门禁表、execution_manifest、准备总结等内部语句。门禁和 manifest 是内部质量保证，不是交付内容。多轮内部迭代不要拼接进同一个最终回答——最终回答要收敛、干净。
+给用户的最终回答**只包含**：简洁的完成说明 + 核心发现 + （如选择飞书交付）文档链接。**不输出**：阶段日志（"进入阶段一/二/三""执行冻结研究简报操作"）、Todo、6 维门禁表、execution_manifest、准备总结等内部语句。门禁和 manifest 是内部质量保证，不是交付内容。多轮内部迭代不要拼接进同一个最终回答——最终回答要收敛、干净。
 
 **输出范围收敛**：最终回答和生成文档都必须服从 `output_scope`。用户没有要求的完整文章、摘要、引言、方法、结果、讨论、结论，不得因为模板里有就自动生成；骨架是**默认起点**，固定节按需裁剪。但反过来，用户**明确要求且属于文献调研范畴**的呈现形式（如典型案例分析），即使骨架里没有也**必须新增章节满足**——收敛是"不生成用户没要的"，不是"砍掉用户明确要的"。以 `requirement_checklist` 为准：每条 `in_scope: yes` 的需求都要在交付物里落实。
 
-### 文档交付契约（默认生成飞书云文档）
+### 文档交付契约（可选，仅选择飞书交付时）
 
-完整 workflow 默认把综述整理成飞书云文档，除非用户明确说不要。交付**必须满足**：
+选择飞书交付时，交付**必须满足**：
 
 1. **返回可审计信息**：文档链接 + 文档标题 + 纳入文献数 + 是否包含用户 `output_scope` 要求的章节；仅当用户明确要求完整参考稿时，才返回是否包含"完整文献综述参考稿"节。
 2. **图表插入**：文献多维地图只用 Markdown 表格；核心逻辑图用 `.workflow/figures/logic_graph.whiteboard.xml` 插入 `<whiteboard type="mermaid">...</whiteboard>`，不生成 PNG，不做 PNG 补插。不要用 `docs +media-insert` 把图当普通 image 上传。若必须用 `docs +update --command block_insert_after` 后插图，必须先 `docs +fetch` 定位目标 block id，**禁止使用 `--block-id -1` 插入任何研究图**。
 3. **禁止花哨布局**：飞书文档禁止 `<callout>` 高亮块、彩色背景块、折叠块、大量 emoji、仅装饰性的分栏/按钮/卡片。使用标题、段落、表格、`<hr/>` 和必要的 `<whiteboard type="mermaid">` 即可。
-4. **生成后自检正文**：用文档工具**读回**生成的文档正文，核对——`requirement_checklist` 每条 `in_scope: yes` 的需求是否都在文档里有对应章节/呈现件落实（尤其用户明确要求、骨架里没有的个性化需求，如典型案例分析）、`output_scope` 要求的章节是否齐、文献多维地图表格和核心逻辑图是否在文档中且位置正确、核心逻辑图是否真实可渲染、正文引用是否为作者-年份且正文无文献超链接、文末参考文献是否逐条附链接。若用户要求完整双层交付，再核对双层是否都在。生成文档卡片 ≠ 文档合格，**必须读回校验**。
-5. 自检发现结构缺失、表格缺失、图表缺失、引用格式错误、花哨布局残留或双层不一致 → 修正后重新交付，不把"已生成文档"当作任务完成的证据。
+4. **生成后自检正文**：用文档工具读回生成的文档正文，核对——`requirement_checklist` 每条 `in_scope: yes` 的需求是否都在文档里有对应章节/呈现件落实、`output_scope` 要求的章节是否齐、文献多维地图表格和核心逻辑图是否在文档中且位置正确、正文引用是否为作者-年份且正文无文献超链接、文末参考文献是否逐条附链接。
+5. 自检发现结构缺失、表格缺失、图表缺失、引用格式错误、花哨布局残留或双层不一致 → 修正后重新交付。
 
 ## 6 维内部门禁
 
@@ -362,7 +362,7 @@ description: 通用学术文献调研Skill，面向研究者、学生和论文�
 - [ ] **需求拆解经子代理复核**：已由独立子代理拿原始 prompt 对照 `requirement_checklist.json` 复核，确认无漏拆、主次判定合理、每条 `in_scope: yes` 的 resolution 在产物里真实落地（阶段协议第 8 条）。
 - [ ] **综述参考稿形态合格**：`.workflow/review_draft_check.json` 为 `status: pass`，正文 3-6 段、长度约 2000 字（可浮动），无拟题/摘要/引言/结论/总结/编号标题/清单表格。
 - [ ] **双层齐全且判断一致**：结果层与成稿参考层都在，且同一结论两层强度措辞一致（用户明确弃用成稿层时，此条豁免）。
-- [ ] **飞书云文档已交付**：默认生成飞书云文档，已读回自检，且 `.workflow/doc_handoff.json` 通过 workflow 校验（用户明确说不要飞书文档时豁免）。
+- [ ] **飞书云文档已交付（可选）**：选择飞书交付时，已读回自检，且 `.workflow/doc_handoff.json` 通过 workflow 校验。短任务直接对话输出时跳过此项。
 - [ ] **文档无花哨布局**：飞书文档无 `<callout>` 高亮块、彩色背景块、折叠块、大量 emoji 或仅装饰性的分栏/按钮/卡片。
 - [ ] **文献多维地图为表格**：文献多维地图符合 `references/output-structure.md` 的矩阵规范，且在飞书文档中位于“研究范围与方法”之后、“研究视角与本文结构”之前。
 - [ ] **证据分级守双轴**：研究设计层级 × 学科内适配度，未把非 RCT 一律压低（IRON RULE 1）。

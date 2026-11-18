@@ -116,9 +116,9 @@ Windows 命令见[参数和路径写法](windows-compat.md)。
 | 看页面设置 | 页面方向、尺寸、页边距、分节、页眉页脚 | `+local-fetch --scope layout` |
 | 看指定页或导出 PDF | 指定页的内容块，或一页、多页的 PDF | `+local-fetch --scope page` 或 `--scope pdf` |
 | 读批注、修订和表格位置 | 批注及锚点、修订和文档模式、表格几何 | `+local-fetch --scope comments`、`revisions` 或 `table_geometry` |
-| 直接改 Canvas | 替换文字，增删块，改表格、样式、批注或修订 | `+local-update`，见[命令索引](../protocol/canvas-doc-protocol.md) |
+| 直接改 Canvas | 替换文字，增删或移动块，改表格、样式、批注或修订 | `+local-update`，见[命令索引](../protocol/canvas-doc-protocol.md) |
 | 取回并提交整份 DOCX | 取得可编辑文件，把修改后的文件提交到当前 Canvas | [`+ooxml-fetch`、`+ooxml-update`](../protocol/cli/ooxml.md) |
 | 改自动目录 | 增加、刷新、配置或删除目录 | [`table_of_contents`](../protocol/canvas-doc-toc.md) |
 | 处理已关闭的文件 | 读取保存的文件、修改原文件 | [关闭后的原文件](canvas-doc-close.md) |
 
-查 Canvas 命令用法，例如 `python scripts/canvas_help.py str_replace`。
+在 Canvas 里编辑前，先按[Canvas 读取说明](../protocol/canvas-doc-fetch.md)用 `+local-fetch` 获取任务相关内容，再读取[命令索引](../protocol/canvas-doc-protocol.md)，根据读取结果使用当前环境可用的 Python 3 执行 `scripts/canvas_help.py`，一次批量查询所需命令、XML 和依赖协议。

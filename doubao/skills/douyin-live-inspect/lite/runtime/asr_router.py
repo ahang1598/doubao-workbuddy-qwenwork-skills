@@ -69,7 +69,7 @@ class Processor:
                         try:
                             preparation=status(task['model_preparation_id'])
                             check={**check,'waiting':preparation['status'] in ACTIVE}
-                            if preparation['status']=='failed':check['issues']=[{'code':preparation.get('code') or 'MODEL_PREPARATION_FAILED'}]
+                            if preparation['status']=='failed':check['issues']=[{**preparation,'code':preparation.get('code') or 'MODEL_PREPARATION_FAILED'}]
                         except Exception:check={'ready':False,'issues':[{'code':'MODEL_PREPARATION_FAILED'}]}
                     if self.cache_stop.is_set():return
                     if not task.get('model_preparation_id') and task.get('local_backup_status')=='preparing' and not check.get('ready'):
@@ -136,7 +136,9 @@ class Processor:
                     worker.close()
                     if isinstance(error, ASRError) and error.code in {'ASR_RUNTIME_UNAVAILABLE', 'ASR_RUNTIME_INCOMPATIBLE',
                             'ASR_RUNTIME_NOT_FOUND', 'ASR_RUNTIME_INVALID',
-                            'ASR_DEPENDENCY_UNAVAILABLE', 'ASR_DEPENDENCY_INCOMPATIBLE'}:
+                            'ASR_DEPENDENCY_UNAVAILABLE', 'ASR_DEPENDENCY_INCOMPATIBLE',
+                            'ASR_NUMPY_MISSING', 'ASR_NUMPY_IMPORT_FAILED', 'ASR_NUMPY_LOAD_FAILED',
+                            'ASR_SHERPA_IMPORT_FAILED', 'ASR_SHERPA_LOAD_FAILED'}:
                         # A changed model identity or a resumed processor permits recovery.
                         with self.local_pool:
                             self.local_unavailable = (identity, error.code)

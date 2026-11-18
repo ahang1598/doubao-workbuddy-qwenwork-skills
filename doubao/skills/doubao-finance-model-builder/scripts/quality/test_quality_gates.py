@@ -20,10 +20,14 @@ class ConsolidatedQualityGateTests(unittest.TestCase):
     def make_root(self) -> Path:
         root = Path(tempfile.mkdtemp())
         (root / "model.xlsx").write_bytes(b"workbook")
+        (root / "execution-plan.json").write_text(json.dumps({
+            "deliverables": {"support": ["workbook-inspect.json"]},
+        }), encoding="utf-8")
+        (root / "workbook-inspect.json").write_text("{}", encoding="utf-8")
         return root
 
-    def write_result(self, root: Path, name: str, status: str = "PASS", hero_hash: str | None = None) -> None:
-        payload = {"status": status, "errors": [], "warnings": []}
+    def write_result(self, root: Path, name: str, status: str = "PASS", hero_hash: str | None = None, **fields) -> None:
+        payload = {"status": status, "errors": [], "warnings": [], **fields}
         if hero_hash is not None:
             payload["artifact_sha256"] = hero_hash
         (root / name).write_text(json.dumps(payload), encoding="utf-8")
@@ -35,14 +39,18 @@ class ConsolidatedQualityGateTests(unittest.TestCase):
             "execution-plan-validation.json",
             "announcement-sweep-validation.json",
             "source-validation.json",
-            "equity-evidence-validation.json",
             "model-contract-validation.json",
             "dcf-validation.json",
             "cross-artifact-parity.json",
         ):
             self.write_result(root, name)
+        equity_manifest = root / "equity-evidence.json"
+        equity_manifest.write_text("{}", encoding="utf-8")
+        self.write_result(
+            root, "equity-evidence-validation.json", manifest_sha256=MODULE.file_sha256(equity_manifest),
+        )
         for name in ("model-audit.json", "formula-semantic-audit.json", "artifact-audit.json", "visual-audit.json"):
-            self.write_result(root, name, hero_hash=hero_hash)
+            self.write_result(root, name, hero_hash=hero_hash, workflow="dcf")
 
     def test_complete_dcf_passes_and_releases_conclusion(self) -> None:
         root = self.make_root()
@@ -50,6 +58,8 @@ class ConsolidatedQualityGateTests(unittest.TestCase):
         result = MODULE.run(root, {"dcf"}, "model.xlsx", root / "quality")
         self.assertEqual(result["report"]["overall_status"], "PASS")
         self.assertTrue(result["release_decision"]["conclusion_allowed"])
+        manifest = json.loads((root / "quality" / "artifact-manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(manifest["files"][1]["sha256"], MODULE.file_sha256(root / "workbook-inspect.json"))
 
     def test_missing_formula_audit_is_incomplete_and_suppresses_values(self) -> None:
         root = self.make_root()
@@ -124,7 +134,7 @@ class ConsolidatedQualityGateTests(unittest.TestCase):
         ):
             self.write_result(root, name)
         for name in ("model-audit.json", "formula-semantic-audit.json", "artifact-audit.json", "visual-audit.json"):
-            self.write_result(root, name, hero_hash=hero_hash)
+            self.write_result(root, name, hero_hash=hero_hash, workflow="lbo")
         (root / "model.xlsx").unlink()
         result = MODULE.run(root, {"lbo"}, "model.xlsx", root / "quality")
         self.assertEqual(result["report"]["gates"]["G5"], "FAIL")
@@ -138,6 +148,30 @@ class ConsolidatedQualityGateTests(unittest.TestCase):
         (root / "equity-evidence-validation.json").unlink()
         result = MODULE.run(root, {"dcf"}, "model.xlsx", root / "quality")
         self.assertEqual(result["report"]["gates"]["G1"], "INCOMPLETE")
+
+    def test_changed_equity_evidence_blocks_release(self) -> None:
+        root = self.make_root()
+        self.complete_dcf(root)
+        (root / "equity-evidence.json").write_text('{"changed": true}', encoding="utf-8")
+        result = MODULE.run(root, {"dcf"}, "model.xlsx", root / "quality")
+        self.assertEqual(result["report"]["gates"]["G1"], "FAIL")
+        self.assertFalse(result["release_decision"]["conclusion_allowed"])
+
+    def test_wrong_audit_workflow_blocks_release(self) -> None:
+        root = self.make_root()
+        self.complete_dcf(root)
+        self.write_result(root, "artifact-audit.json", hero_hash=MODULE.file_sha256(root / "model.xlsx"), workflow="lbo")
+        result = MODULE.run(root, {"dcf"}, "model.xlsx", root / "quality")
+        self.assertEqual(result["report"]["gates"]["G4"], "FAIL")
+        self.assertFalse(result["release_decision"]["conclusion_allowed"])
+
+    def test_missing_planned_support_blocks_release(self) -> None:
+        root = self.make_root()
+        self.complete_dcf(root)
+        (root / "workbook-inspect.json").unlink()
+        result = MODULE.run(root, {"dcf"}, "model.xlsx", root / "quality")
+        self.assertEqual(result["report"]["gates"]["G5"], "INCOMPLETE")
+        self.assertFalse(result["release_decision"]["conclusion_allowed"])
 
 
 if __name__ == "__main__":

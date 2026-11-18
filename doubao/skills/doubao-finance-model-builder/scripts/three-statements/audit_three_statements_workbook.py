@@ -7,6 +7,7 @@ import argparse
 import json
 import re
 import shutil
+from contextlib import ExitStack
 from pathlib import Path
 
 from openpyxl import load_workbook
@@ -19,7 +20,6 @@ sys.path.insert(0, str(COMMON))
 
 from portable_workbook_audit import (  # noqa: E402
     audit_contract,
-    formula_snapshot,
     formula_text,
     recalculate_with_libreoffice,
 )
@@ -36,6 +36,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("workbook")
     parser.add_argument("output")
+    parser.add_argument("--inspect-output", type=Path, help="Write the original workbook's structure snapshot")
     parser.add_argument("--recalculate", choices=["auto", "required", "off"], default="auto")
     parser.add_argument("--timeout", type=int, default=60)
     args = parser.parse_args()
@@ -52,31 +53,29 @@ def main() -> None:
             "require_formula": True,
         },
     }
-    result = audit_contract(
-        args.workbook,
-        contract,
-        recalculate=args.recalculate,
-        timeout=args.timeout,
-    )
-    errors = result["errors"]
-    warnings = result["warnings"]
-    metrics = result["metrics"]
-    formulas_all = formula_snapshot(args.workbook)
-    formulas: dict[str, dict[str, str]] = {}
-    for full_address, formula in formulas_all.items():
-        sheet_name, coordinate = full_address.rsplit("!", 1)
-        formulas.setdefault(sheet_name, {})[coordinate] = formula
-
-    recalculation = (
-        recalculate_with_libreoffice(args.workbook, timeout=args.timeout)
-        if args.recalculate != "off"
-        else None
-    )
-    cached_path = recalculation.workbook_path if recalculation and recalculation.workbook_path else Path(args.workbook)
-    cached = load_workbook(cached_path, data_only=True, read_only=False)
-    original = load_workbook(args.workbook, data_only=False, read_only=False)
-    duplicate_keys = 0
-    try:
+    with ExitStack() as stack:
+        recalculation = None
+        if args.recalculate != "off":
+            recalculation = recalculate_with_libreoffice(args.workbook, timeout=args.timeout)
+            if recalculation.temp_root:
+                stack.callback(shutil.rmtree, recalculation.temp_root, ignore_errors=True)
+        result = audit_contract(
+            args.workbook,
+            contract,
+            recalculate=args.recalculate,
+            timeout=args.timeout,
+            recalculation=recalculation,
+            inspect_output=args.inspect_output,
+        )
+        errors = result["errors"]
+        warnings = result["warnings"]
+        metrics = result["metrics"]
+        cached_path = (recalculation.workbook_path if recalculation else None) or args.workbook
+        cached = load_workbook(cached_path, data_only=True, read_only=False)
+        stack.callback(cached.close)
+        original = load_workbook(args.workbook, data_only=False, read_only=False)
+        stack.callback(original.close)
+        duplicate_keys = 0
         for sheet in original.worksheets:
             seen = set()
             for row in range(1, sheet.max_row + 1):
@@ -167,12 +166,8 @@ def main() -> None:
                     continue
                 for col_index in range(4, sheet.max_column + 1):
                     col = get_column_letter(col_index)
-                    revenue_formula = formulas.get("产品明细", {}).get(
-                        f"{col}{rows['calculated_revenue']}", ""
-                    )
-                    cost_formula = formulas.get("产品明细", {}).get(
-                        f"{col}{rows['calculated_cogs']}", ""
-                    )
+                    revenue_formula = formula_text(sheet.cell(rows["calculated_revenue"], col_index).value) or ""
+                    cost_formula = formula_text(sheet.cell(rows["calculated_cogs"], col_index).value) or ""
                     revenue_tokens = [
                         f"{col}{rows['sales_volume']}",
                         f"{col}{rows['quantity_multiplier']}",
@@ -213,12 +208,6 @@ def main() -> None:
                         errors.append(f"支付股利为正现金流：现金流量表第{dividends_row}行第{col}列")
             else:
                 errors.append("现金流量表缺少可识别的支付股利行")
-    finally:
-        cached.close()
-        original.close()
-        if recalculation and recalculation.temp_root:
-            shutil.rmtree(recalculation.temp_root, ignore_errors=True)
-
     metrics["duplicate_semantic_key_count"] = duplicate_keys
     result["status"] = "FAIL" if errors else ("INCOMPLETE" if warnings else "PASS")
     Path(args.output).write_text(

@@ -10,9 +10,21 @@ BACKUP_HANDOFF_SECONDS = 5
 
 class EvidenceStore(RecoveryStore):
     def update_segment(self, sid, **fields):
+        local = self.segment.get('asr_selection_reason') == 'cloud_unavailable_local'
+        silence = local and (fields.get('asr_metrics') or {}).get('asr_calls') == 0
+        if (local and 'subtitles' in fields and self.segment.get('flv_unverified_gap')
+                and not self.segment.get('speech_detected') and not self.segment.get('subtitles')):
+            # A complete local pass supersedes the provisional cloud gap, including silence.
+            if fields.get('speech_gaps') or fields['subtitles'] or silence:
+                fields.setdefault('speech_gaps', [])
+                fields['flv_unverified_gap'] = False
+                return self.store.update_segment(sid, **fields)
         if fields.get('asr_status') == 'success' and 'subtitles' in fields:
             fields['subtitles'] = [s for s in fields['subtitles'] if s['text'].strip()]
-            if not fields['subtitles'] and self.segment.get('speech_detected'):
+            needs_check = self.segment.get('speech_detected') or (self.segment.get('media_container') == 'flv' and not silence)
+            if not fields['subtitles'] and needs_check:
+                if not local and not any(self.segment.get(k) for k in ('speech_detected', 'speech_gaps', 'subtitles')):
+                    fields['flv_unverified_gap'] = True
                 fields.update(asr_status='fallback_pending',
                     speech_gaps=self.segment.get('speech_gaps') or [{'start_ms':self.segment['start_ms'],'end_ms':self.segment['end_ms']}],
                     asr_diagnostic={'category':'ASR_EMPTY_SPEECH'})
@@ -62,7 +74,7 @@ def _process(processor, store, segment, cancel=None):
     selection=segment.get('remote_asr_selection')
     local_selected=segment.get('asr_selection_reason')=='cloud_unavailable_local'
     submitted=bool(segment.get('asr_task_id'))
-    unknown=segment.get('asr_remote_status')=='submission_unknown' or segment['asr_status']=='submission_unknown'
+    unknown=not submitted and (segment.get('asr_remote_status')=='submission_unknown' or segment['asr_status']=='submission_unknown')
     route = task.get('asr_remote_route', {})
     stale = (selection is not None and selection.get('backend') == 'mediakit'
              and selection.get('generation') != route.get('generation', 0))
@@ -83,7 +95,7 @@ def _process(processor, store, segment, cancel=None):
         # An unknown submission is not replayable, even if the worker died before
         # saving a diagnostic. Known IDs are resumed inside their original budget.
         submitted=bool(segment.get('asr_task_id'))
-        unknown=segment.get('asr_remote_status')=='submission_unknown' or segment['asr_status']=='submission_unknown'
+        unknown=not submitted and (segment.get('asr_remote_status')=='submission_unknown' or segment['asr_status']=='submission_unknown')
         terminal=segment['asr_status'] in {'failed','timed_out','fallback_pending'}
         if not unknown and not terminal:
             mediakit.recover_credentials(store)
@@ -100,6 +112,22 @@ def _process(processor, store, segment, cancel=None):
         if block and segment['asr_status'] in {'pending','running','submitted'}:
             store.update_segment(sid,asr_status='fallback_pending',asr_diagnostic={'category':block['category']})
             segment=current()
+        unknown=not segment.get('asr_task_id') and (segment.get('asr_remote_status')=='submission_unknown' or segment['asr_status']=='submission_unknown')
+        if (segment.get('media_container')=='flv' and not segment.get('flv_format_recovery')
+                and not unknown
+                and ((segment.get('asr_format_unsupported') and segment.get('asr_outcome')=='failed') or
+                     ((segment.get('asr_diagnostic') or {}).get('format_unsupported') and
+                      (segment.get('asr_diagnostic') or {}).get('submission_state')=='not_submitted'))):
+            from runtime.media_fallback import audio
+            if not store.update_segment(sid,flv_format_recovery=True,
+                                        flv_original_asr_task_id=segment.get('asr_task_id')):return
+            if audio(store,segment,cancel):
+                if not store.update_segment(sid,asr_status='pending',asr_remote_status='pending',
+                        asr_task_id=None,flv_format_submit_limit=segment.get('asr_submit_attempts',0)+1,
+                        asr_diagnostic=None,asr_format_unsupported=False):return
+                segment=current()
+                mediakit.process_asr(EvidenceStore(store,segment),segment,cancel=cancel,defer_failure=True)
+                segment=current()
         if segment['asr_status']=='success' and not segment.get('speech_gaps'):
             if 'generation' in selection: backend_routing.remote_result(store,'asr',selection,True)
             return
@@ -112,9 +140,19 @@ def _process(processor, store, segment, cancel=None):
     if not store.update_segment(sid,asr_backend='local',asr_status='fallback_pending',
             asr_selection_reason='cloud_unavailable_local',
             asr_remote_diagnostic=segment.get('asr_remote_diagnostic') or segment.get('asr_diagnostic')):return
-    def failed(code):
+    def unavailable():
+        from runtime.context import DIAGNOSTIC_ENUMS
+        backup = store.task()
+        code = backup.get('local_setup_error')
+        if backup.get('local_backup_status') == 'preparing':
+            code = 'ASR_BACKUP_PREPARING'
+        elif not isinstance(code,str) or code not in DIAGNOSTIC_ENUMS['recovery_code'] or code == 'none':
+            code = 'ASR_RUNTIME_UNAVAILABLE'
+        failed(code, unavailable=True)
+
+    def failed(code, *, unavailable=False):
         latest=current()
-        store.update_segment(sid,asr_status='failed',asr_final=True,asr_recovery_status='unavailable' if code=='ASR_RUNTIME_UNAVAILABLE' else 'failed',
+        store.update_segment(sid,asr_status='failed',asr_final=True,asr_recovery_status='unavailable' if unavailable else 'failed',
             asr_diagnostic={'category':code},speech_gaps=latest.get('speech_gaps') or
             ([] if latest.get('subtitles') else [{'start_ms':latest['start_ms'],'end_ms':latest['end_ms']}]))
     if segment.get('asr_recovery_attempts',0):
@@ -127,8 +165,11 @@ def _process(processor, store, segment, cancel=None):
         handoff_deadline=time.monotonic()+BACKUP_HANDOFF_SECONDS
         while not processor.bind_ready_fallback(store):
             if cancel.is_set():return
+            # Upload failures must release the segment instead of waiting for a model.
+            if (segment.get('asr_remote_diagnostic') or segment.get('asr_diagnostic') or {}).get('failure_stage')=='upload_address':
+                unavailable();return
             if store.task().get('local_backup_status')!='preparing':
-                failed('ASR_RUNTIME_UNAVAILABLE');return
+                unavailable();return
             remaining=handoff_deadline-time.monotonic()
             if remaining<=0:
                 failed('ASR_BACKUP_TIMEOUT');return
@@ -142,8 +183,11 @@ def _process(processor, store, segment, cancel=None):
                 try:check=processor.ready_model.get_nowait()
                 except queue.Empty:check={'ready':False}
                 if not check.get('ready'):
-                    failed('ASR_RUNTIME_UNAVAILABLE');return
+                    unavailable();return
                 if not store.bind_fallback_model(check):return
+        from runtime.media_fallback import audio
+        if not audio(store,current(),cancel):
+            failed('ASR_RECOVERY_FAILED');return
         if not store.update_segment(sid,asr_status='pending',asr_diagnostic=None):return
         segment=current()
         local.process(EvidenceStore(store,segment),segment,cancel=cancel,recovery=True,defer_failure=True)

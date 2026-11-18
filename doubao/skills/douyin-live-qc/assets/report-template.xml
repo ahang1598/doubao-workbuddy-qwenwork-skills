@@ -9,7 +9,7 @@
 <tbody>
 <tr><td background-color="light-gray"><b>账号名称</b></td><td>{{账号名称}}（房间号 {{room_id}}）</td></tr>
 <tr><td background-color="light-gray"><b>产品类目</b></td><td>{{类目，如 apparel/software/food/beauty/general}}</td></tr>
-<tr><td background-color="light-gray"><b>直播间链接</b></td><td><a href="https://live.douyin.com/{{room_id}}">https://live.douyin.com/{{room_id}}</a></td></tr>
+<tr><td background-color="light-gray"><b>直播间链接</b></td><td><a href="{{直播间链接}}">{{直播间链接}}</a></td></tr>
 <tr><td background-color="light-gray"><b>抽查时段</b></td><td>{{起止时间}}</td></tr>
 <tr><td background-color="light-gray"><b>主推商品/服务</b></td><td>{{商品名称与价格，或服务/会员名称与价格}}</td></tr>
 <tr><td background-color="light-gray"><b>主播配置</b></td><td>{{单人/双人，主播特征}}</td></tr>

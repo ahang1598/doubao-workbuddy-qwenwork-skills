@@ -1,0 +1,9 @@
+{
+  "skill": "doubao-market-hotspot",
+  "prompt": "请以2026年3月31日15:00为信息截点，分析某项行业监管规则调整对上下游企业的传导路径与市场计价程度。",
+  "context": {
+    "as_of": "2026-03-31T15:00:00+08:00",
+    "object_frozen": true,
+    "jurisdiction_frozen": true
+  }
+}

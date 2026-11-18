@@ -1,12 +1,12 @@
 # 历史任务协议
 
-仅无 lite_review_v2 标记的已有直播按其已保存 inspection_policy 读取本文件；不迁移、不补跑已跳过窗口。新直播读 [当前流程](live-review.md)。
+仅已有直播且 `review_protocol` 不是 `lite_review_v2` 时使用本文件，再按保存的 `inspection_policy` 选择对应章节；不迁移、不补跑已跳过窗口。`lite_review_v2` 任务读[当前流程](live-review.md)，新视频及历史视频均读[视频流程](video.md)。
 
 ## 历史全量直播 lite_live_full_asr_v1
 
 没有 review_protocol 时保持旧提交合同：review-next --limit 2，有一段立即处理，不为凑批等待。回传 batch_id、generation、task_id、segment_id、evidence_revision，每规则按 modalities 提交 channels 及完整依据；只读返回图片，前30秒 context_subtitles 仅作上下文，不计本批覆盖。缓存规则仅限当前 Agent 已完整读取的同版本规则。
 
-默认串行；宿主真实并发、指定证据读取、结构化返回、观察与取消全部验证后，按 [调度协议](live-dispatch.md) 的历史阈值启用子任务。未验证且最老等待超过120秒可 --limit 4。语音能独立支持的命中不因缺图变为不足，依赖画面且缺失的条件为 insufficient；迟到画面不覆盖既有语音命中。
+保持串行，不按积压时长新建子任务或猜测扩容阈值；最老等待超过120秒时可沿旧合同使用 --limit 4。已有 child 批次仅按[原在途 Worker](live-dispatch.md#原在途-worker)核对与恢复。语音能独立支持的命中不因缺图变为不足，依赖画面且缺失的条件为 insufficient；迟到画面不覆盖既有语音命中。
 
 当前运行时的全量直播普通停止持续排空，明确立即停止才跳过剩余内容；已经封存的历史状态与报告不重开。以原任务 finishing/next_action 为准，复盘沿 recap-input 分页，不读取 sample 窗口。不要套用下节抽检超时策略。
 
@@ -21,9 +21,7 @@
 
 ## 历史逐段协议
 
-仅用于既非 lite_review_v2 也非 lite_sample_v1 的历史任务；历史全量任务沿保存的 full_live 合同，禁止套用本节的逐句或抽检参数。
-
-本节逐段示例仅适用于未冻结 lite_review_v2 的任务。新协议任务使用 [当前直播](live-review.md)。
+仅用于非 `lite_review_v2` 且既非 `lite_sample_v1`、也非 `lite_live_full_asr_v1` 的历史直播。全量任务使用上方 full_live 合同，新协议任务使用[当前流程](live-review.md)，均不套用本节参数。
 
 1. 执行 `review-next --task-dir <原目录> --limit 5`。返回 `segments`，一句就绪即可领取，最多5个；省略 limit 仍返回单个 `segment`。按上节检查是否需要追加行业专项；不需要时直接判定。其余返回 segment 为空时读取状态；有未完成采集/媒体处理时每3秒继续一次，当前 Agent 不活跃时保留任务供续办，不承诺自动唤醒。
 2. 对每个返回单元分别保存 `task_id`、`segment.id`、`segment.evidence_revision`。首次读取完整冻结 `rules.rules` 并记住 `rules.version`；后续领取/提交追加 `--known-rules-version <已读取版本>`，匹配时返回 `rules.cached=true` 和规则ID列表，直接复用已读规则，不重新打开规则文件。版本不同会返回完整规则，须重新读取；上下文压缩、重启或无法完整记得规则时不传该参数，重新获取完整规则。不要使用后来修改的源规则覆盖已有任务。
@@ -50,7 +48,7 @@
 
 6. 单 Agent 判定不使用租约、领取凭证或续租。重复 review-next 会返回最早的就绪待判片段，不会跳过当前片段，也没有180秒提交时限。提交携带读取时的 `evidence_revision`，不能猜测或自行递增；返回 `EVIDENCE_CHANGED` 时重新读取并核对更新后的证据。`FRAMES_NOT_REVIEWED` 表示需补看图片或对证据不足作出说明，`RULES_INCOMPLETE` 表示按本任务规则补齐；不将这些错误解释为锁定，不等待租约过期。
 
-严格遵循返回的 finishing 和 next_action：直播普通停止、自然结束或达到指定时长后，继续领取并提交剩余判定，不设整体收尾时限；运行时允许交付后再生成报告和复盘。只有本地视频主动停止使用媒体收尾30秒、随后判定30秒的上限，不等后台模型下载；本地视频自然读完时排空完整文件。返回 inspection_finished 时不重试、不 resume 积压、不重新采集，按 next_action 交付。报告就绪后不得继续质检循环。立即停止或视频收尾到期的未检测范围须披露，不伪造判定或声称全部通过。
+严格遵循返回的 finishing 和 next_action：直播普通停止、自然结束或达到指定时长后，继续领取并提交剩余判定，不设整体收尾时限；运行时允许交付后再生成报告和复盘。视频的停止与恢复按[视频流程](video.md)及原任务回执执行，不套用本节直播时限。返回 inspection_finished 时不重试、不 resume 积压、不重新采集，按 next_action 交付。报告就绪后不得继续质检循环。立即停止等原因导致的未检测范围须披露，不伪造判定或声称全部通过。
 
 单段领取时判完立即提交；批量领取时看全本批图片、逐段判定后一次批量提交，不为凑满5段等待新证据。优先直接处理返回的 `next` 片段，不再单独调用读取命令。只有没有就绪片段才等待3秒，有积压时连续判定。返回 `retry_review_next` 表示本次提交已保存，单独调用 review-next 即可。旧任务遗留的 claimed 状态也可直接读取，无需等待；旧格式提交缺少 evidence_revision 时重新读取一次，使用新格式提交。
 

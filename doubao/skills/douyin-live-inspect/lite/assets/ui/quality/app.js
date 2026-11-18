@@ -89,6 +89,9 @@ function seekTo(seconds, label, evidenceId, scrollDestination = "player") {
   if (mediaTime === null) { toast("该时段缺少录制内容"); return; }
   if (!state.report?.video.url) { toast("该报告没有可用回放"); return; }
   window.LiteUI.seek(video, mediaTime);
+  if (evidenceId) video.play().catch(error => {
+    if (error.name !== "AbortError") toast("回放未能开始，请查看播放器或点击播放重试");
+  });
   video.focus({ preventScroll: true });
   byId("active-caption").textContent = label || `已定位至 ${formatTime(target, true)}`;
   if (evidenceId) {
@@ -126,7 +129,7 @@ function renderEvidenceImages(item) {
   const images = Array.isArray(item.images) ? item.images : [];
   if (!images.length) return "";
   return `<div class="evidence-images">${images.map((url, index) => `
-    <a href="${escapeHtml(url)}" target="_blank" rel="noreferrer noopener" aria-label="查看${escapeHtml(item.rule_name)}证据图 ${index + 1}">
+    <a href="${escapeHtml(url)}" data-preview="${escapeHtml(url)}" aria-label="查看${escapeHtml(item.rule_name)}证据图 ${index + 1}">
       <img src="${escapeHtml(url)}" alt="${escapeHtml(item.rule_name)}证据图 ${index + 1}" loading="lazy" referrerpolicy="no-referrer">
     </a>`).join("")}</div>`;
 }
@@ -221,7 +224,7 @@ function renderEvidence(query = "", revealId = null) {
     title: item.text || (item.images?.length ? "检测到画面风险" : "风险片段"),
     text: escapeHtml(item.reason || "该片段触发了规则判断，请结合直播回放复核。"),
     evidenceId: item.id,
-    tags: `<div class="evidence-actions"><div class="evidence-tags"><span class="rule-tag">${escapeHtml(item.rule_name)}</span><span class="evidence-kind">${escapeHtml(evidenceKindLabel(item.kind))}</span></div><button class="review-button" type="button" data-seek="${item.start}" data-evidence-id="${escapeHtml(item.id)}">定位复核 <span>↗</span></button></div>`,
+    tags: `<div class="evidence-actions"><div class="evidence-tags">${["P0", "P1", "P2"].includes(item.remediation_level) ? `<span class="priority-tag priority-${item.remediation_level.toLowerCase()}">${item.remediation_level}</span>` : state.report.report_kind !== "video" ? `<span class="priority-tag priority-ungraded">${({pending: "待核实", waiting: "待分级"})[item.remediation_level] || "未分级"}</span>` : ""}<span class="rule-tag">${escapeHtml(item.rule_name)}</span><span class="evidence-kind">${escapeHtml(evidenceKindLabel(item.kind))}</span></div><button class="review-button" type="button" data-seek="${item.start}" data-evidence-id="${escapeHtml(item.id)}">定位复核 <span>↗</span></button></div>`,
     extra: renderEvidenceImages(item),
   }), `<div class="empty-state"><strong>${emptyTitle}</strong><span>${emptyCopy}</span></div>`, evidence.findIndex(item => item.id === revealId));
 }
@@ -251,18 +254,22 @@ function renderRules() {
 }
 
 function diagnosisSummary(report) {
-  const assessment = report.conclusion?.assessment || (report.rules.some(r => scopedAssessment(r) === "hit") ? "hit"
-    : report.rules.some(r => scopedAssessment(r) === "no_hit_in_checked_scope") ? "no_hit_in_checked_scope"
-    : report.rules.some(r => scopedAssessment(r) === "not_applicable") ? "not_applicable" : "undetermined");
+  const assessment = report.conclusion?.assessment || ((report.rules || []).some(r => scopedAssessment(r) === "hit") ? "hit"
+    : (report.rules || []).some(r => scopedAssessment(r) === "no_hit_in_checked_scope") ? "no_hit_in_checked_scope"
+    : (report.rules || []).some(r => scopedAssessment(r) === "not_applicable") ? "not_applicable" : "undetermined");
   const scope = report.inspection_scope === "speech_only" ? "已检测字幕" : "已检测范围";
   let text = report.conclusion?.summary || ({hit: "已发现规则命中。", no_hit_in_checked_scope: `${scope}中未发现规则命中。`,
     not_applicable: "已判定内容中的规则均不适用。", undetermined: "没有足够的有效判断，无法给出质检结论。"})[assessment];
+  if (report.report_kind === "live") {
+    if (report.sampling) text += ` ${report.conclusion.scope}；已完成 ${report.sampling.completed_windows} 个窗口，抽检 ${report.sampling.sampled_ms / 1000} 秒。`;
+    return `${text} ${window.LiteUI.reportScope(report)}${report.inspection_scope === "speech_only" ? " 仅字幕检测，画面未检测。" : ""}`;
+  }
   const coverage = report.conclusion?.coverage_summary;
   if (coverage) {
     text += ` 已采集内容：${coverage.counts.checked} 段有效判定；${coverage.counts.evidence_insufficient} 段证据不足；${coverage.counts.unchecked} 段未完成检测；${coverage.counts.pending} 段待判定。`;
     if (coverage.checked_segment_ratio != null) text += ` 有效判定片段占比 ${(coverage.checked_segment_ratio * 100).toFixed(1)}%。`;
     if (coverage.checked_time_ratio != null) text += ` 已采集内容有效判定时间占比 ${(coverage.checked_time_ratio * 100).toFixed(1)}%。`;
-  } else if (report.conclusion?.has_incomplete_results || report.conclusion?.coverage_complete === false || report.coverage?.gaps?.length || report.rules.some(r => ["insufficient", "pending", "skipped"].includes(r.result))) {
+  } else if (report.conclusion?.has_incomplete_results || report.conclusion?.coverage_complete === false || report.coverage?.gaps?.length || (report.rules || []).some(r => ["insufficient", "pending", "skipped"].includes(r.result))) {
     text += " 存在检测缺口或待判定内容，旧报告未记录完整分类。";
   }
   const reasons = [...new Set((report.conclusion?.coverage_summary?.issues || report.coverage?.gaps || []).map(g => g.reason).filter(Boolean))];
@@ -304,13 +311,24 @@ function reportPresentation(reportKind) {
     reportLabel: `${mediaLabel}质检报告`,
     coverLabel: `${mediaLabel}质检`,
     playerLabel: `${mediaLabel}回放`,
-    durationLabel: `${mediaLabel}时长`,
+    durationLabel: reportKind === "live" ? "质检时长" : "视频时长",
     sessionLabel: `${mediaLabel}场次`,
   };
 }
 
 function renderReport(report) {
   state.report = report;
+  const samples = report.visual_samples;
+  const samplePanel = byId("visual-samples");
+  if (samplePanel) {
+    samplePanel.hidden = !samples;
+    if (samples) {
+      byId("visual-samples-summary").textContent = `每 ${samples.interval_seconds} 秒抽检一帧，仅覆盖抽检时刻；计划 ${samples.planned_count} 张，已采集 ${samples.captured_count} 张，已检测 ${samples.inspected_count} 张。`;
+      const labels = {hit: "发现风险", no_hit: "未发现规则命中", insufficient: "证据不足", pending: "未完成检测"};
+      byId("visual-samples-list").innerHTML = samples.items.map(item => `<div>${timeButton(item.time_ms / 1000, formatTime(item.time_ms / 1000, true))}<p>${escapeHtml(labels[item.status] || "未完成检测")}</p>${renderEvidenceImages({images: item.image_url ? [item.image_url] : [], rule_name: "画面抽检"})}</div>`).join("") +
+        samples.failures.map(item => `<p>${escapeHtml(formatTime(item.time_ms / 1000, true))}：${escapeHtml(item.reason)}</p>`).join("");
+    }
+  }
   const coveragePanel = byId("video-coverage");
   if (coveragePanel && report.report_kind === "video") {
     const cov = report.coverage || {};
@@ -321,6 +339,9 @@ function renderReport(report) {
     byId("video-report-gaps").innerHTML = (cov.gaps || []).map(g => `<li>${escapeHtml(formatTime(g.start, true))}–${escapeHtml(formatTime(g.end, true))}：${escapeHtml(g.reason).replace(/，具体原因见规则判断依据$/, "")}</li>`).join("");
   }
   state.duration = Number(report.duration_seconds || report.video.duration_seconds || 0);
+  const live = report.report_kind === "live";
+  const reportDuration = live && Number.isFinite(report.monitored_duration_ms)
+    ? report.monitored_duration_ms / 1000 : state.duration;
   const presentation = reportPresentation(report.report_kind);
   byId("report-brand-title").textContent = presentation.reportLabel;
   byId("task-cover-label").textContent = presentation.coverLabel;
@@ -332,7 +353,7 @@ function renderReport(report) {
   byId("task-account").textContent = taskAccount ? `@${taskAccount}` : "";
   byId("task-account").title = taskAccount;
   document.title = `${report.task.name || presentation.reportLabel} · 本地报告`;
-  byId("task-meta").textContent = `${presentation.durationLabel}：${formatDurationText(state.duration)}`;
+  byId("task-meta").textContent = `${presentation.durationLabel}：${formatDurationText(reportDuration)}`;
   const taskScene = qualitySceneLabel(report.task.scenario_id, report.report_kind, report.task.scenario_name);
   byId("task-scene-tags").hidden = !taskScene || taskScene === "—";
   byId("task-scene").textContent = taskScene;
@@ -345,11 +366,13 @@ function renderReport(report) {
   byId("risk-count").textContent = report.evidence.length;
   byId("hit-count").textContent = report.hit_rule_count;
   byId("rule-count").textContent = report.rules.length;
-  byId("duration").textContent = formatTime(state.duration, true);
+  byId("duration").textContent = formatTime(reportDuration, true);
   byId("utterance-count").textContent = report.asr.utterances.length;
-  byId("diagnosis-summary").textContent = diagnosisSummary(report);
+  byId("inspection-details").textContent = diagnosisSummary(report);
   const topRules = report.rules.filter(rule => rulePresentation(rule).kind === "hit").map(rule => ({...rule, evidence: report.evidence.filter(item => item.rule_id === rule.id)}))
     .sort((a, b) => b.evidence.length - a.evidence.length || a.name.localeCompare(b.name, "zh-CN")).slice(0, 3);
+  byId("diagnosis-summary").hidden = Boolean(topRules.length);
+  byId("diagnosis-summary").textContent = "已检测内容暂无已确认的规则命中";
   byId("top-hit-rules").hidden = !topRules.length;
   byId("top-hit-rules").innerHTML = '<span>主要命中规则</span>' + topRules.map(rule => `<button type="button" class="review-button" data-top-evidence="${escapeHtml(rule.evidence[0]?.id || "")}" ${rule.evidence.length ? "" : "disabled"}>${escapeHtml(rule.name)} · ${rule.evidence.length ? `${rule.evidence.length} 个片段` : "片段暂无"}</button>`).join("");
   const video = byId("video");
@@ -361,7 +384,7 @@ function renderReport(report) {
   video.addEventListener("loadedmetadata", () => {
     if (Number.isFinite(video.duration) && !report.video.timeline?.length) {
       state.duration = video.duration;
-      byId("duration").textContent = formatTime(video.duration, true);
+      if (!live) byId("duration").textContent = formatTime(video.duration, true);
       renderTimeline();
     }
   }, { once: true });
@@ -383,6 +406,7 @@ function renderReport(report) {
 }
 
 document.addEventListener("click", (event) => {
+  if (event.target.closest("[data-preview]")) { event.preventDefault(); return; }
   const top = event.target.closest("[data-top-evidence]");
   if (top && !top.disabled) {
     byId("asr-search").value = "";

@@ -1,16 +1,12 @@
 # 脚本输入合同
 
-脚本只处理本地结构化输入，不获取行情、新闻或一致预期。需要标准化金融数据时先按 `capability-financial-data-retrieval.md` 调用 `/seed_finance_search`，核对口径后再写入脚本输入。所有比例使用小数，例如 8% 写作 `0.08`；日期使用 `YYYY-MM-DD`；价格序列按交易日严格升序并保持同一复权口径。
+脚本只处理本地结构化输入，不获取行情、新闻或一致预期。需要标准化金融数据时先按 `capability-financial-data-retrieval.md` 调用 `/seed_finance_lookup`，核对口径后再写入脚本输入。所有比例使用小数，例如 8% 写作 `0.08`；日期使用 `YYYY-MM-DD`；价格序列按交易日严格升序并保持同一复权口径。
 
-调用前运行 `python3 <script> --help` 查看参数。首次使用或修改后运行 `python3 <script> --self-test`。
+参数不清时运行 `python3 <script> --help`。脚本或运行环境版本验收时运行脚本支持的 `--self-test`；已验收版本直接使用。
 
 ## delivery_mode 交付门禁
 
-研究开始前建立 JSON 交付清单，并运行计划门禁：
-
-```bash
-python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/delivery_gate.py" --phase plan delivery-manifest.json
-```
+研究开始前建立 JSON 交付清单。
 
 最终回复前更新同一文件，并运行完成态门禁：
 
@@ -31,26 +27,25 @@ python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/delivery_gate.py" --phase final deli
     "no_advanced_component_needed_or_generated": true
   },
   "advanced_components": [],
-  "data_consistency_verified": true,
   "core_financial_data_status": "not_relevant",
   "core_financial_data_reason": "单一估值口径解释，不涉及具体证券分析",
   "price_analysis": false,
   "kline_status": "not_price_analysis",
-  "html_created": false,
-  "html_path": "",
-  "file_verified": false
+  "html_path": ""
 }
 ```
 
-`HTML_REPORT` 的计划阶段可先保留未完成字段；最终阶段必须把 `html_created`、`file_verified` 设为 `true`，填入实际生成的 `.html` 文件路径，并完整列出已生成的高级组件。`file_verified=true` 只表示最后一次生成后的 HTML 已在浏览器复核；若随后又修改报告，必须重新生成并复核后才能恢复为 `true`。
+`HTML_REPORT` 的计划阶段可先保留未完成字段；最终阶段填入实际生成的 `.html` 文件路径，并完整列出已生成的高级组件。最后一次生成后的 HTML 必须在浏览器复核；若随后又修改报告，必须重新生成并复核。
 
 ```json
 {
   "delivery_mode": "HTML_REPORT",
   "mode_reason": "需要同业比较表、情景估值与多象限图",
   "text_checks": {},
-  "advanced_components": ["rich_table", "quadrant_html_block"],
-  "data_consistency_verified": true,
+  "advanced_components": [
+    "rich_table",
+    "quadrant_html_block"
+  ],
   "visual_purposes": {
     "quadrant_html_block": "哪些同业同时具备估值吸引力和盈利确定性"
   },
@@ -78,37 +73,13 @@ python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/delivery_gate.py" --phase final deli
   ],
   "price_analysis": false,
   "kline_status": "not_price_analysis",
-  "html_created": true,
-  "html_path": "/absolute/path/report.html",
-  "file_verified": true,
-  "quality_checks": {
-    "conclusion_first": true,
-    "every_section_changes_decision": true,
-    "evidence_traceable_and_current": true,
-    "low_quality_information_removed": true,
-    "redundant_content_removed": true,
-    "styles_serve_content": true,
-    "required_structure_preserved": true,
-    "logic_chain_explicit": true,
-    "reader_navigation_clear": true,
-    "accounting_bases_unambiguous": true
-  },
-  "visual_checks": {
-    "unique_decision_question": true,
-    "source_units_labeled": true,
-    "no_duplicate_encoding": true,
-    "rendering_verified": true
-  },
-  "html_block_checks": {
-    "embedded_in_html_report": true,
-    "chart_source_embedded": true
-  }
+  "html_path": "/absolute/path/report.html"
 }
 ```
 
-`data_consistency_verified=true` 只能在最终交付前完成跨产物数据对账后设置，且适用于 `TEXT` 和 `HTML_REPORT`。核对聊天摘要、正文、表格、图表、附录和其他交付物中的对象、期间、币种、单位、口径与数值；冲突时先采用更权威来源，权威性相当时采用截至信息截止日更新的数据，并从上游修正所有相关产物。
+最终交付前完成跨产物数据对账，适用于 `TEXT` 和 `HTML_REPORT`。核对聊天摘要、正文、表格、图表、附录和其他交付物中的对象、期间、币种、单位、口径与数值；冲突时先采用更权威来源，权威性相当时采用截至信息截止日更新的数据，并从上游修正所有相关产物。
 
-十项 `quality_checks` 只有在按 `writing-quality.md` 打开 HTML 并完成独立结构审阅、口径复核和删稿后才能设为 `true`。`logic_chain_explicit` 表示结论可沿经营/事件、盈利、预期和估值传导追踪；`reader_navigation_clear` 表示核心结论、章节标题和下钻顺序清楚；`accounting_bases_unambiguous` 表示相似口径已清楚标注、可比且与估值分母一致。`required_structure_preserved` 表示 `actual_sections` 已覆盖全部 `required_sections`，控篇幅时没有删掉承担独立分析功能的章节。覆盖矩阵检查过但证据质量不足的内容应从正文删除，不能靠免责声明或“仅供参考”保留。
+按 `writing-quality.md` 打开 HTML 并完成独立结构审阅、口径复核和删稿，确认逻辑链、导航、会计口径和必需结构完整。实际复核直接完成，无需逐项转写写作、视觉、嵌入与一致性布尔值。覆盖矩阵检查过但证据质量不足的内容应从正文删除，不能靠免责声明或“仅供参考”保留。
 
 所有任务都必须声明核心金融与财务数据状态：
 
@@ -122,22 +93,11 @@ python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/delivery_gate.py" --phase final deli
 `advanced_components` 中只要存在 HTML 图表组件视觉，就必须：
 
 - 在计划态用 `visual_purposes` 为每个视觉写一个唯一、非空的决策问题；
-- 在完成态确认 `visual_checks.unique_decision_question`、`source_units_labeled`、`no_duplicate_encoding` 和 `rendering_verified` 全部为 `true`。
+- 在完成态实际核对独立问题、来源单位、无重复编码及渲染。
 
-两个图回答相同问题、缺少单位/来源、与表格重复或未实际检查 HTML 渲染时，最终门禁不得通过。
+两个图回答相同问题、缺少单位/来源、与表格重复或未实际检查 HTML 渲染时，修正后再交付。
 
-`advanced_components` 中只要存在名称含 `html_block` 的组件，完成态还必须提供：
-
-```json
-{
-  "html_block_checks": {
-    "embedded_in_html_report": true,
-    "chart_source_embedded": true
-  }
-}
-```
-
-只有图表 HTML 已嵌入最终报告、打开后确认存在且渲染正常时，才能把两项设为 `true`。
+存在 HTML 图表组件时，确认图表 HTML 已嵌入最终报告，打开后检查位置和渲染。
 
 每次任务还必须设置 `price_analysis` 和 `kline_status`：
 
@@ -261,11 +221,9 @@ python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/cross_listing_spread.py" cross-listi
 ## 报告校验与引用
 
 ```bash
-python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/report_pipeline.py" source.md facts.json --check-only
-python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/report_pipeline.py" source.md facts.json --output display.md
 python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/report_pipeline.py" source.md facts.json --output display.md
 ```
 
-该脚本检查事实表结构、claim ID、日期、占位符和引用是否存在，然后把 `{fact:...}` 转换为读者引用并生成数据来源章节。默认输入输出为 Markdown；`--format lark-xml` 接受HTML 报告 XML 片段，要求以 `<title>` 开始，并以包含规定免责声明的 `<p>` 结束，生成 XML 格式的数据来源章节。它不判断报告观点是否正确，也不强制固定栏目名称。
+生成命令内置校验；只需检查而暂不生成时使用 `--check-only`。该脚本检查事实表结构、claim ID、日期、占位符和引用是否存在；正文必须在对应事实处包含 `{fact:...}`，只有文末来源列表或仅在数据来源章节标记引用时会报错。Markdown 输出把事实标记转换为就近编号，有 URL 时编号可点击，并生成文末数据来源汇总。默认输入输出为 Markdown；`--format lark-xml` 接受HTML 报告 XML 片段，要求以 `<title>` 开始，并以包含规定免责声明的 `<p>` 结束，生成 XML 格式的数据来源章节。它不判断报告观点是否正确，也不强制固定栏目名称。
 
 默认使用 Markdown 生成读者版来源章节，再运行 `scripts/render_html_report.py`。旧 XML 模式保留为可选的中间处理能力，不用于默认 HTML 交付。

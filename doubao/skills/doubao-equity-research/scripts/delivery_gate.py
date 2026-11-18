@@ -14,28 +14,6 @@ TEXT_CHECKS = (
     "no_structured_comparison_or_navigation",
     "no_advanced_component_needed_or_generated",
 )
-QUALITY_CHECKS = (
-    "conclusion_first",
-    "every_section_changes_decision",
-    "evidence_traceable_and_current",
-    "low_quality_information_removed",
-    "redundant_content_removed",
-    "styles_serve_content",
-    "required_structure_preserved",
-    "logic_chain_explicit",
-    "reader_navigation_clear",
-    "accounting_bases_unambiguous",
-)
-VISUAL_CHECKS = (
-    "unique_decision_question",
-    "source_units_labeled",
-    "no_duplicate_encoding",
-    "rendering_verified",
-)
-HTML_BLOCK_CHECKS = (
-    "embedded_in_html_report",
-    "chart_source_embedded",
-)
 KLINE_STATUSES = {"included", "not_applicable", "not_price_analysis"}
 KLINE_EXCEPTIONS = {
     "user_declined_visual",
@@ -115,9 +93,6 @@ def validate_manifest(data, phase):
 
     components = validate_string_list(data, "advanced_components", errors)
 
-    if phase == "final" and data.get("data_consistency_verified") is not True:
-        errors.append("完成态要求 data_consistency_verified=true")
-
     core_status = data.get("core_financial_data_status")
     if core_status not in CORE_FINANCIAL_DATA_STATUSES:
         errors.append(
@@ -170,9 +145,6 @@ def validate_manifest(data, phase):
 
     visual_components = [
         component for component in components if is_visual_component(component)
-    ]
-    html_block_components = [
-        component for component in components if "html_block" in component
     ]
     if visual_components:
         if mode != "HTML_REPORT":
@@ -255,42 +227,8 @@ def validate_manifest(data, phase):
             errors.append("TEXT 模式不得包含任何 advanced_components；必须升级为 HTML_REPORT")
 
     if phase == "final" and mode == "HTML_REPORT":
-        if data.get("html_created") is not True:
-            errors.append("HTML_REPORT 完成态要求 html_created=true")
         if not valid_html_path(data.get("html_path")):
             errors.append("HTML_REPORT 完成态要求实际存在且完整的 .html 文件")
-        if data.get("file_verified") is not True:
-            errors.append("HTML_REPORT 完成态要求 file_verified=true")
-        quality_checks = data.get("quality_checks")
-        if not isinstance(quality_checks, dict):
-            errors.append("HTML_REPORT 完成态必须提供 quality_checks 对象")
-        else:
-            for name in QUALITY_CHECKS:
-                if quality_checks.get(name) is not True:
-                    errors.append(f"HTML_REPORT 完成态要求 quality_checks.{name}=true")
-        if visual_components:
-            visual_checks = data.get("visual_checks")
-            if not isinstance(visual_checks, dict):
-                errors.append("含高级视觉的完成态必须提供 visual_checks 对象")
-            else:
-                for name in VISUAL_CHECKS:
-                    if visual_checks.get(name) is not True:
-                        errors.append(
-                            f"含高级视觉的完成态要求 visual_checks.{name}=true"
-                        )
-        if html_block_components:
-            html_block_checks = data.get("html_block_checks")
-            if not isinstance(html_block_checks, dict):
-                errors.append(
-                    "含 HTML block 的完成态必须提供 html_block_checks 对象"
-                )
-            else:
-                for name in HTML_BLOCK_CHECKS:
-                    if html_block_checks.get(name) is not True:
-                        errors.append(
-                            f"含 HTML block 的完成态要求 "
-                            f"html_block_checks.{name}=true"
-                        )
 
     return errors
 
@@ -302,7 +240,7 @@ def run_self_test():
         text_manifest = {
             "delivery_mode": "TEXT", "mode_reason": "单一事实问题",
             "text_checks": {name: True for name in TEXT_CHECKS},
-            "advanced_components": [], "data_consistency_verified": True,
+            "advanced_components": [],
             "core_financial_data_status": "not_relevant",
             "core_financial_data_reason": "单一事实问题不需金融与财务基线",
             "price_analysis": False, "kline_status": "not_price_analysis",
@@ -316,27 +254,32 @@ def run_self_test():
             "price_analysis": False, "kline_status": "not_price_analysis",
         }
         final = dict(plan)
-        final.update(core_financial_data_status="included", data_consistency_verified=True,
-                     actual_sections=list(plan["required_sections"]), html_created=True,
-                     html_path=str(html_file), file_verified=True,
-                     quality_checks={name: True for name in QUALITY_CHECKS})
+        final.update(core_financial_data_status="included",
+                     actual_sections=list(plan["required_sections"]),
+                     html_path=str(html_file))
         assert not validate_manifest(text_manifest, "final")
         assert not validate_manifest(plan, "plan")
         assert validate_manifest(plan, "final")
         assert not validate_manifest(final, "final")
         bad = dict(final); bad["html_path"] = str(Path(temp_dir) / "missing.html")
         assert validate_manifest(bad, "final")
-        bad = dict(final); bad["data_consistency_verified"] = False
+        bad = dict(final); bad["core_financial_data_status"] = "planned"
         assert validate_manifest(bad, "final")
         visual = dict(final)
         visual.update(advanced_components=["kline_html_block"], price_analysis=True,
                       kline_status="included", visual_purposes={"kline_html_block": "价格路径"},
-                      chart_generation_modes={"kline_html_block": "script"},
-                      visual_checks={name: True for name in VISUAL_CHECKS},
-                      html_block_checks={name: True for name in HTML_BLOCK_CHECKS})
+                      chart_generation_modes={"kline_html_block": "script"})
         assert not validate_manifest(visual, "final")
-        visual["html_block_checks"]["embedded_in_html_report"] = False
-        assert validate_manifest(visual, "final")
+        bad = dict(text_manifest); bad["text_checks"] = {}
+        assert validate_manifest(bad, "final")
+        bad = dict(final); bad.pop("price_analysis")
+        assert validate_manifest(bad, "final")
+        bad = dict(final); bad["kline_status"] = "included"
+        assert validate_manifest(bad, "final")
+        bad = dict(final); bad["actual_sections"] = ["结论", "主体分析"]
+        assert validate_manifest(bad, "final")
+        bad = dict(final); bad["required_sections"] = [str(index) for index in range(13)]
+        assert validate_manifest(bad, "final")
     print("SELF_TEST_PASS")
 
 

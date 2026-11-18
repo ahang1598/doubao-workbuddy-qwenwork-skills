@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
-"""Validate generic event claims, evidence timing, and transmission graphs."""
+"""Deterministic event evidence timing, transmission graph, and domain arithmetic engine."""
 
 from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+
+MAX_INPUT_BYTES = 1_048_576
+MAX_ITEMS_PER_LIST = 500
 
 EVENT_STATUSES = {
     "rumor",
@@ -27,7 +31,7 @@ CONFLICTING_LEGAL_STATUSES = {"superseded", "repealed"}
 
 
 class InputError(ValueError):
-    """Raised when the JSON input is structurally invalid."""
+    """Raised when the JSON input is structurally or numerically invalid."""
 
 
 def _require_object(value: Any, name: str) -> dict[str, Any]:
@@ -39,7 +43,18 @@ def _require_object(value: Any, name: str) -> dict[str, Any]:
 def _require_list(value: Any, name: str) -> list[Any]:
     if not isinstance(value, list):
         raise InputError(f"{name} must be an array")
+    if len(value) > MAX_ITEMS_PER_LIST:
+        raise InputError(f"{name} exceeds max length {MAX_ITEMS_PER_LIST}")
     return value
+
+
+def _require_number(value: Any, name: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise InputError(f"{name} must be a finite number")
+    numeric = float(value)
+    if not math.isfinite(numeric):
+        raise InputError(f"{name} must be a finite number")
+    return numeric
 
 
 def _parse_time(value: Any, field: str) -> datetime:
@@ -59,9 +74,7 @@ def _optional_time(value: Any, field: str) -> datetime | None:
 
 
 def _evidence_time(source: Any, field: str) -> datetime | None:
-    if source is None:
-        return None
-    if isinstance(source, str):
+    if source is None or isinstance(source, str):
         return None
     if not isinstance(source, dict):
         raise InputError(f"{field} must be a string or object when provided")
@@ -96,9 +109,12 @@ def _claim_effect_at_freeze(
     claim: dict[str, Any], event_status: str, freeze: datetime
 ) -> tuple[str, list[str]]:
     reasons: list[str] = []
-    source_time = _evidence_time(claim.get("source"), "claim.source")
+    source = claim.get("source")
+    source_time = _evidence_time(source, "claim.source")
     if source_time is not None and source_time > freeze:
         return "unknown", ["source_after_as_of"]
+    if isinstance(source, dict) and source.get("coverage_end") is not None and source_time is None:
+        return "unknown", ["coverage_period_without_published_at"]
 
     effective_from = _optional_time(
         claim.get("effective_from"), "claim.effective_from"
@@ -204,19 +220,20 @@ def _validate_transmission(raw: Any) -> dict[str, Any]:
             raise InputError(
                 f"transmission.edges[{index}] requires string from/to endpoints"
             )
-        edge_result = {"index": index, "from": source, "to": target}
+        edge_result: dict[str, Any] = {"index": index, "from": source, "to": target}
         missing = [
             endpoint
             for endpoint in (source, target)
             if endpoint not in node_ids
         ]
         if missing:
-            error = {
-                **edge_result,
-                "code": "UNKNOWN_EDGE_ENDPOINT",
-                "missing_node_ids": sorted(set(missing)),
-            }
-            errors.append(error)
+            errors.append(
+                {
+                    **edge_result,
+                    "code": "UNKNOWN_EDGE_ENDPOINT",
+                    "missing_node_ids": sorted(set(missing)),
+                }
+            )
             edge_result["valid"] = False
         else:
             edge_result["valid"] = True
@@ -234,8 +251,7 @@ def _validate_transmission(raw: Any) -> dict[str, Any]:
             indegree[target] -= 1
             if indegree[target] == 0:
                 queue.append(target)
-    has_cycle = bool(node_ids) and visited != len(node_ids)
-    if has_cycle:
+    if bool(node_ids) and visited != len(node_ids):
         errors.append({"code": "TRANSMISSION_CYCLE"})
 
     connected: set[str] = set()
@@ -276,8 +292,7 @@ def _market_kind(item: dict[str, Any]) -> str | None:
     if raw is None and item.get("pre_event_expectation") is True:
         return "pre_event_expectation"
     if raw is None and (
-        item.get("comparable") is True
-        or item.get("is_comparable") is True
+        item.get("comparable") is True or item.get("is_comparable") is True
     ):
         return "comparable_market_evidence"
     if not isinstance(raw, str):
@@ -316,11 +331,10 @@ def _evaluate_market(raw_market: list[Any], freeze: datetime) -> dict[str, Any]:
             reason = "unsupported"
         kind = _market_kind(item)
         if kind == "comparable_market_evidence" and (
-            item.get("comparable") is False
-            or item.get("is_comparable") is False
+            item.get("comparable") is False or item.get("is_comparable") is False
         ):
             reason = "not_comparable"
-        normalized = {"id": item_id, "evidence_type": kind}
+        normalized: dict[str, Any] = {"id": item_id, "evidence_type": kind}
         if reason:
             normalized["reason"] = reason
             excluded.append(normalized)
@@ -440,35 +454,281 @@ def evaluate_event_claims(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def evaluate_calculations(payload: dict[str, Any]) -> dict[str, Any]:
+    """Perform deterministic financial, unit, FX, reconciliation, and scenario math."""
+    payload = _require_object(payload, "input")
+    errors: list[dict[str, Any]] = []
+    changes_out: list[dict[str, Any]] = []
+    shares_out: list[dict[str, Any]] = []
+    reconciliations_out: list[dict[str, Any]] = []
+    fx_out: list[dict[str, Any]] = []
+    scenario_out: dict[str, Any] | None = None
+
+    for idx, raw in enumerate(_require_list(payload.get("changes", []), "changes")):
+        item = _require_object(raw, f"changes[{idx}]")
+        item_id = str(item.get("id") or f"change_{idx}")
+        start = _require_number(item.get("start"), f"changes[{idx}].start")
+        end = _require_number(item.get("end"), f"changes[{idx}].end")
+        diff = end - start
+        direction = "up" if diff > 1e-12 else "down" if diff < -1e-12 else "flat"
+        pct = None if abs(start) < 1e-12 else round(diff / abs(start) * 100.0, 4)
+        row: dict[str, Any] = {
+            "id": item_id,
+            "start": start,
+            "end": end,
+            "abs_change": round(diff, 6),
+            "pct_change": pct,
+            "direction": direction,
+            "unit": item.get("unit", ""),
+        }
+        if item.get("is_rate_pct") is True:
+            row["bps_change"] = round(diff * 100.0, 2)
+        changes_out.append(row)
+
+    for idx, raw in enumerate(_require_list(payload.get("shares", []), "shares")):
+        item = _require_object(raw, f"shares[{idx}]")
+        item_id = str(item.get("id") or f"share_{idx}")
+        part = _require_number(item.get("part"), f"shares[{idx}].part")
+        whole = _require_number(item.get("whole"), f"shares[{idx}].whole")
+        if whole <= 0:
+            raise InputError(f"shares[{idx}].whole must be positive")
+        strict_subset = bool(item.get("strict_subset", True))
+        exceeds = strict_subset and (part < 0 or part > whole + 1e-9)
+        if exceeds:
+            errors.append(
+                {
+                    "code": "SUBSET_EXCEEDS_WHOLE",
+                    "id": item_id,
+                    "part": part,
+                    "whole": whole,
+                }
+            )
+        shares_out.append(
+            {
+                "id": item_id,
+                "part": part,
+                "whole": whole,
+                "share_pct": round(part / whole * 100.0, 4),
+                "valid_subset": not exceeds,
+                "unit": item.get("unit", ""),
+            }
+        )
+
+    for idx, raw in enumerate(
+        _require_list(payload.get("reconciliations", []), "reconciliations")
+    ):
+        item = _require_object(raw, f"reconciliations[{idx}]")
+        item_id = str(item.get("id") or f"reconcile_{idx}")
+        total = _require_number(item.get("total"), f"reconciliations[{idx}].total")
+        raw_parts = _require_list(item.get("parts", []), f"reconciliations[{idx}].parts")
+        if not raw_parts:
+            raise InputError(f"reconciliations[{idx}].parts must be non-empty")
+        parts = [
+            _require_number(val, f"reconciliations[{idx}].parts[{p_idx}]")
+            for p_idx, val in enumerate(raw_parts)
+        ]
+        tolerance = _require_number(
+            item.get("tolerance", 1e-6), f"reconciliations[{idx}].tolerance"
+        )
+        if tolerance < 0:
+            raise InputError(f"reconciliations[{idx}].tolerance must be non-negative")
+        summed = sum(parts)
+        diff = summed - total
+        matched = abs(diff) <= tolerance
+        if not matched:
+            errors.append(
+                {
+                    "code": "SUM_MISMATCH",
+                    "id": item_id,
+                    "expected_total": total,
+                    "computed_sum": round(summed, 6),
+                    "diff": round(diff, 6),
+                }
+            )
+        reconciliations_out.append(
+            {
+                "id": item_id,
+                "expected_total": total,
+                "computed_sum": round(summed, 6),
+                "diff": round(diff, 6),
+                "reconciled": matched,
+            }
+        )
+
+    for idx, raw in enumerate(
+        _require_list(payload.get("fx_conversions", []), "fx_conversions")
+    ):
+        item = _require_object(raw, f"fx_conversions[{idx}]")
+        item_id = str(item.get("id") or f"fx_{idx}")
+        amount = _require_number(item.get("amount"), f"fx_conversions[{idx}].amount")
+        fx_rate = _require_number(item.get("fx_rate"), f"fx_conversions[{idx}].fx_rate")
+        if fx_rate <= 0:
+            raise InputError(f"fx_conversions[{idx}].fx_rate must be positive")
+        from_ccy = str(item.get("from_currency") or "").strip()
+        to_ccy = str(item.get("to_currency") or "").strip()
+        if not from_ccy or not to_ccy:
+            raise InputError(
+                f"fx_conversions[{idx}] requires non-empty from_currency and to_currency"
+            )
+        per_unit = str(item.get("per_unit") or "").strip()
+        converted = amount * fx_rate
+        fx_out.append(
+            {
+                "id": item_id,
+                "amount": amount,
+                "from_currency": from_ccy,
+                "to_currency": to_ccy,
+                "fx_rate": fx_rate,
+                "converted_amount": round(converted, 6),
+                "unit_label": f"{to_ccy}/{per_unit}" if per_unit else to_ccy,
+            }
+        )
+
+    if payload.get("scenarios") is not None:
+        scen_block = _require_object(payload["scenarios"], "scenarios")
+        status = str(scen_block.get("event_status", "")).strip().lower()
+        raw_rows = _require_list(scen_block.get("scenarios", []), "scenarios.scenarios")
+        if status in {"rumor", "unconfirmed", "传闻", "未确认"}:
+            scenario_out = {
+                "can_quantify_event": False,
+                "event_status": status,
+                "reason": "unconfirmed events cannot enter probability-weighted return calculations",
+                "scenario_names": [
+                    row.get("name") for row in raw_rows if isinstance(row, dict)
+                ],
+            }
+        elif status in {"confirmed", "official", "effective", "announced", "adopted", "已确认", "正式"}:
+            current_val = _require_number(
+                scen_block.get("current_value"), "scenarios.current_value"
+            )
+            if current_val <= 0 or not raw_rows:
+                raise InputError(
+                    "scenarios requires positive current_value and non-empty scenarios list"
+                )
+            rows = []
+            prob_sum = 0.0
+            expected_terminal = 0.0
+            horizons: set[float] = set()
+            for s_idx, s_raw in enumerate(raw_rows):
+                s_obj = _require_object(s_raw, f"scenarios.scenarios[{s_idx}]")
+                prob = _require_number(
+                    s_obj.get("probability"), f"scenarios.scenarios[{s_idx}].probability"
+                )
+                term = _require_number(
+                    s_obj.get("terminal_value"),
+                    f"scenarios.scenarios[{s_idx}].terminal_value",
+                )
+                years = _require_number(
+                    s_obj.get("years"), f"scenarios.scenarios[{s_idx}].years"
+                )
+                if not 0.0 <= prob <= 1.0 or term < 0.0 or years <= 0.0:
+                    raise InputError(
+                        f"scenarios.scenarios[{s_idx}] requires probability in [0,1], non-negative terminal_value, positive years"
+                    )
+                hpr = term / current_val - 1.0
+                ann = (term / current_val) ** (1.0 / years) - 1.0 if term > 0 else -1.0
+                rows.append(
+                    {
+                        "name": str(s_obj.get("name") or f"scenario_{s_idx}"),
+                        "probability": prob,
+                        "years": years,
+                        "terminal_value": term,
+                        "holding_period_return": round(hpr, 6),
+                        "annualized_return": round(ann, 6),
+                    }
+                )
+                prob_sum += prob
+                expected_terminal += prob * term
+                horizons.add(years)
+            if abs(prob_sum - 1.0) > 1e-6:
+                raise InputError("scenario probabilities must sum to 1.0 (+/- 1e-6)")
+            scenario_out = {
+                "can_quantify_event": True,
+                "event_status": status,
+                "probability_sum": round(prob_sum, 6),
+                "expected_terminal_value": round(expected_terminal, 6),
+                "expected_holding_period_return": (
+                    round(expected_terminal / current_val - 1.0, 6)
+                    if len(horizons) == 1
+                    else None
+                ),
+                "aggregation_note": (
+                    "uniform_horizon"
+                    if len(horizons) == 1
+                    else "returns_not_aggregated_across_different_horizons"
+                ),
+                "scenarios": rows,
+            }
+        else:
+            raise InputError(
+                "scenarios.event_status must be confirmed/effective or rumor/unconfirmed"
+            )
+
+    return {
+        "mode": "calc",
+        "valid": not errors,
+        "changes": changes_out,
+        "shares": shares_out,
+        "reconciliations": reconciliations_out,
+        "fx_conversions": fx_out,
+        "scenarios": scenario_out,
+        "errors": errors,
+    }
+
+
+def _read_raw_input(source: str) -> str:
+    if source == "-":
+        raw = sys.stdin.read()
+    elif source.lstrip().startswith(("{", "[")):
+        raw = source
+    else:
+        path = Path(source)
+        if path.stat().st_size > MAX_INPUT_BYTES:
+            raise InputError(f"input file exceeds {MAX_INPUT_BYTES} bytes")
+        raw = path.read_text(encoding="utf-8")
+    if len(raw.encode("utf-8")) > MAX_INPUT_BYTES:
+        raise InputError(f"input payload exceeds {MAX_INPUT_BYTES} bytes")
+    return raw
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Evaluate generic event claims and transmission evidence."
+        description="Evaluate event evidence timing/transmission or perform deterministic domain calculations."
     )
     parser.add_argument(
         "input",
         nargs="?",
         default="-",
-        help="Input JSON file, or - for stdin (default).",
+        help="Input JSON file path, inline JSON string, or - for stdin (default).",
     )
-    parser.add_argument("--output", help="Optional output JSON path.")
+    parser.add_argument(
+        "--mode",
+        choices=("claims", "calc"),
+        default="claims",
+        help="Evaluation mode: 'claims' (default) or 'calc' for domain arithmetic.",
+    )
+    parser.add_argument("--output", help="Optional output JSON file path.")
     parser.add_argument(
         "--pretty", action="store_true", help="Pretty-print emitted JSON."
     )
     args = parser.parse_args(argv)
     try:
-        if args.input == "-":
-            payload = json.load(sys.stdin)
-        elif args.input.lstrip().startswith(("{", "[")):
-            payload = json.loads(args.input)
-        else:
-            payload = json.loads(Path(args.input).read_text(encoding="utf-8"))
-        result = evaluate_event_claims(payload)
-        text = json.dumps(
-            result,
-            ensure_ascii=False,
-            indent=2 if args.pretty else None,
-            sort_keys=args.pretty,
-        ) + "\n"
+        raw = _read_raw_input(args.input)
+        payload = json.loads(raw)
+        result = (
+            evaluate_calculations(payload)
+            if args.mode == "calc"
+            else evaluate_event_claims(payload)
+        )
+        text = (
+            json.dumps(
+                result,
+                ensure_ascii=False,
+                indent=2 if args.pretty else None,
+                sort_keys=args.pretty,
+            )
+            + "\n"
+        )
         if args.output:
             Path(args.output).write_text(text, encoding="utf-8")
         else:

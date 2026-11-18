@@ -20,6 +20,8 @@
 - 加边框用 `border` 简写：`{"style":"solid","color":"#DDDDDD"}` 应用到四边；只有分侧不同样式才用 `border_styles` 完整形态。
 - `freeze` 用 `{rows:N, cols:N}` 冻结前 N 行 / 列，0 或省略表示该维度不冻结；freeze 是整份状态覆盖，全 0（如 `{"rows":0}`）= 两轴全部解冻，与 `+dim-freeze --rows 0 --cols 0` 等价（仅 `+workbook-create` 建新表时全 0 无意义、会被校验拒绝）。
 
+只有逐区域样式时，也接受 `--sheet-name "明细" --styles '{"ranges":[{"range":"A1:D1","style":{"font_weight":"bold"}}]}'`：每项自带范围和样式，沿用同一套字段校验；外层只能有 `ranges`。同时调整行高列宽、合并或冻结时用上面的 `{styles:[...]}`，避免混用外层结构。
+
 
 ## Shortcuts
 
@@ -74,13 +76,13 @@ lark-cli sheets +styles-put --url "https://example.feishu.cn/sheets/shtXXX" --st
 JSON
 ```
 
-多子表同一批交付（每个子表一个 styles 项）：
+多子表列宽与必要换行同一批设置（每个子表一个 styles 项，`name` 使用已取得的真实表名）：
 
 ```bash
 lark-cli sheets +styles-put --url "..." --styles - <<'JSON'
 {"styles":[
-  {"name":"明细","cell_styles":[{"range":"A1:H1","font_weight":"bold","background_color":"#F0F0F0"}],"freeze":{"rows":1}},
-  {"name":"汇总","cell_styles":[{"range":"A1:D1","font_weight":"bold"}],"col_sizes":[{"range":"A:D","type":"pixel","size":140}]}
+  {"name":"明细","cell_styles":[{"range":"B2:C20","word_wrap":"auto-wrap"}],"col_sizes":[{"range":"A","size":180},{"range":"B:C","size":300}]},
+  {"name":"汇总","cell_styles":[{"range":"B2:B10","word_wrap":"auto-wrap"}],"col_sizes":[{"range":"A","size":180},{"range":"B","size":300}]}
 ]}
 JSON
 ```
@@ -90,4 +92,4 @@ JSON
 - `Validate`：`--styles` 必须是合法 JSON、`styles` 非空数组；每项 `name` 必填、至少给 `cell_merges` / `cell_styles` / `row_sizes` / `col_sizes` / `freeze` 之一；`cell_styles` 每项至少一个样式字段；展开后受子操作数（100）与总格数预算约束，超限报错给拆分建议。
 - `DryRun`：输出展开后每个子操作的请求模板，不发起调用。
 
-===== 全文完（共 93 行）=====
+===== 全文完（共 95 行）=====

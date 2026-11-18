@@ -41,7 +41,7 @@
 
 先完整执行 `references/equity-evidence-acquisition.md`。取得官方基准股本、官方公司行动检索结果和公告正文并保存本地证据后，才能建立股数桥。运行 `validate_equity_evidence.py` 通过前，不得准备 `normalized-dcf.json`、历史财务模型或估值计算。
 
-先按强制读取完整性协议完整读取 `references/source-tool-priority.md`。对每个数据项目优先调用用户明确指定的工具、网站、文件、字段和历史时点口径；用户未指定的项目再优先定位并调用环境中的 `seed_finance_search`，适配实际参数模式，不猜测不存在的字段。指定来源或默认工具不存在、未连接、权限不足或无法覆盖所需字段时，记录实际尝试和降级原因，再按数据能力组合监管文件检索、交易所公告、公司投资者关系材料、官方宏观与市场数据工具；明确披露替代关系和置信度下降，不静默换源，不声称接入不存在的数据源。
+先按强制读取完整性协议完整读取 `references/source-tool-priority.md`。对每个数据项目优先调用用户明确指定的工具、网站、文件、字段和历史时点口径；用户未指定的项目再优先定位并调用环境中的 `seed_finance_lookup`，适配实际参数模式，不猜测不存在的字段。指定来源或默认工具不存在、未连接、权限不足或无法覆盖所需字段时，记录实际尝试和降级原因，再按数据能力组合官方宏观与市场数据工具；监管文件、交易所公告和公司投资者关系材料优先用 `seed_finance_search` 检索，不可用时回退 `general_search`；明确披露替代关系和置信度下降，不静默换源，不声称接入不存在的数据源。
 
 先取得原始报表、股本和市场组成项，再自行计算 LTM、净债务、完全稀释股本、WACC 与估值。关键报告值用监管文件、交易所文件或公司正式披露核验。为每个关键字段保存来源编号和 `[R]/[A]/[E]/[D]/[H]` 标签。
 
@@ -115,7 +115,7 @@ python3 scripts/common/materialize_formula_contract.py \
 摘要、DCF、三种情景和敏感性不得保存独立硬编码结果。完成Excel后建立 `delivery-audit.json`，完整读取 `references/dcf-delivery-audit-schema.md`。在运行交付验证前，使用生成器输出的 `workbook-contract.json` 直接审计最终Excel：
 
 ```bash
-python3 scripts/common/audit_formula_workbook.py model.xlsx workbook-contract.json artifact-audit.json --recalculate required
+python3 scripts/common/audit_formula_workbook.py model.xlsx workbook-contract.json artifact-audit.json --recalculate required --inspect-output workbook-inspect.json
 python3 scripts/dcf/validate_delivery.py normalized-dcf.json calculated-dcf.json delivery-audit.json --workbook-audit artifact-audit.json --output delivery-validation.json
 ```
 

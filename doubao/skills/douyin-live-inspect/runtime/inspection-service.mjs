@@ -1,5 +1,4 @@
-// 本文件负责正式版能力探测与版本回退决策：
-// 在已知是“新建请求”的前提下，检查认证状态、CLI 能力、项目列表，并决定走 formal / lite / clarify / blocked。
+// 探测正式版新请求的认证、服务能力及项目配置。
 import { createProbeSession } from './probe-session.mjs';
 import { runOperationArgs, getOperationSchema } from './operations.mjs';
 import { runService } from './service-call.mjs';
@@ -31,7 +30,7 @@ function decision(route, reason, extra = {}) {
     ok: route !== 'blocked', command: 'check-inspection-service',
     data: {
       route, reason,
-      next_action: { lite: 'start_lite', formal: 'select_project', clarify: 'choose_lite_or_login', blocked: 'resolve_blocker' }[route],
+      next_action: { formal: 'select_project', clarify: 'choose_lite_or_login', blocked: 'resolve_blocker' }[route],
       activation_guidance_required: reason === 'formal_service_not_enabled',
       ...extra,
     },
@@ -78,13 +77,14 @@ async function checkService(input, { read, sleep, onAccount }) {
       || (input.allow_lite !== undefined && typeof input.allow_lite !== 'boolean')) {
     return decision('blocked', 'invalid_new_request_context');
   }
-  const fallback = (reason, extra) => decision(input.allow_lite === false ? 'blocked' : 'lite', reason, extra);
   let context = {};
-  const clarify = (reason, diagnostics) => decision(input.allow_lite === false ? 'blocked' : 'clarify', reason, {
+  const clarify = (reason, diagnostics) => decision(input.mode === 'formal' || input.allow_lite === false ? 'blocked' : 'clarify', reason, {
     ...context, ...(diagnostics ? { diagnostics } : {}),
-    next_action: input.allow_lite === false ? 'resolve_blocker' : 'choose_formal_or_lite',
+    next_action: input.mode === 'formal' || input.allow_lite === false ? 'resolve_blocker' : 'choose_formal_or_lite',
   });
-  const authChoice = diagnostics => input.allow_lite === false
+  const authChoice = diagnostics => input.mode === 'formal'
+    ? decision('clarify', 'authentication_required', { ...context, diagnostics, next_action: 'login_required' })
+    : input.allow_lite === false
     ? decision('blocked', 'authentication_required', { ...context, diagnostics, next_action: 'login_required' })
     : decision('clarify', 'authentication_required', { ...context, diagnostics });
   const domain = input.kind === 'live' ? 'quality' : 'content';
@@ -160,8 +160,7 @@ async function checkService(input, { read, sleep, onAccount }) {
     const { payload, failed, diagnostics } = await query(
       ['--format', 'json', ...binding, domain, shortcut, '--page-number', String(number), '--page-size', '100'], 'projects');
     const code = diagnostics.code;
-    // 服务明确未开通时，才允许把新请求回退到 Lite；不能把其他错误混同成未开通。
-    if (code === 'AccessDenyError') return fallback('formal_service_not_enabled', { ...context, diagnostics, formal_error: { code } });
+    if (code === 'AccessDenyError') return decision('blocked', 'formal_service_not_enabled', { ...context, diagnostics, formal_error: { code } });
     if (diagnostics.category === 'authentication') return authChoice(diagnostics);
     if (!failed && payload.meta?.account_id) {
       try { await onAccount?.(payload.meta.account_id); } catch { /* Optional telemetry. */ }
@@ -190,7 +189,7 @@ async function checkService(input, { read, sleep, onAccount }) {
     if (complete) {
       return projects.size
         ? decision('formal', 'projects_available', { projects: [...projects.values()], ...context })
-        : fallback('projects_unconfigured', context);
+        : decision('blocked', 'projects_unconfigured', context);
     }
     if (rows.length < 100) return invalidResponse();
   }
@@ -198,8 +197,8 @@ async function checkService(input, { read, sleep, onAccount }) {
 }
 
 export function entryTimeout(input, stage, context = {}) {
-  return decision(input.allow_lite === false ? 'blocked' : 'clarify', 'entry_timeout', {
-    ...context, next_action: input.allow_lite === false ? 'resolve_blocker' : 'choose_formal_or_lite',
+  return decision(input.mode === 'formal' || input.allow_lite === false ? 'blocked' : 'clarify', 'entry_timeout', {
+    ...context, next_action: input.mode === 'formal' || input.allow_lite === false ? 'resolve_blocker' : 'choose_formal_or_lite',
     diagnostics: { stage, category: 'timeout', attempts: 0 },
   });
 }

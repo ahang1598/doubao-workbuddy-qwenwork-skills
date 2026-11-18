@@ -72,6 +72,8 @@ export async function runLogin(
     stdin = process.stdin,
     output = process.stderr,
     timeoutMs = 300000,
+    onReady,
+    onResult,
   } = {}
 ) {
   requireOnline(input);
@@ -83,20 +85,28 @@ export async function runLogin(
     let pending;
     let server;
     let result;
+    let callbackResponse;
+    let stage = input.remote ? "AUTH_RESPONSE_INVALID" : "AUTH_CALLBACK_UNAVAILABLE";
     try {
+      // Replace local attempt metadata under the same lock as credentials and completion.
+      if (input.remote) {
+        stage = "AUTH_STORE_FAILED";
+        await removeStore(profile, "login", env);
+        stage = "AUTH_RESPONSE_INVALID";
+      }
+      if (input.remote && (input.authorizationResponseStdin || input.entryTask)) {
+        const saved = await readStore(profile, "pending", env);
+        if (saved?.clientId === CLIENT_REMOTE && saved.redirectUri === `${SIGNIN}/authorize/oauth/authorize` &&
+            saved.state && saved.verifier && clock() >= saved.createdAt && clock() - saved.createdAt <= 600000 &&
+            (input.authorizationResponseStdin || saved.entryTask === input.entryTask)) pending = saved;
+      }
       if (input.authorizationResponseStdin) {
-        pending = await readStore(profile, "pending", env);
-        if (
-          !pending ||
-          clock() - pending.createdAt > 600000 ||
-          clock() < pending.createdAt ||
-          pending.clientId !== CLIENT_REMOTE ||
-          pending.redirectUri !== `${SIGNIN}/authorize/oauth/authorize`
-        )
+        if (!pending)
           throw new Error("Pending login missing or expired");
         result = await readAuthorizationResponse(stdin);
       } else {
-        pending = {
+        pending ??= {
+          ...(input.entryTask && { entryTask: input.entryTask }),
           state: randomBytes(32).toString("base64url"),
           verifier: randomBytes(32).toString("base64url"),
           createdAt: clock(),
@@ -120,12 +130,11 @@ export async function runLogin(
                   req.url.slice(req.url.indexOf("?")),
                   pending.state
                 );
-                res
-                  .writeHead(200, {
-                    "Content-Type": "text/plain; charset=utf-8",
-                    "Cache-Control": "no-store",
-                  })
-                  .end("已收到授权回调。请回到当前对话回复“已授权”或“继续”，核验登录状态后继续质检。此页面不会自动让对话继续。");
+                if (callbackResponse) {
+                  res.writeHead(409).end("Authorization already being processed");
+                  return;
+                }
+                callbackResponse = res;
                 resolve(req.url.slice(req.url.indexOf("?")));
               } catch (error) {
                 res.writeHead(400).end("Invalid authorization response");
@@ -158,6 +167,11 @@ export async function runLogin(
           code_challenge_method: "S256",
         }).toString();
         if (input.remote) await writeStore(profile, "pending", pending, env);
+        if (onReady) {
+          stage = "AUTH_STORE_FAILED";
+          await onReady(url.toString());
+          stage = "AUTH_CALLBACK_UNAVAILABLE";
+        }
         output.write(
           `Open this URL manually in your chosen browser:\n${url}\n${input.remote ? "请通过受控授权输入渠道提交授权结果，再回到当前对话回复“已授权”或“继续”。" : "授权完成后，请回到当前对话回复“已授权”或“继续”，核验登录状态后继续质检。"}授权页面不会自动让对话继续。\n`
         );
@@ -166,6 +180,7 @@ export async function runLogin(
             profile,
             environment: "online",
             status: "pending",
+            authorization_url: url.toString(),
             resume:
               "Run login.mjs --remote --authorization-response-stdin with either the code provided by the Volcengine authorization page (Base64 result) or the complete callback URL on controlled stdin; the decoded result must include state",
           };
@@ -175,7 +190,7 @@ export async function runLogin(
             callback,
             new Promise((_, reject) => {
               timer = setTimeout(
-                () => reject(new Error("Login timed out")),
+                () => reject(Object.assign(new Error("Login timed out"), { code: "AUTH_TIMEOUT" })),
                 timeoutMs
               );
             }),
@@ -185,6 +200,7 @@ export async function runLogin(
         }
       }
       const code = decodeAuthorizationResponse(result, pending.state);
+      stage = "AUTH_EXCHANGE_FAILED";
       const token = await exchangeToken(
         {
           grant_type: "authorization_code",
@@ -196,21 +212,44 @@ export async function runLogin(
         },
         { fetchImpl }
       );
+      stage = "AUTH_SESSION_INVALID";
       const session = tokenSession(
         token,
         { clientId: pending.clientId },
         clock()
       );
+      stage = "AUTH_STORE_FAILED";
       await writeStore(profile, "session", session, env);
       await removeStore(profile, "pending", env);
+      if (onResult) await onResult({ status: "authenticated" });
+      if (callbackResponse) {
+        callbackResponse.writeHead(200, {
+          "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store",
+        }).end("登录成功。请回到当前对话回复“已授权”或“继续”，继续质检。此页面不会自动让对话继续。");
+      }
       return {
         profile,
         environment: "online",
         account_id: session.account_id,
         status: "authenticated",
       };
+    } catch (error) {
+      const code = error.code === "AUTH_DENIED" || error.code === "AUTH_TIMEOUT" ? error.code : stage;
+      if (onResult) {
+        try { await onResult({ status: "failed", error: { code } }); } catch {}
+      }
+      if (callbackResponse) callbackResponse.writeHead(500, {
+        "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store",
+      }).end(`登录未完成（${code}）。请回到当前对话查看登录状态。`);
+      throw Object.assign(new Error(code === "AUTH_TIMEOUT" ? "Login timed out" : code === "AUTH_RESPONSE_INVALID" ? "Pending login missing, invalid or expired" : code), { code });
     } finally {
       if (server) {
+        if (callbackResponse && !callbackResponse.writableFinished && !callbackResponse.destroyed) {
+          await new Promise(resolve => {
+            callbackResponse.once("finish", resolve);
+            callbackResponse.once("close", resolve);
+          });
+        }
         server.closeAllConnections();
         await new Promise((resolve) => server.close(resolve));
       }

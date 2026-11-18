@@ -1,0 +1,42 @@
+{
+  "snapshot": "2026-11-05",
+  "origin": "derived",
+  "note": "图标能力为依据相关规则新增归纳；其他能力按原包对应模式/片段提取。",
+  "files": [
+    {
+      "source": "新增子skills-20261105/来源/doubao-visualization_20261105_150506_000/references/mode-html-svg.md",
+      "target": "references/mode-html-svg.md",
+      "sha256": "80a5c552af209e8b2fcc1448678ca77b1a296187cd6d862bd59a0929e3872350",
+      "materialized_sha256": "9705e9fac2c181750af3b61f84540fd7a1f606dd5a6c3018314e043069b6efe9",
+      "current_sha256": "187554269828c0fcc13cbd81b0097661c904fd364d8cdf81d5f81086c4dd8cc7"
+    },
+    {
+      "source": "新增子skills-20261105/来源/doubao-visualization_20261105_150506_000/references/generated-style-guide.md",
+      "target": "references/generated-style-guide.md",
+      "sha256": "a6cab86e04838ccdeb04262c54f741cd0843bbe159979da531e64488f5808710",
+      "materialized_sha256": "a6cab86e04838ccdeb04262c54f741cd0843bbe159979da531e64488f5808710",
+      "current_sha256": "a6cab86e04838ccdeb04262c54f741cd0843bbe159979da531e64488f5808710"
+    }
+  ],
+  "adaptations": [
+    {
+      "date": "2026-11-09",
+      "scope": "一种正式载体；中间文件内部使用；额外交付仅按明确要求",
+      "changedFiles": [
+        "SKILL.md",
+        "references/delivery-contract.md"
+      ],
+      "scriptsAndAssetsUnchanged": true
+    },
+    {
+      "date": "2026-11-10",
+      "scope": "医学报告包可视化改为程序化 SVG 优先；移除生成式图片分支及位图/Canvas 回退，精确数值与响应式布局要求保留",
+      "sourceFingerprintsPreserved": true
+    },
+    {
+      "date": "2026-11-10",
+      "scope": "补充SVG直接构造与临时资源边界，区分不必要的对话确认、平台强制审批和浏览器许可"
+    }
+  ],
+  "localRevision": "svg-priority.20261110"
+}

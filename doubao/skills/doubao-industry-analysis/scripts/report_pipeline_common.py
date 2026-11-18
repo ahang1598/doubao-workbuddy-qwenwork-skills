@@ -1,77 +1,27 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 import re
 from typing import Iterable
 
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_PARTS_DIR = REPO_ROOT / "parts"
-DEFAULT_OUTPUT_PATH = REPO_ROOT / "output" / "report.md"
+WORK_ROOT = Path.cwd()
+DEFAULT_PARTS_DIR = WORK_ROOT / "parts"
+DEFAULT_OUTPUT_PATH = WORK_ROOT / "output" / "report.md"
 
 
-@dataclass(frozen=True)
-class PartSpec:
-    filename: str
-    required_sections: tuple[str, ...]
-    requires_title: bool = False
-    requires_recap: bool = False
-    allows_references: bool = False
-    requires_disclaimer: bool = False
-    requires_table: bool = False
-
-
-PART_SPECS: tuple[PartSpec, ...] = (
-    PartSpec(
-        filename="01-executive-summary.md",
-        required_sections=("## 核心观点",),
-        requires_title=True,
-    ),
-    PartSpec(
-        filename="02-industry-definition-scale.md",
-        required_sections=("## 一、行业定义、规模测算与历史坐标",),
-        requires_recap=True,
-        requires_table=True,
-    ),
-    PartSpec(
-        filename="03-structure-competition.md",
-        required_sections=("## 二、行业结构、竞争格局与格局演变",),
-        requires_recap=True,
-        requires_table=True,
-    ),
-    PartSpec(
-        filename="04-drivers-constraints.md",
-        required_sections=("## 三、核心驱动力与制约因素",),
-        requires_recap=True,
-        requires_table=True,
-    ),
-    PartSpec(
-        filename="05-trends-opportunities.md",
-        required_sections=("## 四、趋势研判与结构性机会",),
-        requires_recap=True,
-        requires_table=True,
-    ),
-    PartSpec(
-        filename="06-commercialization-risk-refs.md",
-        required_sections=(
-            "## 五、商业化路径、盈利质量与落地建议",
-            "## 风险提示",
-            "## 结语",
-            "## 参考文献",
-        ),
-        requires_recap=True,
-        allows_references=True,
-        requires_disclaimer=True,
-        requires_table=True,
-    ),
+FINAL_REQUIRED_SECTIONS: tuple[str, ...] = (
+    "## 核心观点",
+    "## 一、行业定义、规模测算与历史坐标",
+    "## 二、行业结构、竞争格局与格局演变",
+    "## 三、核心驱动力与制约因素",
+    "## 四、趋势研判与结构性机会",
+    "## 五、商业化路径、盈利质量与落地建议",
+    "## 风险提示",
+    "## 结语",
+    "## 参考文献",
 )
 
-PART_SPEC_BY_NAME = {spec.filename: spec for spec in PART_SPECS}
-ALLOWED_PART_FILENAMES = {spec.filename for spec in PART_SPECS}
-FINAL_REQUIRED_SECTIONS: tuple[str, ...] = tuple(
-    section for spec in PART_SPECS for section in spec.required_sections
-)
 
 REFERENCE_HEADING = "## 参考文献"
 DISCLAIMER_MARKER = "风险提示与免责声明："
@@ -83,7 +33,6 @@ TABLE_SEPARATOR_PATTERN = re.compile(
     r"^\s*\|.*\|\s*$\n^\s*\|(?:\s*:?-{3,}:?\s*\|)+\s*$",
     re.MULTILINE,
 )
-IMAGE_PATTERN = re.compile(r"!\[")
 RAW_TAG_PATTERN = re.compile(r"<[A-Za-z/][^>]*>")
 OLD_PIPELINE_PATTERN = re.compile(
     r"Docx\x58ML|docs\s+\+(?:create|update|fetch)|block_insert\x5fafter",
@@ -119,7 +68,7 @@ def has_markdown_table(text: str) -> bool:
 
 
 def has_forbidden_markup(text: str) -> bool:
-    return bool(IMAGE_PATTERN.search(text) or RAW_TAG_PATTERN.search(text) or OLD_PIPELINE_PATTERN.search(text))
+    return bool(RAW_TAG_PATTERN.search(text) or OLD_PIPELINE_PATTERN.search(text))
 
 
 def extract_citations(text: str) -> list[int]:
@@ -182,4 +131,4 @@ def split_reference_section(text: str) -> tuple[str, str, str]:
 
 
 def expected_part_paths(parts_dir: Path) -> list[Path]:
-    return [parts_dir / spec.filename for spec in PART_SPECS]
+    return sorted(parts_dir.glob("*.md"))

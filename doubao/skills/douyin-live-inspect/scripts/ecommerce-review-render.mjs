@@ -174,7 +174,7 @@ async function main(argv = process.argv.slice(2)) {
         { code: 'INVALID_RENDER_CONTEXT' },
       );
   }
-  if (format === 'json' && !renderContext) {
+  if (!renderContext?.scoring_context) {
     throw Object.assign(
       new Error(
         'Run ecommerce-review-prepare for the original task and retry with its render_context_id; preserve the analysis source',

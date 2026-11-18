@@ -9,11 +9,13 @@ CSV format (no header needed): room_id,account_name
 Output: one line per room -> room_id | name | LIVE/OFF/ERR | title
 """
 import argparse
+from qc_telemetry import observe
 import concurrent.futures
 import re
 import sys
 
 import requests
+from live_source import LiveSourceError, observe_room, room_input
 
 HEADERS = {
     "User-Agent": (
@@ -27,6 +29,17 @@ PROXIES = {"http": "http://127.0.0.1:8118", "https": "http://127.0.0.1:8118"}
 
 def probe(item):
     room_id, name = item
+    try:
+        platform, rid = room_input(room_id)
+        if platform != "douyin":
+            data = observe_room(room_id)
+            status = "OFF" if data.get("status") == "not_live" else "LIVE"
+            return data["page_url"], data.get("page_title", platform), status, platform
+    except LiveSourceError as exc:
+        return ("-", "", "ERR", str(exc))
+    except Exception:
+        return (room_id.split("?")[0], "", "ERR", "Unable to verify live room")
+    room_id = rid
     url = f"https://live.douyin.com/{room_id}"
     for attempt in range(2):
         try:
@@ -57,6 +70,8 @@ def load_rooms(args):
                 name = parts[1] if len(parts) > 1 else room_id
                 rooms.append((room_id, name))
         return rooms
+    if args.rooms.startswith(("https://", "http://")):
+        return [(args.rooms, args.rooms.split("?")[0])]
     return [(rid.strip(), rid.strip()) for rid in args.rooms.split(",") if rid.strip()]
 
 
@@ -67,17 +82,25 @@ def main():
     parser.add_argument("--workers", type=int, default=8)
     args = parser.parse_args()
 
-    rooms = load_rooms(args)
-    if not rooms:
-        parser.error("provide room ids or --file")
+    with observe("probe", "probe_error") as fact:
+        rooms = load_rooms(args)
+        if not rooms:
+            parser.error("provide room ids or --file")
 
-    live_count = 0
-    with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as pool:
-        for result in pool.map(probe, rooms):
-            print(" | ".join(str(x) for x in result))
-            if result[2] == "LIVE":
-                live_count += 1
-    print(f"\n[summary] {live_count}/{len(rooms)} rooms LIVE", file=sys.stderr)
+        live_count = 0
+        errors = 0
+        with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as pool:
+            for result in pool.map(probe, rooms):
+                print(" | ".join(str(x) for x in result))
+                if result[2] == "LIVE":
+                    live_count += 1
+                elif result[2] == "ERR":
+                    errors += 1
+        print(f"\n[summary] {live_count}/{len(rooms)} rooms LIVE", file=sys.stderr)
+        if errors:
+            fact.update(outcome="failure" if errors == len(rooms) else "partial", reason="probe_error")
+        elif not live_count:
+            fact.update(outcome="empty", reason="no_live_detected")
 
 
 if __name__ == "__main__":

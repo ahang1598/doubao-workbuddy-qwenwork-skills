@@ -62,7 +62,7 @@ description: 对 A 股、港股和美股上市公司执行中文、可审计且�
 
 先按最终交付物路由，只加载选定工作流及其明确要求的资料。所有相对路径均以本 skill 根目录为基准。
 
-查询财务、市场、一致预期或公司行动数据前，按强制读取完整性协议完整读取 `references/source-tool-priority.md`。用户明确指定的工具、网站、文件或数据口径优先于 `seed_finance_search`；只有指定来源已实际尝试且成功取得、确认不适用或留下可审计的不可用记录后，才能调用 `seed_finance_search` 补充或降级。用户未指定时，`seed_finance_search` 仍作为默认高效检索入口。不得静默替换用户指定来源，不得声称调用未实际使用的工具。
+查询财务、市场、一致预期或公司行动数据前，按强制读取完整性协议完整读取 `references/source-tool-priority.md`。用户明确指定的工具、网站、文件或数据口径优先于 `seed_finance_lookup`；只有指定来源已实际尝试且成功取得、确认不适用或留下可审计的不可用记录后，才能调用 `seed_finance_lookup` 补充或降级。用户未指定时，结构化数据默认用 `seed_finance_lookup`；公告、研报等文本默认用 `seed_finance_search`，不可用时回退 `general_search`。不得静默替换用户指定来源，不得声称调用未实际使用的工具。
 
 每项任务都完整读取 `references/model-and-artifact-controls.md`。正式建模、公式工作簿或多步骤估值还完整读取：
 
@@ -117,7 +117,7 @@ description: 对 A 股、港股和美股上市公司执行中文、可审计且�
 9. 使用工作流指定脚本完成标准化、计算和验证，不用语言模型口算或手填第二套关键结果。未知必需输入保持空白或 `NA`；只有模块合约明确为“不适用”的可选项才写显式 0。
 10. 三表、DCF、LBO和可比公司正式任务均强制生成中文、可编辑、公式驱动的 `.xlsx`，并将该工作簿作为模型计算、质量审计和在线导入的唯一正式源文件。生成前必须按强制读取完整性协议完整读取 `sheet/SKILL.md`，并完整读取、遵循 `sheet/references/ref-financial-modeling-standards`，以生成符合专业金融财务规范的表格。LBO与可比公司默认只生成一个用户可见的表格产物：结论摘要、方法口径、数据来源、风险失效条件和模型检查必须内嵌同一工作簿，不得默认生成或交付Markdown、飞书文档或第二份报告；只有用户明确要求独立报告时才可附加，且不得形成第二套计算或替代该工作簿。本条的“飞书文档”不包括第15条强制交付的飞书在线表格。只解释方法且不输出预测、估值、倍数或回报的非正式问答可不生成工作簿。加载可用的电子表格能力并运行 `scripts/common/detect_workbook_engines.py`。统一使用OpenPyXL和公共公式语义编译器生成工作簿；不得因环境差异而临时拼接坐标公式。
 11. 生成工作簿前按`references/model-and-artifact-controls.md`建立`model-contract.json`、`formula-contract.json`、`cell-map.json`和布局锁，冻结prompt驱动、关键公式路径、场景、覆盖区域、单位恒等式、反向DCF和检查单元格；禁止语言模型直接手写关键A1坐标公式。
-12. 工作簿必须包含“数据来源”“历史数据与口径”“假设依据”和“模型检查”，关键输入通过来源编号或假设编号连接披露台账。保存后关闭并重新打开，以LibreOffice隔离重算并回读，然后只通过统一入口`scripts/quality/audit_model.py`检查prompt覆盖、公式穿透、场景错位、单位倍率、多证券恒等式、反向DCF残差及静态PASS；再运行现有结构、公式语义、直接产物和视觉审计。
+12. 工作簿必须包含“数据来源”“历史数据与口径”“假设依据”和“模型检查”，关键输入通过来源编号或假设编号连接披露台账。保存后由直接产物审计器完成重新打开、一次LibreOffice隔离重算、回读和结构快照；通过统一入口`scripts/quality/audit_model.py`检查prompt覆盖、公式穿透、场景错位、单位倍率、多证券恒等式、反向DCF残差及静态PASS，并完成公式语义和视觉审计。
 13. 按`references/model-and-artifact-controls.md`把原子检查整合为G0至G5。运行`scripts/quality/run_quality_gates.py`生成阶段结果、`quality-report.json`、`release-decision.json`和`artifact-manifest.json`；缺少机器结果不得手填PASS。
 14. 按 `references/delivery-package-contract.md` 打包。工作簿、来源披露、假设证据链、公式语义合约、布局映射、单元格追溯、回读快照和审计结果必须绑定同一最终工作簿SHA-256。最终回答只从`release-decision.json`读取结论权限；仅当G0至G5全部`PASS`且`conclusion_allowed=true`时，才输出目标价、估值区间、上涨下跌空间、MOIC/IRR、推荐倍数、“市场定价合理”或“模型完成”。
 15. 最终交付必须采用飞书在线表格。即使用户要求“做个 Excel”“提供 Excel”或“需要 `.xlsx` 文件”，也必须先按第10至14条生成并审计最终 `.xlsx`，再调用 `lark-cli sheets +workbook-import` 将该最终工作簿导入为飞书在线表格。导入对象必须是已完成隔离重算、直接产物审计、质量门检查和SHA-256锁定的最终 `.xlsx`；不得导入临时文件、未审计版本或与 `artifact-manifest.json` 哈希不一致的版本。导入成功并取得有效飞书在线表格链接后，必须调用当前环境可用的交付工具，将该链接实际提供给用户。根据运行环境实际提供的工具能力选择交付方式，不得依赖或写死特定工具名称。飞书在线表格是默认用户交付入口；`.xlsx` 保留为模型源文件、审计对象和导入源文件，可按平台能力或用户明确要求作为附件补充，但不得替代在线表格链接。只有G0至G5全部为 `PASS`、`release-decision.json.conclusion_allowed=true`、导入成功、已取得有效链接，且交付工具调用成功并确认用户可获得该链接时，才能声称交付完成。导入失败、链接无效、表格不可访问、不存在任何可用交付工具、工具调用失败或用户无法获得链接时，交付状态必须为 `INCOMPLETE`，仅报告失败环节、错误信息和修复动作，不得声称在线表格已交付。

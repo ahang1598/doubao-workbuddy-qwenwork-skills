@@ -29,7 +29,7 @@ function asr(task, fields) {
     doubao_user_id:task._telemetry?.owner?.doubao_user_id}, false);
   if (!extra) return null;
   extra.diagnostic_event_id = uuid5(extra.task_id,
-    ['segment_id','attempt','route_generation','phase'].map(k => extra[k] ?? '').join(':'));
+    ['segment_id','attempt','route_generation','phase', ...(extra.phase === 'query' ? ['query_status'] : [])].map(k => extra[k] ?? '').join(':'));
   return {command:EVENTS.asr.DIAGNOSTIC, extra};
 }
 function safeDiagnostic(event) {
@@ -48,7 +48,10 @@ export function asrFields(input, strict = true) {
       !/^[0-9a-f]{32}$/i.test(input.task_id || '') ||
       !strict && typeof input.task_id !== 'string') return;
   if (strict && (!UUID.test(input.diagnostic_event_id || '') ||
-      !({attempt:['started'],result:['success','failed'],route:['selected'],recovery:['success','failed']}[input.phase] || []).includes(input.outcome))) return;
+      !({attempt:['started'],result:['success','failed'],query:['success','failed'],route:['selected'],recovery:['success','failed']}[input.phase] || []).includes(input.outcome))) return;
+  if (strict && input.phase === 'query' &&
+      !(input.query_status === 'completed' ? input.outcome === 'success'
+        : ['failed','cancelled','timed_out','authentication_rejected'].includes(input.query_status) && input.outcome === 'failed')) return;
   const extra = strict
     ? {task_id:input.task_id,diagnostic_event_id:input.diagnostic_event_id,segment_id:input.segment_id}
     : {task_id:input.task_id};
@@ -56,7 +59,7 @@ export function asrFields(input, strict = true) {
     if (allowed.includes(input[key])) extra[key] = input[key];
     else if (strict && input[key] !== undefined) return;
   }
-  for (const key of ['segment_id','attempt','route_generation','recovery_elapsed_ms','http_status']) {
+  for (const key of ['segment_id','attempt','route_generation','recovery_elapsed_ms','http_status','subtitle_count']) {
     const value = input[key];
     if (Number.isInteger(value) && value >= 0 && value <= 2 ** 31 &&
         (key !== 'http_status' || value >= 400 && value <= 599)) extra[key] = value;
@@ -76,7 +79,7 @@ export function runtimeFields(input, stored = false) {
   const extra = stored ? enumFields(input, contract.DIAGNOSTIC_ENUMS) : contract.safeFields(input);
   if (!['failure_component','failure_reason','recovery_outcome'].every(k => extra[k])) return;
   if (stored) {
-    for (const key of ['json_line','json_column','reviewed_segments','unresolved_segments','recovery_attempts','bytes_received','bytes_total','prepare_attempts','recovery_elapsed_ms'])
+    for (const key of ['json_line','json_column','reviewed_segments','unresolved_segments','recovery_attempts','bytes_received','bytes_total','prepare_attempts','recovery_elapsed_ms','errno','winerror'])
       if (Number.isSafeInteger(input[key]) && input[key] >= 0) extra[key] = input[key];
     if (Number.isInteger(input.http_status) && input.http_status >= 400 && input.http_status <= 599) extra.http_status = input.http_status;
     if (typeof input.task_id === 'string' && /^[0-9a-f]{32}$/.test(input.task_id)) extra.task_id = input.task_id;

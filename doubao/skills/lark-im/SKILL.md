@@ -1,7 +1,7 @@
 ---
 name: lark-im
 version: 1.0.0
-description: "飞书即时通讯：收发消息和管理群聊。发送和回复消息、搜索聊天记录、管理群聊成员、上传下载图片和文件、管理表情回复、发送应用内/短信/电话加急、发送交互卡片（Interactive Card）。当用户需要发消息、查看或搜索聊天记录、读取消息分享链接快照、下载聊天中的文件、查看群成员、搜索群、创建群聊或话题群、管理标记数据、管理 Feed 置顶（添加/移除/查询置顶会话）、管理标签数据、发送交互卡片时使用。"
+description: "飞书即时通讯：收发消息和管理群聊。发送和回复消息、搜索聊天记录、管理群聊成员（含用户、AE / Agent Employee 和应用机器人）、上传下载图片和文件、管理表情回复、发送应用内/短信/电话加急、发送交互卡片（Interactive Card）。当用户需要发消息、查看或搜索聊天记录、创建或读取消息分享链接快照、下载聊天中的文件、查看群成员、搜索群、创建群聊或话题群、管理标记数据、管理 Feed 置顶（添加/移除/查询置顶会话）、管理标签数据、发送交互卡片时使用。"
 metadata:
   requires:
     bins: ["lark-cli"]
@@ -150,6 +150,8 @@ lark-cli im <resource> <method> [flags] # 调用 API
 
 ### chat.members
 
+  - `create` — 将用户、AE 或应用机器人拉入已有群。调用方使用当前用户身份；目标为用户或 AE 时使用 `member_id_type=open_id`，目标为应用机器人时使用 `member_id_type=app_id`。调用方必须已在群内，并满足群成员管理权限。
+
 ### chat.user_setting
 
   - `batch_query` — 批量查询当前用户在群内的个人偏好设置 (e.g. `is_muted` mutes normal messages, `is_mute_at_all` mutes @all messages); up to 10 chats per request. Identity: `user` only (`user_access_token`); the caller must be in each target chat.
@@ -176,6 +178,7 @@ lark-cli im <resource> <method> [flags] # 调用 API
   - `get` — 获取群成员发言权限。Identity: supports `user` only; the caller must be in the target chat and belong to the same tenant.
 ### message_links
 
+  - `create` — Create a user-requested sharing snapshot, not a navigation link. Verify the selected messages' chat/thread source before creating.[Must-read](references/lark-im-applinks.md#create-a-message-sharing-link)
   - `query` — Query message sharing-link content. Read the copied snapshot using the full message link URL; do not infer chronology from array position; check chat_info.is_authorized separately.[Must-read](references/lark-im-applinks.md#read-message-link-content)
 
 ### resources
@@ -245,6 +248,7 @@ lark-cli im <resource> <method> [flags] # 调用 API
 | `+messages-read-status` | user: `im:message:readonly` (recommended), `im:message`, or `im:message:get_as_user` |
 | `+message-read-users` | user: `im:message:readonly` (recommended), `im:message`, `im:message:basic`, or `im:message:get_as_user`; bot: `im:message:readonly` |
 | `message_links.query` | `im:message.message_link:read` |
+| `message_links.create` | `im:message` |
 | `resources.download` | `im:message`, `im:message:readonly`, or `im:message.history:readonly` |
 | `messages.read_status` | `im:message:readonly` (recommended), `im:message`, or `im:message:get_as_user` |
 | `messages.delete` | `im:message:recall` |

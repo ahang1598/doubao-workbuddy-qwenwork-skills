@@ -1,0 +1,9 @@
+{
+  "shareholder_payouts": {
+    "FY2025": {
+      "cash_dividends": 30,
+      "cash_buybacks": 20,
+      "non_cash_capital_commitments": 25
+    }
+  }
+}

@@ -8,9 +8,11 @@
 
 首次领取前读齐本页及调度协议；正常判定不查源码或重复查询命令帮助。当前 Agent 默认串行，每批最多20段，不限制批内媒体时长；有段即判。第一次执行 `review-next --limit 20 --request-id <唯一ID>`，后续直接使用提交返回的 next。保留同一 dispatcher_id，默认 main。
 
-读取返回的 segments 和 rules；规则已完整读过且版本一致时复用缓存。大结果优先完整读取 result_file，无法读取时只沿 next_page_argv 恢复。仅把 context_subtitles 用作语境，命中引用当前片段的 evidence_ids。
+读取返回的 segments 和 rules；规则已完整读过且版本一致时复用缓存。大结果优先完整读取 result_file，无法读取时只沿 next_page_argv 恢复。仅把 context_subtitles 用作语境。命中引用逐字复制当前片段的 evidence_contract，不按相邻片段或序号规律推算 ID；speech 命中引用字幕、image 命中引用已查看的图片，两渠道同时命中须分别有证据。
 
-按实际内容应用核心规则，普通商品带货追加 ecommerce，投资分析或投顾内容追加 finance。追加时使用 rules_load_contract，执行 `rules-load --next` 并直接使用新合同。已经加载的专项无需重复追加。
+只用宿主图片工具打开本批各片段实际返回的 `frames[].path`（相对于任务目录）。列表为空时跳过读图，不按时间点推算文件名；只把成功查看的图片 ID 填入 `images_viewed`。
+
+按[规则指引](rules.md#追加专项)核对实际对象和业务语境，追加适用的 ecommerce 或 finance；专项已加载不代表当前片段必然适用。追加时原样使用 rules_load_contract.argv（含本批上限），直接使用新合同，不扩大首批等待新内容。已经加载的专项无需重复追加。
 
 ## 精简提交
 
@@ -34,15 +36,19 @@
 
 旧任务回执缺少 submit_command_argv 时，先核实当前加载的 Lite 根目录和原 task_dir，再从旧 submit_argv 中取 `review-submit` 起的全部参数，包括原 request-id，按上述方式执行。旧 retry_argv 和 recovery_argv 分别从 `review-submit`、`review-recover` 起取参数；旧 snapshot_check.argv 从 `status` 起取参数。若原命令是否执行成功不明，先按原 request-id 查询 review-state；不能因路径失效重新领取或创建任务。
 
-开启 image_inspection 的任务使用返回的完整合同，实际查看图片并填写 images_viewed。仅字幕任务的检测方式为“字幕检测”。旧完整 rules 和 no_hit_rule_ids 仍可提交，沿用其已有结构，不混用 reviewed 短格式。
+新直播默认每分钟画面抽检，开启 image_inspection 的任务使用返回的完整合同，实际查看图片并填写 images_viewed。未抽到图时保留 image=insufficient，不能仅因缺图填 not_applicable；混合规则 speech=no_hit、image=insufficient 时，顶层也填 insufficient，语音已有真实命中则保留 hit。同类错误一次修复本段所有受影响规则。仅字幕任务的检测方式为“字幕检测”。旧完整 rules 和 no_hit_rule_ids 仍可提交，沿用其已有结构，不混用 reviewed 短格式。
 
 ## 结束与异常
 
+- 直播未结束且用户未明确停止时，持续领取、判定、提交或按回执等待；无风险、连续无命中、空批次、“检测够久”或提前出报告均不能触发 stop 或结束循环。进度播报后继续执行，不等用户回复，也不询问“是否继续”。
+- 长期偏好、历史停止习惯和 Agent 自拟理由不是本次用户停止指令，不得填入 `--user-instruction`。自然结束须同时确认 `source_end_reason=offline` 与 `live_source_status=not_live`；收尾时限只在停止采集后适用。
+- 运行时到达用户预设时长、云电脑采集上限或故障／资源保护边界时沿原回执收尾；只有宿主实际提示额度不足才允许 `--reason execution_limit`，不能把主观判断或长期偏好包装成额度不足。
+
 空批次时按 `next_action` 自动续办：返回 status 时，云电脑执行 wait_command_argv，由 status --wait-seconds 30 等待内容或状态变化；本地最多等3秒后查询状态；返回 review-next 则用新的 request-id 领取；有片段和合同才直接提交；返回 report 才转报告阶段。顶层 continuation_instruction 与 next 内实际动作共同描述本次续办；旧回执说明与动作冲突时以实际 next_action 为准。不要反复重放同一空批次请求来等待新内容，旧 request-id 只恢复原回执。
 
-用户未回复、阶段性进度已发出、直播运行较久均不构成停止条件；不新增“是否继续”的选择，不把继续判定交还给用户触发。直播仍在采集时持续循环，进度播报后继续执行。用户明确停止时先 stop，再按 next_action 按实时策略的无进展窗口和总上限处理剩余片段；仅明确舍弃剩余检测才立即停止。运行时已结束的批次直接进入下一步，不补交或重采集。
+用户明确停止时先 stop，再按 next_action 和实时策略处理剩余片段；仅明确舍弃剩余检测才立即停止。运行时已结束的批次直接进入下一步，不补交或重采集。
 
-积压、批次无进展和结束收尾统一按[实时策略](../SKILL.md#实时策略)执行：未领取积压超过 3 分钟保留最近 2 分钟；已领取批次 120 秒无成功提交只跳过该批次未完成片段并继续下一批；来源结束/用户停止后，收尾使用 120 秒无进展窗口及有限恢复，总上限为本地15分钟、新云电脑3分钟，排空或恢复耗尽后进入报告。轮询和修复失败不刷新预算；保存的片段不重判。空批次仍按回执续办，不等用户。未领取片段在 ASR 最终结束、无有效字幕且关闭画面检测时由运行时记录未检测及证据缺口，不创建无证据判定。
+积压、批次无进展和结束收尾统一按[实时策略](../SKILL.md#实时策略)执行：未领取积压保留排队，不按时长跳过；主 Agent 已领取合同不因120秒无提交失效，继续提交原批次；异常子任务超时取消后保留片段重领；来源结束/用户停止后，收尾使用 120 秒无进展窗口及有限恢复，总上限为本地15分钟、新云电脑3分钟，排空或恢复耗尽后进入报告。轮询和修复失败不刷新预算；保存的片段不重判。未领取片段在 ASR 最终结束、无有效字幕且关闭画面检测时由运行时记录未检测及证据缺口，不创建无证据判定。
 
 交付质检报告，并按 recap_input 和 submission_contract 完成复盘。复盘最多三次明确失败尝试；360 秒仅提示检查分析进展或原草稿，不自动判失败，迟交正文仍需完整校验；terminal_failure 时交付真实失败说明并确认 failed/chat，不重开检测、不无限重试。
 
@@ -78,9 +84,9 @@ repair 的 retry_command_argv 保留原 --next、dispatcher、规则版本及批
 
 直播采集失败后查询原 task_dir 的 `status`。默认返回简短 `capture_failure`，只在报告说明缺失范围和原因；不交付诊断附件。用户明确要求排查时才使用 `status --include-diagnostics`，参见 [诊断按需提供](delivery.md#诊断按需提供)，然后继续原 `next_action`。
 
-运行中采集中断后的来源解析由原采集进程自动恢复：最多 6 次、总计最多 60 秒，等待和网络请求均可中断；不由 Agent 另开任务或叠加重试。恢复期间继续处理已采集内容。预算耗尽称“采集中断、未确认停播”，不能称“直播已结束”；仅 `source_end_reason=offline` 且 `live_source_status=not_live` 时可称停播。`source_ended`、`capture_status=ended/failed`、收尾阶段或报告就绪均不能单独作为停播依据；此规则同时适用于中间进度播报和最终交付。冻结任务只恢复收尾。
+抖音、B 站和小红书直播已收到媒体后断流，由原任务间隔重连，工作台显示重连时继续处理已有内容。恢复后沿原时间轴续录，报告列出未录区间；单段字幕或抽帧失败仅影响对应证据。等待期间仍响应用户停止和任务时限，不另开任务。仅 `source_end_reason=offline` 且 `live_source_status=not_live` 时可称停播。`source_ended`、`capture_status=ended/failed`、收尾阶段或报告就绪均不能单独作为停播依据；此规则同时适用于中间进度播报和最终交付。冻结任务只恢复收尾。
 
-- `STREAM_RETRY_EXHAUSTED` 只表示连续尝试未取得新片段；`NO_CAPTURED_CONTENT` 表示缺少可检测内容；`stop_reason=source_ended` 是失败也会触发的收尾信号。它们都不能证明停播，HTTP 404、EOF 和零媒体也不能；停播结论须有解析器明确返回 `not_live` 的证据。
+- `STREAM_RETRY_EXHAUSTED` 只表示连续尝试未取得新片段；`NO_CAPTURED_CONTENT` 表示缺少可检测内容；`stop_reason=source_ended` 是失败也会触发的收尾信号。重试耗尽不能直接称为页面解析失败。它们都不能证明停播，HTTP 404、EOF 和零媒体也不能；停播结论须有解析器明确返回 `not_live` 的证据。
 - `DOUYIN_FETCH_FAILED` 属于页面解析；没有此码不能排除拉流阶段的网络、TLS、HTTP 或编码器错误。以 `assessment` 和安全诊断为依据，明确的最终异常优先于历史尝试，最近保存的 `attempts` 只作辅助证据；不把某一次错误推广到全部尝试。
 - 明确 DNS、TLS、连接或网络超时错误时，按实际诊断说明网络原因；用户要求定位时参见[受限网络环境](startup.md#受限网络环境)。沿原任务收尾，不重启冻结任务或手工补报。
 - 最终异常和进程诊断均无明确证据时说明原因未知；临时目录已消失不能反推根因。不输出原始日志、来源地址、请求头、凭证或环境变量全集。

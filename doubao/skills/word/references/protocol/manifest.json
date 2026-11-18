@@ -45,6 +45,12 @@
       "depends_on": ["local-update"]
     },
     {
+      "keyword": "move",
+      "function": "在同一文档内移动完整段落、标题、列表项或整表，调整内容顺序",
+      "file": "cli/move.md",
+      "depends_on": ["local-update"]
+    },
+    {
       "keyword": "append",
       "function": "在尾随连续分节符之前追加合法正文 block",
       "file": "cli/append.md",

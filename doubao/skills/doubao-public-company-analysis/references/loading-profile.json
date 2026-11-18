@@ -1,0 +1,38 @@
+{
+  "version": "3.0.0",
+  "initial_files": [
+    "SKILL.md"
+  ],
+  "mode_references": {
+    "快速判断": [
+      "references/source-policy.md",
+      "references/output-structure.md"
+    ],
+    "聚焦分析": [
+      "references/source-policy.md",
+      "references/financial-quality.md",
+      "references/output-structure.md"
+    ],
+    "完整研究": [
+      "references/source-policy.md",
+      "references/analysis-framework.md",
+      "references/business-model-playbooks.md",
+      "references/financial-quality.md",
+      "references/valuation-methods.md",
+      "references/output-structure.md"
+    ]
+  },
+  "reference_policy": "read_only_what_the_current_question_requires",
+  "delivery_tiers": {
+    "direct": {
+      "format": "as_requested_or_direct_answer"
+    },
+    "brief": {
+      "format": "as_requested_or_focused_analysis"
+    },
+    "full": {
+      "format": "as_requested_by_user_and_capability"
+    }
+  },
+  "path_base": "skill_root"
+}

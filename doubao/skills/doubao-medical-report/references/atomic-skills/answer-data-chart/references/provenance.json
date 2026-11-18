@@ -1,0 +1,92 @@
+{
+  "snapshot": "2026-11-05",
+  "origin": "extracted",
+  "note": "保留相关规范与运行资源；飞书/renderer 按宿主适配，关联父流程的默认文种不提升为全局要求。",
+  "files": [],
+  "localRevision": "svg-priority.20261110",
+  "adaptations": [
+    {
+      "date": "2026-11-09",
+      "scope": "一种正式载体；主要成品与内部渲染/台账/图表源文件分开；额外交付仅按用户明确要求",
+      "changedFiles": [
+        "SKILL.md",
+        "references/delivery-contract.md"
+      ],
+      "originalSourceFingerprintsPreserved": true
+    },
+    {
+      "date": "2026-11-09",
+      "scope": "用户澄清：只限制正式交付数量与格式，撤回强制将说明、记录合并进成品的要求",
+      "changedFiles": [
+        "SKILL.md",
+        "references/delivery-contract.md"
+      ]
+    },
+    {
+      "date": "2026-11-09",
+      "scope": "生成前判断可视化收益，省略重复列表式图形，保留有效比较/关系/交互",
+      "changedFiles": [
+        "SKILL.md",
+        "references/visual-value.md",
+        "references/mode-echarts.md"
+      ],
+      "scriptsAndAssetsUnchanged": true
+    },
+    {
+      "date": "2026-11-10",
+      "scope": "交付物的份数、格式及版本服从用户任务；一份成品仅为单项任务默认，不限制用户要求的多份交付；过程材料不自动附送",
+      "changedFiles": [
+        "SKILL.md",
+        "references/delivery-contract.md"
+      ],
+      "originalSourceFingerprintsPreserved": true
+    },
+    {
+      "date": "2026-11-10",
+      "scope": "医学报告包可视化改为程序化 SVG 优先；移除生成式图片分支及位图/Canvas 回退，精确数值与响应式布局要求保留",
+      "sourceFingerprintsPreserved": true
+    },
+    {
+      "date": "2026-11-10",
+      "scope": "补充SVG直接构造与临时资源边界，区分不必要的对话确认、平台强制审批和浏览器许可"
+    }
+  ],
+  "retiredOriginalFiles": [
+    {
+      "source": "新增子skills-20261105/来源/doubao-visualization_20261105_150506_000/references/mode-echarts.md",
+      "target": "references/mode-echarts.md",
+      "sha256": "bcc56308c780f4eb322002d08c760a9501abf64347bd7eb63fb8746c0412af41",
+      "materialized_sha256": "81f60b2524ccd8264f112cb1ded3a79515c483dff43a6222ec3397498605aff2"
+    },
+    {
+      "source": "新增子skills-20261105/来源/doubao-visualization_20261105_150506_000/references/echarts-option-spec.md",
+      "target": "references/echarts-option-spec.md",
+      "sha256": "7c2c01fd96b21a06169a73262fae3f3aad145a0a1c5074602984c1c0fd57c5bc",
+      "materialized_sha256": "7c2c01fd96b21a06169a73262fae3f3aad145a0a1c5074602984c1c0fd57c5bc"
+    },
+    {
+      "source": "新增子skills-20261105/来源/doubao-visualization_20261105_150506_000/references/echarts-web-pc-spec.md",
+      "target": "references/echarts-web-pc-spec.md",
+      "sha256": "6500fbdf107fcd24a6fe8184b02fb4d8a87b9d76cdb0c6683baaecdfb64cac40",
+      "materialized_sha256": "f2e5714ab885b4419f197fc706f4d110cb41d3e06a7f72e0ba4ac7f7bae6057d"
+    },
+    {
+      "source": "新增子skills-20261105/来源/doubao-visualization_20261105_150506_000/references/echarts-web-pc-sunburst-reference.md",
+      "target": "references/echarts-web-pc-sunburst-reference.md",
+      "sha256": "ab2d27f4d018ef4e7ccc590a5af93f0e4e2c3bb0011cba08dd6a9063bbe6c9a0",
+      "materialized_sha256": "ab2d27f4d018ef4e7ccc590a5af93f0e4e2c3bb0011cba08dd6a9063bbe6c9a0"
+    },
+    {
+      "source": "新增子skills-20261105/来源/doubao-visualization_20261105_150506_000/references/echarts-web-pc-gauge-reference.md",
+      "target": "references/echarts-web-pc-gauge-reference.md",
+      "sha256": "23a768b7b35577beebb746030edeb74c8a551f15cfebd35a6076c0367b599cbe",
+      "materialized_sha256": "23a768b7b35577beebb746030edeb74c8a551f15cfebd35a6076c0367b599cbe"
+    },
+    {
+      "source": "新增子skills-20261105/来源/doubao-visualization_20261105_150506_000/references/echarts-source.md",
+      "target": "references/echarts-source.md",
+      "sha256": "c63448b0c7f5b8c29bb66ad51429c5c7eb5f825956dd3e9092f181c474ab5c3e",
+      "materialized_sha256": "c63448b0c7f5b8c29bb66ad51429c5c7eb5f825956dd3e9092f181c474ab5c3e"
+    }
+  ]
+}

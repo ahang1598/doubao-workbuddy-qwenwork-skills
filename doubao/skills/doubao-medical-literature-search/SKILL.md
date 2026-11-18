@@ -58,7 +58,7 @@ description: "医学文献检索分析 Skill。用户需要查找临床指南、
 - `response_mode=full_report` 且用户未指定格式、也未命中综述论文分支时，调用平台 `lark-doc` 的 `online-doc` 创建飞书文档。综述论文按上一节默认路由 `word`；PPT/幻灯片调用平台 `ppt` Skill，Word/docx 调用平台 `word` Skill；用户明确要求 Markdown 或 Excel/xlsx 时按指定格式交付。参数遵循当前工具合同。
 - 用户要求创建表格、对照表、清单或矩阵时，除非明确指定 `Excel` 或 `xlsx`，一律通过 `lark-doc` 创建飞书文档，在文档中插入所需表格，并用常规正文补充结论、解读、证据边界和来源链接；不要只在聊天中贴表格。
 - `full_report` 使用 UTF-8 BOM 的六列 literature-log CSV：`citation_number,original_title,journal_or_institution,year,url,journal_rank_2025`。如果需要写 CSV 文件，先 Read 再 Write；新建时先 Read 模板，已有文件每次批量写入前先 Read 当前内容，再 Write。按六列结构批量追加，新行的 `journal_rank_2025` 先留空，由匹配脚本写入。台账保留题录、原始链接和期刊匹配结果。脚本自行读入 CSV 再写入，已满足先 Read 再 Write 的要求，不必在调用脚本前额外 Read。`quick_answer` 不创建 CSV。
-- 飞书在线文档按模板生成完整 XML 后创建；载荷受限时按实际需要分块。交付前简要确认正文、表格和来源链接，按实际需要一次回读即可。
+- 飞书在线文档按模板生成完整 XML 后创建；载荷受限时按实际需要分块。
 - 聊天回答直接给出结论、相关风险和依据，篇幅按问题需要展开，不设 Skill 预定字数、句数或要点数量上限；用户明确限制篇幅时按用户要求。优先在相关句子的标点之后，用角标引用最重要的依据。 `full_report` 默认交付聊天回答和飞书文档链接。XML、CSV 和原始草稿仅作内部过程文件保留，`present_files` 不选择这些文件；用户明确要求 PPT、Word 等最终格式时继续按相应路由交付最终产物。 `professional` 模式可按任务给相关延伸；`patient` 模式聚焦当前问题。`quick_answer` 保留免责声明，并把“是否需要我进一步生成完整的文献检索调研报告？”作为最后一句。
 
 ## 执行要求
@@ -128,7 +128,7 @@ description: "医学文献检索分析 Skill。用户需要查找临床指南、
 4. 根据问题精读核心证据，类型、证据级别、结果与局限直接依据实际核实原文用于正文。本次拟纳入文献整理后，默认运行 `node scripts/match-journal-rank.js --csv <literature-log.csv> --in-place` 一次批量匹配；后续新增需要匹配的期刊时再按需执行。脚本 stdout 返回 JSON，其中 `results` 与 CSV 逐行对应，包含 `citation_number`、`journal_or_institution`、`url`、`journal_rank_2025`、`status`、`matchedJournal`；可直接按编号和 URL 用于正文与参考文献表，无需额外 Read CSV 获取期刊级别。
 5. 普通调研报告使用文献写入 CSV 时已按行顺序生成的 `citation_number`，直接综合结论并规划“总结高亮块 -> 第一章深度回答用户问题 -> 第二章起补充证据骨架”；不再为正文顺序单独规划或回填编号。投稿综述按主题论证组织论文；国标顺序编码制按首次引用顺序编排展示编号，并保留内部编号映射。仅在需要图表时读取 `references/synthesis-and-visualization.md`；正文锚文本由原标题生成。
 6. 投稿综述按 `references/review-manuscript-and-citations.md` 整理稿件并交 `word` 生成。普通调研报告读取 `references/output-and-qa.md`；默认飞书文档必须在生成任何 XML 前读取 `references/lark-doc-delivery-reliability.md` 和 `assets/feishu-doc-template.xml`。第一章固定用于直接、深入回答用户问题，用户指定的表格、清单或深度解读也放在第一章；第二章起与其重复的内容可合并、缩减或删除，第八章再精简披露检索策略与证据范围，随后给出完整参考文献。非默认格式再读取 `references/output-format-routing.md`。
-7. 按目标格式创建文档，简要确认正文、表格与来源链接；需要时一次回读。
+7. 按目标格式创建文档。
 8. 默认在聊天中回答问题并给出飞书文档链接；用户要求其他最终格式时，`present_files` 只选择最终文档或文件链接，参数按环境工具合同。XML、CSV 和原始草稿内部保留，无需结束清理。
 
 ## 文件路由
@@ -137,8 +137,8 @@ description: "医学文献检索分析 Skill。用户需要查找临床指南、
 - `references/core-workflow.md`：任务分类、问题拆解、关键词扩展、检索批次、上下文预算和完成条件。
 - `references/evidence-sources-and-appraisal.md`：检索顺序、证据准入、CSV、原文阅读、Oxford CEBM 2009 分级和期刊级别匹配。
 - `references/synthesis-and-visualization.md`：证据脉络思维导图、关键研究里程碑时间线图、逐篇文献解读和飞书 diagram 安全规则。
-- `references/output-and-qa.md`：默认飞书结构、正文/参考文献链接、最终回复格式和最小 QA。
-- `references/lark-doc-delivery-reliability.md`：平台产物路由、飞书创建与简要交付确认。
+- `references/output-and-qa.md`：默认飞书结构、正文/参考文献链接、最终回复格式和交付。
+- `references/lark-doc-delivery-reliability.md`：平台产物路由、飞书创建与交付。
 - `references/output-format-routing.md`：PPT、Word/docx、Markdown、Excel/xlsx、飞书内表格和失败兜底的格式路由。
 - `assets/literature-log-template.csv`：UTF-8 BOM 六列题录与期刊级别模板；`citation_number` 是正文、图表和参考文献的稳定编号。
 - `assets/journal-rank-index.json` 与 `scripts/match-journal-rank.js`：本地期刊级别 CSV 一次批量匹配与 stdout JSON 结果。

@@ -95,6 +95,9 @@ function formalCommandMetadata(name, mode, context = {}) {
     inspection_mode: mode,
     record_type: "command",
     feature:
+      feature === 'live_recap' && ['video_single','video_batch'].includes(safe.workflow_kind)
+        ? safe.workflow_kind === 'video_batch' ? 'video_batch' : 'video_inspection'
+        :
       feature === "video_inspection" && safe.workflow_kind === "video_batch"
         ? "video_batch"
         : feature,
@@ -218,10 +221,12 @@ function commandMetadata(command, context = {}) {
     delete safe.startup_stage;
     delete safe.startup_outcome;
   }
-  const feature = COMMAND_FEATURES[command];
+  let feature = COMMAND_FEATURES[command];
   const workflow =
     safe.workflow_kind ??
     (["live_inspection", "live_recap"].includes(feature) ? "live" : "unknown");
+  if (feature === "inspection" || (feature === 'live_recap' && workflow.startsWith('video_'))) feature = workflow === "video_batch" ? "video_batch"
+    : workflow === "video_single" ? "video_inspection" : workflow === "live" ? "live_inspection" : "task_management";
   return {
     product: "douyin-live-inspect",
     schema_version: 2,
@@ -287,6 +292,8 @@ function fitExtra(input) {
     "startup_attempt_id",
     "source_page_url",
     "source_http_status",
+    "source_handoff_stage",
+    "source_handoff_error",
     "source_failure_kind",
     "startup_stage",
     "startup_outcome",

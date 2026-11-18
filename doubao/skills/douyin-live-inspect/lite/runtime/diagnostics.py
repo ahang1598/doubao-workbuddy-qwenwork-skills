@@ -19,6 +19,10 @@ def capture_process_details(stderr, exit_code):
         return result
     for pattern, category in (
             (b'unknown encoder', 'encoder_unavailable'),
+            (b'no such filter:', 'ffmpeg_configuration_error'),
+            (b'unrecognized option ', 'ffmpeg_configuration_error'),
+            (b'is not a suitable output format', 'ffmpeg_configuration_error'),
+            (b'requested output format', 'ffmpeg_configuration_error'),
             (b'permission denied', 'permission_denied'),
             (b'certificate verify failed', 'tls_error'),
             (b'connection timed out', 'network_timeout'),
@@ -104,10 +108,17 @@ def cleanup_actions(actions, primary=None):
     return primary
 
 
+def capture_failed(task):
+    # Storage evidence survives processing-only recovery; ordinary cancellation is not a failure.
+    return task.get('capture_status') == 'failed' or (
+        task.get('capture_status') == 'stopped'
+        and type((task.get('capture_diagnostic') or {}).get('sqlite_errorcode')) is int)
+
+
 def failure_label(task):
-    capture_failed = task.get('capture_status') == 'failed'
+    capture_failure = capture_failed(task)
     worker_failed = task.get('worker_status') == 'failed'
-    if not capture_failed and not worker_failed:
+    if not capture_failure and not worker_failed:
         return ''
     for key in ('capture_diagnostic', 'failure_diagnostic', 'stream_diagnostic'):
         diagnostic = task.get(key) or {}
@@ -115,30 +126,36 @@ def failure_label(task):
             return '内存不足，任务处理失败'
         if type(diagnostic.get('sqlite_errorcode')) is int:
             return '本地存储异常，采集已停止'
-    if capture_failed and task.get('capture_error')=='BROWSER_SOURCE_TIMEOUT':
+    if capture_failure and task.get('capture_error')=='BROWSER_SOURCE_TIMEOUT':
         return '浏览器补流等待超时，未取得可采集内容'
-    if capture_failed and (task.get('capture_error') in {
-            'XHS_FETCH_FAILED','XHS_PAGE_UNAVAILABLE','XHS_AUTH_REQUIRED','XHS_STREAM_UNAVAILABLE','XHS_LIVE_STATE_UNKNOWN','BROWSER_SOURCE_TIMEOUT','BROWSER_SOURCE_TASK_CLOSED','INVALID_BROWSER_SOURCE','DOUYIN_PAGE_UNAVAILABLE', 'DOUYIN_FLV_UNAVAILABLE', 'DOUYIN_FETCH_FAILED'} or
+    if capture_failure and (task.get('capture_error') in {
+            'BILI_FETCH_FAILED', 'BILI_PAGE_UNAVAILABLE', 'BILI_AUTH_REQUIRED', 'BILI_STREAM_UNAVAILABLE', 'BILI_LIVE_STATE_UNKNOWN', 'BILI_ROOM_UNAVAILABLE', 'BILI_REPLAY_UNSUPPORTED', 'XHS_FETCH_FAILED','XHS_PAGE_UNAVAILABLE','XHS_AUTH_REQUIRED','XHS_STREAM_UNAVAILABLE','XHS_LIVE_STATE_UNKNOWN','BROWSER_SOURCE_TIMEOUT','BROWSER_SOURCE_TASK_CLOSED','INVALID_BROWSER_SOURCE','DOUYIN_PAGE_UNAVAILABLE', 'DOUYIN_FLV_UNAVAILABLE', 'DOUYIN_FETCH_FAILED'} or
             (not task.get('capture_error') and
              (task.get('capture_diagnostic') or {}).get('category') == 'DouyinResolveError')):
         return '直播页面或流地址解析失败'
-    return '采集失败' if capture_failed else '媒体处理失败'
+    return '采集失败' if capture_failure else '媒体处理失败'
 
 
 def capture_status_text(task):
     status = task.get('capture_status', 'pending')
-    if status == 'failed':
+    if capture_failed(task):
         return failure_label(task)
     if status == 'ended' and task.get('kind', 'live') == 'live':
         return ('直播已结束' if task.get('source_end_reason') == 'offline'
                 and task.get('live_source_status') == 'not_live' else '采集已结束，未确认直播停播')
+    if task.get('kind','live')=='live' and status in {'pending','running'}:
+        if task.get('source_refresh_required'):return '正在重连，等待浏览器补流，未确认停播'
+        if task.get('capture_reconnecting'):return '录制中断，正在原任务重连，未确认停播'
+        if status=='pending':return '正在准备处理能力，尚未采集'
+        if task.get('live_source_status','unknown')=='unknown':return '正在获取直播源，尚未确认收到媒体'
+        if not (task.get('capture_active_span') or task.get('capture_last_input_at')):return '正在连接直播流，尚未确认收到媒体'
+        return '已收到媒体，采集中；质检进度以判定结果为准'
     return {'pending':'待开始', 'running':'进行中', 'stopped':'已停止', 'ended':'已结束'}.get(status, '状态未知')
 
 
 # Business recovery categories are needed even when telemetry is disabled.
-RECOVERY_CODES={'none','ASR_RUNTIME_UNAVAILABLE','ASR_BACKUP_TIMEOUT','ASR_RECOVERY_INTERRUPTED','ASR_RETRY_EXHAUSTED',
-                'ASR_EMPTY_SPEECH','ASR_AUDIO_UNAVAILABLE','ASR_PROCESS_EXITED','ASR_INITIALIZE_FAILED',
-                'ASR_INITIALIZE_TIMEOUT','ASR_STOP_TIMEOUT','ASR_RUNTIME_INCOMPATIBLE','ASR_PROTOCOL_ERROR','ASR_AUDIO_DROPPED','ASR_TIMEOUT','ASR_CANCELLED','ASR_RECOVERY_FAILED'}
+from runtime.context import _CONTRACTS
+RECOVERY_CODES = frozenset(_CONTRACTS['ASR_ENUMS']['recovery_code'])
 
 BUSINESS_ERRORS = ['INVALID_INPUT', 'PERMISSION_DENIED', 'TASK_BINDING_MISMATCH', 'OUT_OF_MEMORY', 'OPERATION_FAILED', 'ABORTED', 'RUNTIME_UNAVAILABLE',
     'LOCAL_VIDEO_PATH_REQUIRED', 'VIDEO_SOURCE_UNAVAILABLE', 'VIDEO_SOURCE_CHANGED', 'VIDEO_INVALID', 'VIDEO_START_FAILED',

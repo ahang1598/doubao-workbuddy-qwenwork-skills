@@ -6,6 +6,13 @@ const { ENUMS, DIAGNOSTIC_ENUMS, ERRORS, ERROR_DETAILS } = require('./contracts.
 
 const { lite: COMMAND } = require('../telemetry-events.json');
 const SOURCE_ERRORS = [
+  'BILI_FETCH_FAILED',
+  'BILI_PAGE_UNAVAILABLE',
+  'BILI_AUTH_REQUIRED',
+  'BILI_STREAM_UNAVAILABLE',
+  'BILI_LIVE_STATE_UNKNOWN',
+  'BILI_ROOM_UNAVAILABLE',
+  'BILI_REPLAY_UNSUPPORTED',
   'XHS_FETCH_FAILED',
   'XHS_PAGE_UNAVAILABLE',
   'XHS_AUTH_REQUIRED',
@@ -21,6 +28,7 @@ const CAPTURE_ERRORS = [
   'http_error',
   'process_exit',
   'encoder_unavailable',
+  'ffmpeg_configuration_error',
   'permission_denied',
   'tls_error',
   'network_timeout',
@@ -32,6 +40,7 @@ const CAPTURE_ERRORS = [
 const DIAGNOSTIC_NUMBERS = [
   'json_line',
   'json_column',
+  'review_elapsed_ms',
   'reviewed_segments',
   'unresolved_segments',
   'recovery_attempts',
@@ -45,7 +54,10 @@ const DIAGNOSTIC_NUMBERS = [
   'child_exit_code',
 ];
 const DIAGNOSTIC_FIELDS = [
+  'review_phase',
+  'review_timeout_state',
   'recap_input_code',
+  'recap_validation_reason',
   'download_source',
   'network_failure_kind',
   'watchdog_stage',
@@ -54,6 +66,7 @@ const DIAGNOSTIC_FIELDS = [
   'http_status',
   'diagnostic_event_id',
   'prepare_stage',
+  'prepare_operation',
   'recovery_outcome',
   'recovery_code',
   'failure_component',
@@ -76,12 +89,16 @@ const DIAGNOSTIC_FIELDS = [
 
 const COMMAND_FEATURES = {
   [COMMAND.START]: 'live_inspection',
+  [COMMAND.REVIEW_NEXT]: 'inspection',
+  [COMMAND.REVIEW_SUBMIT]: 'inspection',
   [COMMAND.STOP]: 'task_management',
   [COMMAND.REPORT]: 'quality_report',
   [COMMAND.RECAP_REPORT]: 'live_recap',
 };
 const DROP_ORDER = ['delivery_mode', 'asr_policy', 'scenario_category'];
 const CORE_DIAGNOSTICS = new Set([
+  'errno',
+  'winerror',
   'failure_component',
   'failure_reason',
   'startup_outcome',
@@ -90,6 +107,7 @@ const CORE_DIAGNOSTICS = new Set([
   'recovery_code',
   'recovery_outcome',
   'prepare_stage',
+  'prepare_operation',
 ]);
 
 export {

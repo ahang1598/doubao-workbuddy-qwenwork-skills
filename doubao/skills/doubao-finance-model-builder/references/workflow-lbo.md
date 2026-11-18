@@ -18,9 +18,9 @@
 
 ### 2. 查询并核验公开资料
 
-先按强制读取完整性协议完整读取 `references/source-tool-priority.md`。对公司身份、价格、股份数、财务报表、债务、现金、资本开支和前瞻数据分别识别用户指定来源并优先实际调用。用户未指定的项目才检查并优先调用 `seed_finance_search`。指定来源或默认工具不可用、无覆盖或数据冲突时，记录实际尝试与降级原因，再使用监管申报、交易所公告和公司投资者关系资料等权威来源；不得静默换源。
+先按强制读取完整性协议完整读取 `references/source-tool-priority.md`。对公司身份、价格、股份数、财务报表、债务、现金、资本开支和前瞻数据分别识别用户指定来源并优先实际调用。用户未指定的项目才检查并优先调用 `seed_finance_lookup`。指定来源或默认工具不可用、无覆盖或数据冲突时，记录实际尝试与降级原因，再用 `seed_finance_search` 检索监管申报、交易所公告和公司投资者关系资料等权威文本；不可用时回退 `general_search`；不得静默换源。
 
-`seed_finance_search` 是检索工具而非最终审计凭证。关键估值和现金流数据必须尽可能回查原始监管文件。读取 references/lbo-data-source-policy.md，并按上市地读取对应市场文件：
+`seed_finance_lookup` 是检索工具而非最终审计凭证。关键估值和现金流数据必须尽可能回查原始监管文件。读取 references/lbo-data-source-policy.md，并按上市地读取对应市场文件：
 
 - A股：references/lbo-market-a-share.md
 - 港股：references/lbo-market-hong-kong.md
@@ -65,11 +65,9 @@
 
 读取 references/lbo-calculation-rules.md 和 references/lbo-output-schema.md。将结构化输入保存为JSON，先运行：
 
-    python3 scripts/lbo/validate_case.py case.json
-
-验证通过后运行：
-
     python3 scripts/lbo/lbo_engine.py case.json --output result.json
+
+引擎在计算前调用`validate_case`，输入校验失败时停止。
 
 不得用语言模型口算替代脚本结果。若交易结构超出脚本能力，扩展并测试脚本，或清楚标注简化及其影响。
 只有 `result.json` 的 `model_status_code` 为 `PASS` 才能输出利润、MOIC和XIRR结论；`INCOMPLETE` 仅展示假设、债务底稿、阻断事项和修复动作。

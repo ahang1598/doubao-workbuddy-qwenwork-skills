@@ -227,6 +227,7 @@ export async function finalizeReview(input, dependencies = {}) {
         } catch {
           throw fail("REVIEW_CONTEXT_REQUIRED");
         }
+        if (context.kind === 'video') throw Object.assign(new Error('Use ecommerce-review-render for the video recap attachment'), {code:'VIDEO_RECAP_LOCAL_DELIVERY'});
         const contextIdentity = {
           environment: context.environment,
           profile: context.profile,
@@ -252,6 +253,7 @@ export async function finalizeReview(input, dependencies = {}) {
           context.project_name !== identity.project_name
         )
           throw fail("TASK_BINDING_MISMATCH");
+        if (!context.scoring_context) throw fail('REVIEW_CONTEXT_REQUIRED');
         const artifact = await (dependencies.render || renderReviewReport)({
           review,
           metadata: { ...identity, playback: context },

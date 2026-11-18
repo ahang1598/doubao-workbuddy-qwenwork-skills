@@ -158,7 +158,7 @@ atexit.register(_rpc_channel.close)
 
 def request(method, facts=None):
     if os.environ.get('BYTEDLIVE_TELEMETRY_DISABLED','').strip().lower() in ('1','true'):return None
-    if not enabled() and method != 'report_runtime_failure':return None
+    if not enabled() and method not in {'report_runtime_failure','review_command'}:return None
     try:
         from runtime.artifacts import cache_root
         context={'cacheRoot':str(cache_root()),'python':sys.executable}
@@ -242,11 +242,11 @@ def close_channel():
 
 def record_preparation(detail):
     if os.environ.get('BYTEDLIVE_TELEMETRY_DISABLED','').lower() in ('1','true') or _CHANNEL_FD is None:return
-    for key in ('prepare_stage','recovery_outcome','recovery_code','download_source','network_failure_kind'):
+    for key in ('prepare_stage','prepare_operation','recovery_outcome','recovery_code','download_source','network_failure_kind'):
         if detail.get(key) in DIAGNOSTIC_ENUMS[key]:_METADATA[key]=detail[key]
     value=detail.get('http_status')
     if type(value) is int and 400<=value<=599:_METADATA['http_status']=value
-    for key in ('bytes_received','bytes_total','prepare_attempts','recovery_elapsed_ms'):
+    for key in ('bytes_received','bytes_total','prepare_attempts','recovery_elapsed_ms','errno','winerror'):
         value=detail.get(key)
         if type(value) is int and 0<=value<=2**53-1:_METADATA[key]=value
 
@@ -254,7 +254,7 @@ def begin_command(command):
     """Only existing command events get diagnostics; disabled telemetry does no work."""
     _METADATA.clear()
     try:
-        if (command not in {'start', 'stop', 'report', 'recap-report'} or
+        if (command not in COMMANDS or
                 os.environ.get('BYTEDLIVE_TELEMETRY_DISABLED', '').strip().lower() in ('1', 'true') or
                 _CHANNEL_FD is None):
             return
@@ -276,26 +276,33 @@ def startup_stage(stage, outcome=None):
     except Exception:
         pass
 
+def error_facts(error, *, classify_lock=True):
+    category = ('invalid_input' if isinstance(error, (ValueError, KeyError, TypeError)) else
+                'permission' if isinstance(error, PermissionError) else
+                'not_found' if isinstance(error, FileNotFoundError) else
+                'file_conflict' if isinstance(error, FileExistsError) else
+                'timeout' if isinstance(error, (TimeoutError, subprocess.TimeoutExpired)) else
+                'sqlite' if isinstance(error, sqlite3.Error) else
+                'import' if isinstance(error, ImportError) else
+                'io' if isinstance(error, OSError) else
+                'runtime' if isinstance(error, RuntimeError) else 'other')
+    # Python 3.10 has no sqlite_errorcode. Preserve only the fixed lock category.
+    if classify_lock and category == 'sqlite' and getattr(error, 'sqlite_errorcode', None) is None and str(error) in (
+            'database is locked', 'database table is locked'):
+        category = 'sqlite_busy'
+    facts = {'error_category':category}
+    for key in ('errno', 'winerror', 'sqlite_errorcode'):
+        value = getattr(error, key, None)
+        if type(value) is int and abs(value) <= 2**53 - 1:
+            facts[key] = value
+    return facts
+
+
 def record_command_error(error):
     try:
         if not _METADATA.get('diagnostic_schema_version'):
             return
-        from runtime.diagnostics import failure_details
-        detail = failure_details(error)
-        category = ('invalid_input' if isinstance(error, (ValueError, KeyError, TypeError)) else
-                    'permission' if isinstance(error, PermissionError) else
-                    'not_found' if isinstance(error, FileNotFoundError) else
-                    'file_conflict' if isinstance(error, FileExistsError) else
-                    'timeout' if isinstance(error, (TimeoutError, subprocess.TimeoutExpired)) else
-                    'sqlite' if isinstance(error, sqlite3.Error) else
-                    'import' if isinstance(error, ImportError) else
-                    'io' if isinstance(error, OSError) else
-                    'runtime' if isinstance(error, RuntimeError) else 'other')
-        _METADATA.update(error_origin='business', error_category=category)
-        for key in ('errno', 'winerror', 'sqlite_errorcode'):
-            value = detail.get(key) if key == 'sqlite_errorcode' else getattr(error, key, None)
-            if type(value) is int and abs(value) <= 2**53 - 1:
-                _METADATA[key] = value
+        _METADATA.update(error_origin='business', **error_facts(error, classify_lock=False))
         if 'startup_stage' in _METADATA:
             _METADATA['startup_outcome'] = 'failed'
         publish_metadata()
@@ -326,6 +333,31 @@ def publish_metadata(value=None, *, batch=False, error_code=None, error_detail=N
             _METADATA['error_detail'] = error_detail
     except Exception:
         pass
+
+def review_command(result, observation=None):
+    """Fast supervised commands bypass the CLI wrapper; never read task files here."""
+    if os.environ.get('BYTEDLIVE_TELEMETRY_DISABLED','').strip().lower() in ('1','true'):return
+    if result.get('command') not in {'review-next','review-submit'}:return
+    try:
+        data=result.get('data') or {}
+        detail=result.get('error') or {}
+        safe = dict(observation or {})
+        if detail.get('error_detail') in ERROR_DETAILS:
+            safe['error_detail'] = detail['error_detail']
+        for key in ('error_category','errno','winerror','sqlite_errorcode','review_phase'):
+            if key in detail:safe[key] = detail[key]
+        if _CHANNEL_FD is not None:
+            task_id = safe_dimensions({'task_id':data.get('task_id')}).get('task_id')
+            if task_id:
+                _METADATA.setdefault('task_id',task_id)
+            _METADATA.update(safe)
+            return
+        facts={**safe,'command':result['command'],'ok':result.get('ok') is True,
+               'task_id':data.get('task_id'),
+               'error_code':detail.get('code') if detail.get('code') in ERRORS else 'OPERATION_FAILED'}
+        _channel.submit(('review_command',facts))
+    except Exception:pass
+
 
 def record_runtime_issue(component, reason):
     if os.environ.get('BYTEDLIVE_TELEMETRY_DISABLED', '').strip().lower() in ('1','true') or _CHANNEL_FD is None:return
@@ -383,10 +415,10 @@ def safe_failure(value):
     from runtime.context import _CONTRACTS
     if not isinstance(value,dict):return {}
     enums=_CONTRACTS['ASR_ENUMS']
-    result={k:value[k] for k in ('category','reason','failure_stage','submission_state') if value.get(k) in enums[k]}
-    for k in ('exit_code','http_status'):
+    result={k:value[k] for k in ('category','reason','failure_stage','submission_state','query_status') if value.get(k) in enums[k]}
+    for k in ('exit_code','http_status','subtitle_count'):
         v=value.get(k)
-        if type(v) is int and (400<=v<=599 if k=='http_status' else abs(v)<=2**31):result[k]=v
+        if type(v) is int and (400<=v<=599 if k=='http_status' else 0<=v<=2**31 if k=='subtitle_count' else abs(v)<=2**31):result[k]=v
     return result
 def record(key, result, task=None):
     """业务只传事件 Key 和已有结果；公共归属与发送策略由遥测统一处理。"""

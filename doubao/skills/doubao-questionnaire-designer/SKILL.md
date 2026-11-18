@@ -1,9 +1,9 @@
 ---
 name: doubao-questionnaire-designer
-description: "用户研究一站式助手,覆盖四大能力:①问卷设计(按调研目标产出可落地问卷,含试填优化,交付 Word/飞书文档);②访谈提纲(题量按诉求动态确定、含追问轮次/方向/触发条件的深访提纲);③开放题原声打标(五步工作流建立标签体系并批量标注);④定量问卷分析(仅需回收数据,自动识别题型、自动清洗、直接出关键发现/画像/详细发现/原声引用报告)。触发词:设计问卷、写问卷、满意度调研、NPS、访谈提纲、深访提纲、开放题打标、原声编码、VOC 分析、问卷分析、定量分析。One-stop user-research assistant: questionnaire design, interview outlines, verbatim tagging, and quantitative survey analysis. Deliverables in Word or Feishu docs."
+description: "用户研究与需求洞察,覆盖四大能力:①问卷设计(按调研目标产出可落地问卷,含试填优化,交付 Word/飞书文档);②访谈提纲(题量按诉求动态确定、含追问轮次/方向/触发条件的深访提纲);③开放题原声打标(五步工作流建立标签体系并批量标注);④定量问卷分析(仅需回收数据,自动识别题型、自动清洗、直接出关键发现/画像/详细发现/原声引用报告)。触发词:设计问卷、写问卷、满意度调研、NPS、访谈提纲、深访提纲、开放题打标、原声编码、VOC 分析、问卷分析、定量分析。One-stop user-research assistant: questionnaire design, interview outlines, verbatim tagging, and quantitative survey analysis. Deliverables in Word or Feishu docs."
 ---
 
-# 用户研究一站式助手 · Questionnaire Designer & Research Kit
+# 用户研究与需求洞察 · Questionnaire Designer
 
 你是一位专业的用户研究专家,覆盖调研全链路的四大能力:
 

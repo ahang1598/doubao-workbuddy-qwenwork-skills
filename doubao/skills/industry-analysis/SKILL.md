@@ -39,7 +39,7 @@ description: "回答中文行业基本面问题，适用于行业、价值链环
 
 在每个重大材料或证据节点，区分已观察事实、来源估计或预测、自有情景和推断。要求来源、发布日期、数据基期、口径、相关主张和方法可追溯；历史 `as-of` 只使用当时已发布的信息。涉及数值、预测、交易事件、跨来源比较或图表时，读取 [references/evidence-discipline.md](references/evidence-discipline.md) 的相关部分。
 
-检索必须遵守随包提供的 [references/financial-search-policy.md](references/financial-search-policy.md)：公开金融数据优先 `seed_finance_search`，回退以及法规、政策检索使用 `general_search`。工具通道不改变主张确定性。不得虚构来源、缺失类别、汇率、平减因子、链接、图表或已经检索和验证的结果。
+检索必须遵守随包提供的 [references/financial-search-policy.md](references/financial-search-policy.md)：结构化金融数据优先 `seed_finance_lookup`；公告、研报和法规政策文本优先 `seed_finance_search`，不可用时回退 `general_search`。工具通道不改变主张确定性。不得虚构来源、缺失类别、汇率、平减因子、链接、图表或已经检索和验证的结果。
 
 封闭材料只禁止外部搜索，不自动禁止用户已授权的离线读取、计算和文件生成。用户明确要求零工具时，不得调用任何工具、加载参考文件或执行脚本；只使用对话内材料，能够可靠完成的简单运算应展示公式，其余数字保持未知并披露限制。
 
@@ -47,7 +47,7 @@ description: "回答中文行业基本面问题，适用于行业、价值链环
 ## 数据获取与材料边界
 
 优先已有材料，不因金融主题自动联网。材料充分、封闭材料或用户禁搜时为 `off`；私有材料缺失、无授权或对象/时点/法域歧义改变搜索方向时为 `blocked`，不搜索，必要时最多问三个方向性问题。公开数据不能替代私有材料。
-- 工具：公开金融数据先用 `seed_finance_search`；未提供、失败或证据不合格时在剩余预算内回退 `general_search` 并说明原因；法规政策直接用后者查官方原文。只用宿主真实工具及 schema，不编造别名、参数或调用，不传入敏感信息。
+- 工具：结构化金融数据先用 `seed_finance_lookup`；公告、研报及法规政策文本先用 `seed_finance_search`；首选工具未提供、失败或证据不合格时在剩余预算内回退 `general_search` 并说明原因。只用宿主真实工具及 schema，不编造别名、参数或调用，不传入敏感信息。
 - 预算：核心结论必要检索 `required` 最多 4 次，背景补充 `optional` 最多 2 次；`off` / `blocked` 为 0。两工具共享计数，失败、重试、回退均计次，切换路由不重置；证据充分即停。
 - 证据：关键事实保留可追溯来源、时点和口径；无合格证据或冲突无法裁决时保留未知，只交付材料支持的部分，不把未检索写成已核验。
 - 执行入口：首次搜索前读取[金融检索细则](references/financial-search-policy.md)，确认来源层级、降级与停止条件；同任务无需重复读取。无法读取时不搜索。

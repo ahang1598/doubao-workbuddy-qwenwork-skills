@@ -4,6 +4,7 @@
 import json
 import time
 import uuid
+from runtime.platform_support import private_temporary_directory
 
 SCHEMA = '''CREATE TABLE IF NOT EXISTS media_jobs(
  id INTEGER PRIMARY KEY,
@@ -182,7 +183,6 @@ def run_job(store, job, *, cancel=None):
     import os
     from pathlib import Path
     import subprocess
-    import tempfile
     import threading
     from runtime.media import extract_frames, extract_audio
 
@@ -206,7 +206,7 @@ def run_job(store, job, *, cancel=None):
     pulse.start()
     try:
         segment = next(s for s in store.segments() if s['id'] == job['segment_id'])
-        with tempfile.TemporaryDirectory(dir=store.root, prefix=f".media-job-{job['lease_token']}-") as temporary:
+        with private_temporary_directory(dir=store.root, prefix=f".media-job-{job['lease_token']}-") as temporary:
             try:
                 if job['kind'] == 'frames':
                     from runtime.frame_router import extract, FrameJobCancelled

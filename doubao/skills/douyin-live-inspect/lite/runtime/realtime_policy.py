@@ -5,7 +5,6 @@ from datetime import datetime
 POLICY = 'lite_live_realtime_v1'
 LATEST_POLICY = 'lite_live_realtime_v2'
 CLOUD_CAPTURE_SECONDS = 600
-CLOUD_COMMAND_LIMIT = 40
 CLOUD_DRAIN_SECONDS = 180
 
 
@@ -18,24 +17,8 @@ def current(task):
 
 
 def cloud_limited(task):
+    # Keep the persisted cloud drain/delivery marker, without counting commands.
     return current(task) and 'cloud_live_command_count' in task
-
-
-def protect_cloud(store):
-    """Budget foreground dispatches, not background heartbeats or report delivery."""
-    task = store.task()
-    if not cloud_limited(task) or task.get('capture_status') in {'ended','stopped','failed'}:
-        return
-    if store.should_stop():return
-    with store.connection(True) as conn:
-        task = store._task(conn)
-        if task.get('stop_requested'):return
-        count = min(CLOUD_COMMAND_LIMIT, task['cloud_live_command_count'] + 1)
-        task['cloud_live_command_count'] = count
-        store._set_task(conn, task)
-    # A durable stop signal precedes draining; the current submission can still land.
-    if count >= CLOUD_COMMAND_LIMIT:
-        store.request_stop(origin='agent', reason='execution_limit')
 
 
 def skip(store, conn, segment, code, now):
@@ -132,7 +115,7 @@ def current_work(store, conn, now):
             if value and 'review_progress_at' not in batch:
                 progress = max(progress, datetime.fromisoformat(value.replace('Z', '+00:00')).timestamp())
         if any(by_id.get(int(sid), {}).get('review_status') not in {'done','skipped'} for sid in batch['targets']):
-            if now >= progress + 120:stalled.append(batch)
+            if batch.get('executor') == 'child' and now >= progress + 120:stalled.append(batch)
     occupied = {int(sid) for b in batches for sid in b['targets']}
     waiting = sorted((s for s in segments if s['review_status'] not in {'done','skipped'} and s['id'] not in occupied),
                      key=lambda s:(s['start_ms'], s['id']))
@@ -156,9 +139,8 @@ def skip_empty(store, conn, task, batches, segments, now):
 
 
 def advance_current(store, conn, task, now):
-    """Bound unclaimed backlog and drain time without dropping saved judgments."""
+    """Retain queued evidence; only explicit finish and stalled review budgets expire."""
     from runtime import finishing, live_review
-    from runtime.store import interval_ms
     state = task.get('finishing', {})
     if state.get('phase') == 'completed':return state
     live_review.initialize(conn)
@@ -177,21 +159,8 @@ def advance_current(store, conn, task, now):
             state = {'phase':'draining', 'mode':'bounded', 'started_at':started}
         from runtime.stop_drain import advance as drain
         return drain(store, conn, task, state, batches, segments, stalled, now)
-    # A review lease is local to its batch, never a signal to stop capture.
-    by_id = {s['id']:s for s in segments}
+    # Retire stalled child leases, not the evidence they were reviewing.
+    from runtime.stop_drain import retire
     for batch in stalled:
-        for sid in batch['targets']:
-            segment = by_id.get(int(sid))
-            if segment and segment['review_status'] not in {'done','skipped'}:
-                skip(store, conn, segment, 'LIVE_BATCH_REVIEW_TIMEOUT', now)
-        running = batch.get('executor') == 'child' and batch['status'] in {'dispatching','running','cancelling'}
-        batch.update(status='cancelling' if running else 'expired', generation=batch['generation'] + 1, expired_reason='LIVE_BATCH_REVIEW_TIMEOUT')
-        live_review.save(conn, store.session_id, batch)
-    if interval_ms(waiting) > 180000:
-        retained = 0
-        for index, segment in enumerate(reversed(waiting)):
-            # Keep a contiguous newest suffix, without splitting stored evidence.
-            retained += segment['end_ms'] - segment['start_ms']
-            if index and retained > 120000:
-                skip(store, conn, segment, 'LIVE_BACKLOG_SKIPPED', now)
+        retire(store, conn, batch, now)
     return state

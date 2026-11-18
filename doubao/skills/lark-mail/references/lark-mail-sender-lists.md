@@ -15,6 +15,8 @@
 
 搜索/列表底层按游标扫描，可能出现 `items=[]` 但 `has_more=true` 的空页；这不代表结果已结束，应继续使用返回的 `page_token` 翻页。
 
+写入黑白名单后，搜索结果可能会有些延迟。
+
 ```bash
 # 查询信任发件人
 lark-cli mail +sender-allowlist --page-size 20
