@@ -8,7 +8,7 @@
 - 定时任务：`ChatgptSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：20
 - 当前索引文件数：949
-- 最近变更：[2026-10-18-180006](chatgpt/change-logs/2026-10-18-180006.md) - ChatGPT 本次同步新增 610 个文件、修改 8 个文件、删除 256 个文件。 新增条目：plugins/openai-bundled/browser/26.1013.40934, plugins/openai-bundled/computer-use/26.1013.40934, plugins/openai-bundled/unified-...
+- 最近变更：[2026-11-18-180008](chatgpt/change-logs/2026-11-18-180008.md) - ChatGPT 本次同步新增 0 个文件、修改 6 个文件、删除 0 个文件。 受影响范围：skills/.codex-system-skills.marker, skills/openai-docs。
 
 ## 数据来源
 
@@ -29,7 +29,7 @@
 | Name | Directory | Category | Files | Description |
 | --- | --- | --- | ---: | --- |
 | imagegen | `chatgpt/skills/imagegen` | skill | 12 | Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-background cutouts. Use when Codex should create a brand-n... |
-| openai-docs | `chatgpt/skills/openai-docs` | skill | 17 | Use for Codex models/pricing, scheduled tasks, skills, settings, setup, troubleshooting, customization, automations, and self-knowledge—including 'you,' 'your,' 'this app,' or 'this coding agent' when they refer to Co... |
+| openai-docs | `chatgpt/skills/openai-docs` | skill | 17 | API first-timers, Codex/Work Q&A. If the user already has an OpenAI API integration, skip this skill for API questions and use the developer docs. Read this skill before answering how Codex or ChatGPT Work behaves, wh... |
 | review-agent | `chatgpt/skills/review-agent` | skill | 2 | Perform a read-only, defect-first review of a specified code change and return every actionable finding. Use when another agent delegates review of uncommitted changes, a base-branch diff, a commit, or custom review i... |
 | skill-creator | `chatgpt/skills/skill-creator` | skill | 9 | Create or update a Codex skill with appropriately scoped instructions and any needed supporting resources. |
 | skill-installer | `chatgpt/skills/skill-installer` | skill | 8 | Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill, or install a skill from another repo (including private... |
@@ -58,6 +58,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-11-18-180008 | [2026-11-18-180008](chatgpt/change-logs/2026-11-18-180008.md) | ChatGPT 本次同步新增 0 个文件、修改 6 个文件、删除 0 个文件。 受影响范围：skills/.codex-system-skills.marker, skills/openai-docs。 |
 | 2026-10-18-180006 | [2026-10-18-180006](chatgpt/change-logs/2026-10-18-180006.md) | ChatGPT 本次同步新增 610 个文件、修改 8 个文件、删除 256 个文件。 新增条目：plugins/openai-bundled/browser/26.1013.40934, plugins/openai-bundled/computer-use/26.1013.40934, plugins/openai-bundled/unified-... |
 | 2026-10-17-180008 | [2026-10-17-180008](chatgpt/change-logs/2026-10-17-180008.md) | ChatGPT 本次同步新增 23 个文件、修改 19 个文件、删除 405 个文件。 新增条目：plugins/openai-bundled/codex-app-tools/0.1.6, plugins/openai-bundled/visualize/1.0.49。 移除条目已归档：plugins/openai-bundled/browser/26... |
 | 2026-08-10-160232 | [2026-08-10-160232](chatgpt/change-logs/2026-08-10-160232.md) | ChatGPT 本次同步新增 399 个文件、修改 6 个文件、删除 392 个文件。 新增条目：plugins/openai-bundled/browser/26.803.41515, plugins/openai-bundled/computer-use/26.803.41515, plugins/openai-bundled/visualize/... |
