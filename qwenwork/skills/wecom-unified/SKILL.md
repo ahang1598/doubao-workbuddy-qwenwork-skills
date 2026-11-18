@@ -1,10 +1,9 @@
 ---
 name: wecom-unified
-description: 企业微信 CLI 套件。仅当用户明确要求使用企业微信/企微，或给出 doc.weixin.qq.com、page.weixin.qq.com、drive.weixin.qq.com 链接时触发；不要因为泛化的找人、文档、表格、日程、会议、待办、邮件或发消息请求而触发。覆盖通讯录、文档、表格、日程、会议、待办、微盘、邮件、消息和媒体文件。
+description: "企业微信 CLI 套件。仅当用户明确要求使用企业微信/企微，或给出 doc.weixin.qq.com、page.weixin.qq.com、drive.weixin.qq.com 链接时触发；不要因为泛化的找人、文档、表格、日程、会议、待办、邮件或发消息请求而触发。覆盖通讯录、文档、表格、日程、会议、待办、微盘、邮件、消息和媒体文件。"
 allowed-tools: Bash, Read
-version: 1.1.0
+version: 1.3.4
 install_source: qwenwork-wecom-cli-connector
-enabled_at: 1793173427562
 ---
 
 # 企业微信套件 (WeCom Unified)
@@ -21,7 +20,7 @@ enabled_at: 1793173427562
 wecom-cli --version
 ```
 
-如果命令不存在、版本低于 `1.1.0` 或提示连接器不可用，停止业务操作，并告知用户在「设置 > 连接器 > 企业微信」中完成安装或启用。禁止自行安装或绕过连接器。
+如果命令不存在、版本低于 `1.3.4` 或提示连接器不可用，停止业务操作，并告知用户在「设置 > 连接器 > 企业微信」中完成安装或启用。禁止自行安装或绕过连接器。
 
 ### Step 2: 检查凭证是否配置
 

@@ -6,9 +6,9 @@
 
 - 平台目录：`qwenwork/`
 - 定时任务：`QwenworkSkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：271
-- 当前索引文件数：4878
-- 最近变更：[2026-11-04-180008](qwenwork/change-logs/2026-11-04-180008.md) - QwenWork 本次同步新增 3 个文件、修改 33 个文件、删除 0 个文件。 受影响范围：skills/.dws-skill-state.json, skills/dingtalk-aicard, skills/dingtalk-aisearch, skills/dingtalk-aitable, skills/dingtalk-calendar...
+- 当前索引条目数：272
+- 当前索引文件数：4885
+- 最近变更：[2026-11-18-180008](qwenwork/change-logs/2026-11-18-180008.md) - QwenWork 本次同步新增 7 个文件、修改 3 个文件、删除 0 个文件。 新增条目：skills/qw-app。 受影响范围：skills/pptx, skills/qw-app, skills/wecom-unified。
 
 ## 数据来源
 
@@ -204,6 +204,7 @@
 | 产品营销定位 | `qwenwork/skills/product-marketing-context` | 市场营销 | 1 | When the user wants to create or update their product marketing context document. Also use when the user mentions 'product context,' 'marketing context,' 'set up context,' 'positioning,' 'who is my target audience,' '... |
 | 夸克网盘官方Skill | `qwenwork/skills/quarkclouddrive` | 效率工具 | 14 | 夸克网盘官方(Quark Drive)Skill，用于文件上传/下载（支持断点续传）、文件分享与转存、网盘文件搜索、相册整理、AI助手（文件总结与知识问答，支持万级文件）。当用户需要操作夸克网盘文件或进行身份验证时使用。 |
 | 数据分析 | `qwenwork/skills/quickbi-smartq-chat` | 数据分析 | 41 | Quick BI-智能分析 技能，具备多种数据分析能力: 1. **数据集问数**：自然语言查询 Quick BI 平台数据集，自动智能选表匹配 2. **文件问数**：上传 Excel/CSV 文件，通过 Quick BI API 进行智能分析 3. **文档解析**：解析 PDF/Word/Excel/CSV/图片等文档，提取文本，并支持提取关键字段并生成结构化 Excel 4. **仪表板技能生成**：将 QuickBI 仪... |
+| qw-app | `qwenwork/skills/qw-app` | 数据分析 | 7 | 创建、修改和发布网页或业务应用，包括网页原型、交互工具、数据看板和业务系统。处理这些请求时先加载本 Skill，根据需求选择 QwenWork Pages 或宜搭，再进入对应流程；已有宜搭业务的查询、分析和办理也由此转入问办流程。 |
 | qw-pages | `qwenwork/skills/qw-pages` | 开发工具 | 1 | Publish static or dynamic HTML, websites, and web applications through QW Pages. Use when the user asks to publish, deploy, or make a webpage live. Combine with qw-pages-supabase only when the webpage needs persistent... |
 | qw-pages-supabase | `qwenwork/skills/qw-pages-supabase` | 开发工具 | 1 | Prepare Supabase-compatible persistent storage for a dynamic QW Page. Use with qw-pages when a webpage needs database tables, server-side persistence, Supabase access, or database-backed APIs. |
 | 千问办公客户端图标替换 | `qwenwork/skills/qwenwork-app-icon` | 设计创意 | 11 | Cross-platform (macOS + Windows) app icon replacement centered on the official QwenWork mascot "千仔" (Qianzai) — a flat-vector waving green octopus with two big round eyes. Auto-detects platform and routes accordingly.... |
@@ -317,6 +318,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-11-18-180008 | [2026-11-18-180008](qwenwork/change-logs/2026-11-18-180008.md) | QwenWork 本次同步新增 7 个文件、修改 3 个文件、删除 0 个文件。 新增条目：skills/qw-app。 受影响范围：skills/pptx, skills/qw-app, skills/wecom-unified。 |
 | 2026-11-04-180008 | [2026-11-04-180008](qwenwork/change-logs/2026-11-04-180008.md) | QwenWork 本次同步新增 3 个文件、修改 33 个文件、删除 0 个文件。 受影响范围：skills/.dws-skill-state.json, skills/dingtalk-aicard, skills/dingtalk-aisearch, skills/dingtalk-aitable, skills/dingtalk-calendar... |
 | 2026-10-28-180005 | [2026-10-28-180005](qwenwork/change-logs/2026-10-28-180005.md) | QwenWork 本次同步新增 115 个文件、修改 63 个文件、删除 1 个文件。 新增条目：skills/dingtalk-aicard, skills/dingtalk-tag, skills/environment-packages, skills/media-generation-ecommerce, skills/media-read,... |
 | 2026-10-15-192505 | [2026-10-15-192505](qwenwork/change-logs/2026-10-15-192505.md) | QwenWork 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/wecom-unified。 |

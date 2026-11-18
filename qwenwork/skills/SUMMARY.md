@@ -6,9 +6,9 @@
 
 - 目录：`qwenwork/skills/`
 - 来源：`/mnt/c/Users/15805/.qwenworkcn/skills`
-- 条目数：176
-- 文件数：3119
-- 最近同步：2026-11-04 18:00:08 +0800
+- 条目数：177
+- 文件数：3126
+- 最近同步：2026-11-18 18:00:08 +0800
 
 ## 场景导航（按用途）
 
@@ -163,6 +163,7 @@
 - **数据可视化** — 从表格文件 (.xlsx / .xlsm / .csv / .tsv) 生成自包含 HTML 数据分析报告。 含 KPI 卡片、ECharts 图表、文字洞察。数据 inline 嵌入。 TRIGGER: 用户上传表格文件 + 提出分析/出报告/看趋势/做可视化/出 KPI/同环比/ 排名/构成/异常/帕累托/漏斗/留存/归因/分群等诉求时立即触发, 包括"出份报告"/ "做个分析"/"看看数据"这类模糊表达。 PARTIAL:...
 - **ECharts 图表生成** — 生成数据可视化图表，支持词云、折线图、柱状图、饼图、面积图及混合图表。 输出自包含 HTML 文件（引入 ECharts CDN），用户点击即可查看高质量图表。 支持导出 PNG 图片。当用户提到"生成图表"、"画个图"、"数据可视化"、 "柱状图"、"折线图"、"饼图"、"词云"、"图表展示数据"时使用。 不用于非 ECharts 的图表库（如 D3、Chart.js），不用于纯数据分析（无图表需求）。
 - **数据分析** — Quick BI-智能分析 技能，具备多种数据分析能力: 1. **数据集问数**：自然语言查询 Quick BI 平台数据集，自动智能选表匹配 2. **文件问数**：上传 Excel/CSV 文件，通过 Quick BI API 进行智能分析 3. **文档解析**：解析 PDF/Word/Excel/CSV/图片等文档，提取文本，并支持提取关键字段并生成结构化 Excel 4. **仪表板技能生成**：将 QuickBI 仪...
+- **qw-app** — 创建、修改和发布网页或业务应用，包括网页原型、交互工具、数据看板和业务系统。处理这些请求时先加载本 Skill，根据需求选择 QwenWork Pages 或宜搭，再进入对应流程；已有宜搭业务的查询、分析和办理也由此转入问办流程。
 - **多语言翻译工具** — 任意两语言对的文章 / 文档翻译——含所有小语种方向（越南语 / 泰语 / 印尼语 / 阿拉伯语 / 俄语 / 葡语 / 土耳其语 等 ↔ 中 / 英 或互译），不限于中英日韩西法德。核心强项 = **结构化输出 + 术语一致 + 专有名词保留**：Markdown 表格 / 列表 / SRT / iOS strings / 占位符（`%@` `{0}` `{{var}}` `\\n`）/ 日期 / 数字 ID 逐字守恒；用户即席指...
 
 ### 设计创意
@@ -372,6 +373,7 @@
 | 产品营销定位 | `qwenwork/skills/product-marketing-context` | 市场营销 | product-marketing-context | 1 | When the user wants to create or update their product marketing context document. Also use when the user mentions 'product context,' 'marketing context,' 'set up context,' 'positioning,' 'who is my target audience,' '... |
 | 夸克网盘官方Skill | `qwenwork/skills/quarkclouddrive` | 效率工具 | quarkclouddrive | 14 | 夸克网盘官方(Quark Drive)Skill，用于文件上传/下载（支持断点续传）、文件分享与转存、网盘文件搜索、相册整理、AI助手（文件总结与知识问答，支持万级文件）。当用户需要操作夸克网盘文件或进行身份验证时使用。 |
 | 数据分析 | `qwenwork/skills/quickbi-smartq-chat` | 数据分析 | quickbi-smartq-chat | 41 | Quick BI-智能分析 技能，具备多种数据分析能力: 1. **数据集问数**：自然语言查询 Quick BI 平台数据集，自动智能选表匹配 2. **文件问数**：上传 Excel/CSV 文件，通过 Quick BI API 进行智能分析 3. **文档解析**：解析 PDF/Word/Excel/CSV/图片等文档，提取文本，并支持提取关键字段并生成结构化 Excel 4. **仪表板技能生成**：将 QuickBI 仪... |
+| qw-app | `qwenwork/skills/qw-app` | 数据分析 | qw-app | 7 | 创建、修改和发布网页或业务应用，包括网页原型、交互工具、数据看板和业务系统。处理这些请求时先加载本 Skill，根据需求选择 QwenWork Pages 或宜搭，再进入对应流程；已有宜搭业务的查询、分析和办理也由此转入问办流程。 |
 | qw-pages | `qwenwork/skills/qw-pages` | 开发工具 | qw-pages | 1 | Publish static or dynamic HTML, websites, and web applications through QW Pages. Use when the user asks to publish, deploy, or make a webpage live. Combine with qw-pages-supabase only when the webpage needs persistent... |
 | qw-pages-supabase | `qwenwork/skills/qw-pages-supabase` | 开发工具 | qw-pages-supabase | 1 | Prepare Supabase-compatible persistent storage for a dynamic QW Page. Use with qw-pages when a webpage needs database tables, server-side persistence, Supabase access, or database-backed APIs. |
 | 千问办公客户端图标替换 | `qwenwork/skills/qwenwork-app-icon` | 设计创意 | qwenwork-app-icon | 11 | Cross-platform (macOS + Windows) app icon replacement centered on the official QwenWork mascot "千仔" (Qianzai) — a flat-vector waving green octopus with two big round eyes. Auto-detects platform and routes accordingly.... |

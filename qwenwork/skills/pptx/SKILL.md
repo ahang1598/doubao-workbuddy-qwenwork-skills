@@ -1,12 +1,47 @@
 ---
 name: pptx
-version: 2.3.3
+version: 2.3.5
 description: "Use this skill any time a PowerPoint .pptx or legacy .ppt file is involved as input, output, or both. This includes creating decks; reading or extracting slide content; editing presentations; combining or splitting slides; and working with templates, layouts, speaker notes, comments, charts, actions, or fonts. Trigger whenever the user mentions a deck, slides, presentation, PPT, or a .ppt/.pptx filename. Normalize legacy .ppt input before using PPTX workflows."
 description_zh: "当 PowerPoint .pptx 或旧版 .ppt 文件作为输入、输出或两者兼有时使用此技能。覆盖创建、读取、提取、编辑、合并和拆分演示文稿，以及处理模板、布局、演讲者备注、批注、图表、动作与字体。用户提到幻灯片、演示文稿、PPT 或 .ppt/.pptx 文件名时触发。处理旧版 .ppt 前，先将其规范化为适合读取或编辑的格式。"
 license: Proprietary. LICENSE.txt has complete terms
 ---
 
 # PPTX Skill
+
+## Presentations open in QWOffice
+
+When the current session's QWOffice system reminder indicates that the target
+is open, or says the tab state is too large to include, load and follow the
+`qwoffice` skill if available. Otherwise follow
+the reminder and the available QWOffice tool descriptions and `load_guide`;
+the skill's availability is not a prerequisite for using the tools. When a
+complete current reminder unambiguously identifies the target as `doc_model_opened`
+and supplies its document ID, use that ID directly with QWOffice tools. If the
+state is `doc_model_unavailable`, or the reminder is incomplete, missing an ID,
+stale, or ambiguous, use `docview_getlist` to recheck the target. The list
+only includes established models; absence does not prove that the file is
+closed. In particular, with an incomplete reminder, do not write the file on
+disk based solely on its absence; wait or report that its state is unknown.
+If the required tools are unavailable or the operation unsupported,
+report the limitation rather than bypassing it with file operations.
+
+Keep applying this skill's relevant content planning, visual design, layout,
+and quality principles, adapted to what the live editor can actually read and
+change. File-based commands below do not operate on an open target: its disk
+contents may not contain current edits, and scripts must not modify it in
+place. Verify through the editor and QWOffice tools; report checks that cannot
+be performed rather than claiming they passed. Creating a whole new file or
+working on a file not open in the current session continues to use the existing
+workflow below.
+
+## PowerPoint instance safety (mandatory)
+
+Apply these rules when managing PowerPoint automation or local conversion and rendering processes. Ordinary file-based operations do not require application or process inspection.
+
+- **Never terminate processes by application name**, whether using commands such as `taskkill /IM POWERPNT.EXE`, `Stop-Process -Name POWERPNT`, or enumerating all matching PIDs. Errors, timeouts, retries, and suspected orphan processes do not justify broadening cleanup.
+- **Only clean up instances proven to have been created by this task.** Use reliable ownership evidence, such as a retained instance/process handle or an isolated execution context that identifies the owned process. A name, a hidden window, or a recently appeared process is insufficient; attaching to an existing instance does not transfer ownership. Keep lifecycle management inside existing tools that already isolate and manage their own subprocesses.
+- When writing COM automation, use `try/finally` to close only presentations opened by this task and release its COM references. Call `Quit` only on a verified task-owned instance containing no unrelated user presentations; never quit a shared or pre-existing application.
+- If graceful cleanup fails, terminate only the verified task-owned process whose isolation from user work is established. When targeting a numeric PID, revalidate it against recorded identity (for example, process creation time) to avoid PID reuse. If ownership, identity, or isolation is uncertain, leave the process running and report the limitation.
 
 ## User-facing style names
 
@@ -47,6 +82,28 @@ user explicitly wants represented in their presentation.
 Call the bundled semantic entry points directly and let them select a validated
 execution path. Do not begin with broad environment, credential, CLI, font, or
 package inventories.
+
+### Desktop Office process safety (hard requirement)
+
+Treat the user's interactive Office session as external state that this skill
+must not control. A user may have unrelated presentations open with unsaved
+work, and a background automation object is not proof of process isolation.
+
+- Never use `win32com`, `comtypes`, COM/OLE automation, PowerShell Office
+  automation, AppleScript, `osascript`, `POWERPNT.EXE`, or another locally
+  installed PowerPoint/Keynote process for unattended creation, conversion,
+  rendering, preview, QA, or cleanup.
+- Never call `Application.Quit()`, `app.Quit()`, `taskkill`, `Stop-Process`, or
+  an equivalent command against PowerPoint or another desktop Office process.
+  `DispatchEx` does not prove process isolation; quitting that object can close
+  unrelated user presentations.
+- Before running generated Python or shell code for a deck, inspect the command
+  for local Office automation or process termination. Rewrite a violating
+  command to use the bundled semantic entry points instead of executing it.
+- Use the entry points below, their validated cloud route, or the bundled
+  LibreOffice bridge. If rendering remains unavailable, finish the structural
+  QA that is available and report that visual preview is unavailable. Never
+  fall back to the user's desktop Office session.
 
 | Need                        | Entry point                                                                                                                                                    |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -1,0 +1,167 @@
+examples:
+  - id: customer-visit-management
+    title:
+      zh: 客户拜访管理
+      en: Customer Visit Management
+    description:
+      zh: 创建一个适合销售团队使用的客户拜访管理应用，支持客户信息、拜访计划、拜访记录、跟进提醒和统计看板
+      en: Create a customer visit management app for sales teams, covering customer information, visit plans, visit records, follow-up reminders and analytics dashboards
+    prompt:
+      zh: |-
+        帮我创建一个客户拜访管理应用，适合销售团队记录和跟进客户拜访情况，需要包含：
+
+        - 客户信息管理
+        - 拜访计划登记
+        - 拜访记录提交
+        - 跟进事项提醒
+        - 拜访数据统计看板
+
+        请自动设计表单、审批或流转规则、应用首页，并发布成一个可直接使用的宜搭应用。
+      en: |-
+        Please create a customer visit management app for sales teams to record and follow up on customer visits. It should include:
+
+        - Customer information management
+        - Visit plan registration
+        - Visit record submission
+        - Follow-up reminders
+        - Visit analytics dashboard
+
+        Please automatically design the forms, approval or workflow rules, and app homepage, then publish it as a ready-to-use Yida app.
+
+  - id: asset-request-management
+    title:
+      zh: 物品领用管理
+      en: Asset Request Management
+    description:
+      zh: 创建一个适合行政团队使用的物品领用管理应用，支持库存管理、领用申请、主管审批、归还报废和库存预警
+      en: Create an asset request management app for admin teams, covering inventory, request submission, manager approval, return or disposal records and inventory alerts
+    prompt:
+      zh: |-
+        帮我创建一个物品领用管理应用，适合行政团队管理员工办公用品、设备和物资领用情况，需要包含：
+
+        - 物品库存管理
+        - 员工领用申请
+        - 主管审批流程
+        - 归还或报废登记
+        - 库存预警和领用统计看板
+
+        请自动设计表单、审批流程、应用首页和数据看板，并发布成一个可直接使用的宜搭应用。
+      en: |-
+        Please create an asset request management app for admin teams to manage office supplies, equipment and material requests. It should include:
+
+        - Asset inventory management
+        - Employee request submission
+        - Manager approval workflow
+        - Return or disposal registration
+        - Inventory alerts and request analytics dashboard
+
+        Please automatically design the forms, approval workflow, app homepage and analytics dashboard, then publish it as a ready-to-use Yida app.
+
+  - id: generate-app-from-dingtalk-docs
+    title:
+      zh: 钉钉文档/AI 听记生成应用
+      en: Generate App from DingTalk Docs or AI Notes
+    description:
+      zh: 基于钉钉文档、会议纪要或 AI 听记提取业务需求，并自动生成宜搭应用方案、表单、流程和首页
+      en: Extract business requirements from DingTalk Docs, meeting notes or AI notes, then generate a Yida app plan, forms, workflows and homepage
+    prompt:
+      zh: |-
+        请根据这份钉钉文档/AI 听记内容，帮我生成一个宜搭应用：
+
+        输入来源：{{钉钉文档链接或 AI 听记 taskUuid}}
+
+        请先提取里面的业务背景、角色分工、流程节点和数据对象，再生成应用方案，并继续搭建对应的表单、流程和首页页面。
+
+        最终请发布应用，并返回应用入口。
+      en: |-
+        Please generate a Yida app based on the following DingTalk Doc or AI note:
+
+        Input source: {{DingTalk Doc link or AI note taskUuid}}
+
+        Please first extract the business background, roles, workflow nodes and data objects, then generate the app plan and continue building the corresponding forms, workflows and homepage.
+
+        Finally, publish the app and return the app entry link.
+  - id: yida-query-my-apps
+    title:
+      zh: 查询我的宜搭应用
+      en: Query My YiDA Apps
+    description:
+      zh: 通过宜搭连接器查询当前授权用户相关的宜搭应用列表，并整理应用名称、简介和入口链接
+      en: Use the YiDA connector to query YiDA apps related to the current authorized user, including names, descriptions and entry links
+    prompt:
+      zh: |-
+        帮我查一下我有哪些宜搭应用。
+
+        请按应用名称、简介和入口链接整理成表格，如果有同名应用也帮我标注出来。
+      en: |-
+        Please query which YiDA apps I have.
+
+        Organize the result as a table with app name, description and entry link, and mark apps with duplicate names if any.
+
+  - id: yida-query-my-tasks
+    title:
+      zh: 查询我的宜搭待办
+      en: Query My YiDA Pending Tasks
+    description:
+      zh: 通过宜搭连接器查询当前用户待处理的宜搭流程任务，并按应用或流程分组整理
+      en: Use the YiDA connector to query pending YiDA workflow tasks for the current user and group them by app or process
+    prompt:
+      zh: |-
+        帮我查一下我在宜搭里待处理的流程任务有哪些。
+
+        请按应用和流程分组，列出标题、发起人、创建时间和处理入口。
+      en: |-
+        Please query my pending YiDA workflow tasks.
+
+        Group them by app and process, and list the title, initiator, creation time and processing link.
+
+  - id: yida-query-aibi-statistics
+    title:
+      zh: 统计宜搭业务数据
+      en: Analyze YiDA Business Metrics
+    description:
+      zh: 对已存在宜搭表单做数量、分布、排行、趋势、占比或对比类统计分析
+      en: Analyze counts, distributions, rankings, trends, ratios or comparisons over existing YiDA form data
+    prompt:
+      zh: |-
+        帮我统计一下「工单管理」应用里本月工单按处理状态的数量分布。
+
+        请给出总数、各状态数量和占比，并指出是否有明显积压。
+      en: |-
+        Please analyze this month's ticket distribution by processing status in the "Ticket Management" app.
+
+        Provide the total count, count and ratio for each status, and point out whether there is obvious backlog.
+
+  - id: yida-query-relationship-lineage
+    title:
+      zh: 查询业务关系和血缘
+      en: Query Business Relationships and Lineage
+    description:
+      zh: 查询宜搭业务对象之间的关联关系，或追踪具体记录影响到的上下游业务记录
+      en: Query relationships between YiDA business objects or trace upstream and downstream records affected by a concrete record
+    prompt:
+      zh: |-
+        帮我看一下「合同」和「回款」这两个业务对象之间是什么关系。
+
+        如果能查到，请说明它们通过哪些字段关联，以及合同记录会影响哪些回款记录。
+      en: |-
+        Please check the relationship between the "Contract" and "Payment Collection" business objects.
+
+        If available, explain which fields connect them and which payment records can be affected by a contract record.
+
+  - id: yida-business-action
+    title:
+      zh: 办理宜搭业务动作
+      en: Prepare YiDA Business Action
+    description:
+      zh: 查找并准备执行已发布的宜搭业务 Action，在用户确认后完成提交、发起流程或其他受控业务动作
+      en: Find and prepare a published YiDA business Action, then execute submission, process start or other controlled business operation after user confirmation
+    prompt:
+      zh: |-
+        帮我看看「费用报销」应用里能不能发起一笔报销申请。
+
+        如果可以，请先生成办理预览，列出需要我补充的字段，等我确认后再提交。
+      en: |-
+        Please check whether I can start an expense reimbursement request in the "Expense Reimbursement" app.
+
+        If possible, prepare a preview first, list the fields I need to provide, and submit only after I confirm.
