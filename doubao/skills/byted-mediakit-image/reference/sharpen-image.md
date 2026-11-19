@@ -31,7 +31,7 @@
 
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `image_url` | `--image-url` | string | 是 | - | - | 待处理图片 URL，仅支持 .png、.jpg、.jpeg、.webp 格式；支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持处理静图；输入图像的宽和高均不得超过 10000 像素；建议单张图片不超过 35 MB。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 36700160；仅支持格式: ["png","jpg","jpeg","webp"]；宽高上限 px: 10000 | 待处理图片 URL，仅支持 .png、.jpg、.jpeg、.webp 格式；支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持处理静图；输入图像的宽和高均不得超过 10000 像素；建议单张图片不超过 35 MB。 |
 | `output_format` | `--output-format` | string | 否 | "original" | 枚举: ["original","png","jpeg","webp"] | 输出图片格式，默认并支持 original，表示保持与原图一致的格式；也支持 png、jpeg、webp。 |
 | `sharpen_level` | `--sharpen-level` | string | 否 | "low" | 枚举: ["low","medium","high"] | 锐化强度档位，支持 low（轻度锐化）、medium（中度锐化）和 high（重度锐化），默认 low。 |
 

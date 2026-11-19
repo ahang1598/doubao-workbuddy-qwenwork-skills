@@ -1,0 +1,40 @@
+{
+  "logic_title": "宪法在 Anthropic 对齐工作中的位置迁移",
+  "core_question": "2025 年 Anthropic 把宪法用到了哪里：训练目标还是部署边界",
+  "nodes": [
+    {
+      "id": "M1",
+      "label": "训练期宪法对齐：自批评、修订与 RLAIF",
+      "evidence": ["R1", "R2", "R3"]
+    },
+    {
+      "id": "M2",
+      "label": "宪法作为分类器标注规范：2025 年部署防线",
+      "evidence": ["R4"]
+    },
+    {
+      "id": "M3",
+      "label": "成本驱动的架构迭代：表示复用、探针与两级级联",
+      "evidence": ["R5", "R7"]
+    },
+    {
+      "id": "M4",
+      "label": "宪法设计与人机遵循差距：原则框架、公众输入",
+      "evidence": ["R2", "R3", "R6"]
+    },
+    {
+      "id": "M5",
+      "label": "外部攻击面与证据边界：分阶段攻击、小模型复现",
+      "evidence": ["R8", "R9"]
+    }
+  ],
+  "edges": [
+    {"source": "core", "target": "M1", "relation": "引出"},
+    {"source": "M1", "target": "M2", "relation": "分化"},
+    {"source": "M2", "target": "M3", "relation": "扩展"},
+    {"source": "M2", "target": "M4", "relation": "限定"},
+    {"source": "M4", "target": "M1", "relation": "补充"},
+    {"source": "M5", "target": "M2", "relation": "限定"},
+    {"source": "M5", "target": "M3", "relation": "限定"}
+  ]
+}

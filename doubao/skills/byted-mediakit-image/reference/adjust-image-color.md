@@ -35,7 +35,7 @@
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | `adjust_type` | `--adjust-type` | string | 是 | - | 枚举: ["increase_brightness","decrease_brightness","increase_contrast","decrease_contrast","increase_saturation","decrease_saturation"] | 必填的图像调整类型。支持 increase_brightness（调亮）、decrease_brightness（调暗）、increase_contrast（增强对比度）、decrease_contrast（减弱对比度）、increase_saturation（增强饱和度）、decrease_saturation（减弱饱和度）。一次仅支持选择一种效果。 |
-| `image_url` | `--image-url` | string | 是 | - | - | 待处理图片，必填。支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持 .png、.jpg、.jpeg、.webp 格式；仅支持处理静图。单张图片不得超过 35 MB，输入分辨率的宽和高均不得超过 10000 像素。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 36700160；仅支持格式: ["png","jpg","jpeg","webp"]；宽高上限 px: 10000 | 待处理图片，必填。支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持 .png、.jpg、.jpeg、.webp 格式；仅支持处理静图。单张图片不得超过 35 MB，输入分辨率的宽和高均不得超过 10000 像素。 |
 | `output_format` | `--output-format` | string | 否 | "original" | 枚举: ["original","png","jpeg","webp"] | 输出图片格式，可选。支持 original、png、jpeg、webp；original 表示保持与原图一致的格式，默认 original。 |
 
 ### 调用示例

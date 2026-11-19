@@ -1,0 +1,38 @@
+<whiteboard type="mermaid">
+%%{init: {'theme': 'base', 'themeVariables': {
+  'fontFamily': 'Inter, Arial, Microsoft YaHei, sans-serif',
+  'background': '#FAF9F6',
+  'primaryColor': '#E8EEF6',
+  'primaryTextColor': '#1F2933',
+  'primaryBorderColor': '#2F5D8C',
+  'lineColor': '#627D98',
+  'secondaryColor': '#E6F0EA',
+  'tertiaryColor': '#F4EFE6'
+}}}%%
+flowchart TD
+    Title["宪法在 Anthropic 对齐工作中的位置迁移"]
+    Core["2025 年 Anthropic 把宪法用到了哪里：训练目标还是部署边界"]
+    Title --> Core
+    classDef title fill:#F4EFE6,stroke:#9A7B4F,color:#1F2933,stroke-width:1px
+    classDef core fill:#E8EEF6,stroke:#2F5D8C,color:#102A43,stroke-width:1.5px
+    classDef theme fill:#E6F0EA,stroke:#3B7C6E,color:#1F2933,stroke-width:1px
+    class Title title
+    class Core core
+    N1[["训练期宪法对齐：自批评、修订与 RLAIF (R1 R2 R3)"]]
+    class N1 theme
+    N2[["宪法作为分类器标注规范：2025 年部署防线 (R4)"]]
+    class N2 theme
+    N3[["成本驱动的架构迭代：表示复用、探针与两级级联 (R5 R7)"]]
+    class N3 theme
+    N4[["宪法设计与人机遵循差距：原则框架、公众输入 (R2 R3 R6)"]]
+    class N4 theme
+    N5[["外部攻击面与证据边界：分阶段攻击、小模型复现 (R8 R9)"]]
+    class N5 theme
+    Core -->|引出| N1
+    N1 -->|分化| N2
+    N2 -->|扩展| N3
+    N2 -->|限定| N4
+    N4 -->|补充| N1
+    N5 -->|限定| N2
+    N5 -->|限定| N3
+</whiteboard>

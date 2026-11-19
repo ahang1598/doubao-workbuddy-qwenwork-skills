@@ -26,7 +26,7 @@
 
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `image_url` | `--image-url` | string | 是 | - | - | 待识别的图像 URL。图像来源支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；图像长边不得超过 3840 px，短边不得超过 2160 px，单张图片文件大小不得超过 10 MB；仅支持 .png、.jpg、.jpeg、.webp、.tiff、.bmp和.heic 格式。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 10485760；仅支持格式: ["png","jpg","jpeg","webp","tiff","bmp","heic"]；短边上限 px: 2160；长边上限 px: 3840 | 待识别的图像 URL。图像来源支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；图像长边不得超过 3840 px，短边不得超过 2160 px，单张图片文件大小不得超过 10 MB；仅支持 .png、.jpg、.jpeg、.webp、.tiff、.bmp和.heic 格式。 |
 
 ### 调用示例
 

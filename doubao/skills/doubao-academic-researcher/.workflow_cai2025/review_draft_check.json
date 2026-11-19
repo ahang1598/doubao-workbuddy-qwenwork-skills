@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "failures": [],
+  "result": {
+    "paragraph_count": 5,
+    "visible_length": 1731,
+    "numbered_citations": 0,
+    "author_year_citations": 11,
+    "status": "pass"
+  }
+}

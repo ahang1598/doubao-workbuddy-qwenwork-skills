@@ -1,0 +1,45 @@
+{
+  "topic": "Anthropic 2025 年 Constitutional AI 方向的最新论文及其技术脉络",
+  "requirements": [
+    {
+      "id": "R1",
+      "requirement": "找出 Anthropic 在 2025 年发表的、与 Constitutional AI 直接相关的最新论文",
+      "priority": "main",
+      "in_scope": "yes",
+      "carrier": "一、核心结论 + 六、主题章节（按 2025 年工作分主题）",
+      "resolution": "一、核心结论总体判断直接回答：2025 年无新 CAI 训练论文，主线为 Sharma et al.（2025）Constitutional Classifiers；六（一）展开其机制与定位，六（二）补充同年的成本优化报告。"
+    },
+    {
+      "id": "R2",
+      "requirement": "说明这些 2025 年论文具体做了什么、相对 2022 年 Constitutional AI 原始框架推进在哪里",
+      "priority": "main",
+      "in_scope": "yes",
+      "carrier": "六、主题章节（机制/路线分析）",
+      "resolution": "六（一）用表 1 对比 CAI 2022 与 CC 2025/2026 的宪法角色、干预位置、优化对象与失效模式；六（二）说明成本优化如何把外挂分类器改为表示复用与级联。"
+    },
+    {
+      "id": "R3",
+      "requirement": "给出时间线，区分 2025 年新论文与更早的奠基论文（2022 CAI、2024 Collective CAI 等）",
+      "priority": "secondary",
+      "in_scope": "yes",
+      "carrier": "五、核心逻辑图 + 主题章节内的论文脉络对比表",
+      "resolution": "五、核心逻辑图按训练期对齐（2022—2024）到部署期分类器（2025）再到成本迭代与下一代（2025—2026）的先后关系绘制；六（一）表 1 给出 CAI 2022、CC 2025、CC++ 2026 的代际对照。"
+    },
+    {
+      "id": "R4",
+      "requirement": "每条论文给出可核验的出处（作者、机构、发表 venue、arXiv/DOI 链接）",
+      "priority": "secondary",
+      "in_scope": "yes",
+      "carrier": "十一、参考文献（逐条附链接）",
+      "resolution": "十一、参考文献列出 9 条文献，每条含作者、标题、venue/arXiv 编号、年份，并以可点击的 arXiv 或 DOI 链接结尾；正文不夹带超链接。"
+    },
+    {
+      "id": "R5",
+      "requirement": "说明这条技术路线的争议、局限与未解问题",
+      "priority": "secondary",
+      "in_scope": "yes",
+      "carrier": "七、争议与开放问题 + 九、局限性",
+      "resolution": "七、争议与开放问题列三条争议（红队结论的时间边界、成本口径不可比、宪法与分类器一致性问题）与两条开放问题；九、局限性补充检索范围、证据深度与语言覆盖的边界。"
+    }
+  ]
+}

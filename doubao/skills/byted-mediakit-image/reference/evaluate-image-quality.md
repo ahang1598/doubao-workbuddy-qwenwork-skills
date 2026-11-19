@@ -33,7 +33,7 @@ mediakit-cli image evaluate-image-quality \
 
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `image_url` | `--image-url` | string | 是 | - | - | image_url 是待评估的图像 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议，仅支持 png、jpeg、webp和heic 格式，单张图片不得超过 10 MB，图像输入分辨率的长边不得超过 7680 px，短边不得超过 4320 px。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 10485760；仅支持格式: ["png","jpeg","webp","heic"]；短边上限 px: 4320；长边上限 px: 7680 | image_url 是待评估的图像 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议，仅支持 png、jpeg、webp和heic 格式，单张图片不得超过 10 MB，图像输入分辨率的长边不得超过 7680 px，短边不得超过 4320 px。 |
 | `standard_evaluate_items` | `--standard-evaluate-items` | array<string> | 否 | ["vqscore","noise","aesthetic","blur"] | 元素枚举: ["vqscore","advcolor","blockiness","noise","aesthetic","blur","cg","contrast","texture","brightness","overexposure","hue","saturation","green","cmartifacts"] | standard_evaluate_items 为非必填参数，仅当 tool_version 为 standard 时生效，用于指定需要返回的标准版评估维度。standard_evaluate_items 可选 15 个评估维度：vqscore（图片主观质量，值越高表示质量越好）、advcolor（图片整体色彩质量）、blockiness（块效应（马赛克）严重程度）、noise（图片噪声强度）、aesthetic（综合大众美学的质量评分）、blur（模糊度）、cg（是否为非自然场景，如游戏、录屏）、contrast（对比度）、texture（纹理丰富程度）、brightness（平均亮度）、overexposure（过曝光程度）、hue（色调均衡程度）、saturation（饱和度均衡程度）、green（偏绿或绿幕检测）、cmartifacts（压缩失真检测）。standard_evaluate_items 为空时默认返回 vqscore、noise、aesthetic、blur 四个维度。 |
 | `tool_version` | `--tool-version` | string | 否 | "standard" | 枚举: ["standard","professional"] | tool_version 用于选择画质评估所用的模型版本，为非必填参数，支持 standard 和 professional，默认为 standard。standard 提供 15 种基础画质评估维度，可通过 standard_evaluate_items 灵活选择部分或全部维度，在成本和功能灵活性上达到较好的平衡；不传 standard_evaluate_items 时默认返回 vqscore、noise、aesthetic、blur。professional 基于大模型进行评估，直接返回一组固定的综合性评分，提供更优的综合评估效果，适用于对图像品质要求较高的场景，且不支持自定义评估维度。 |
 

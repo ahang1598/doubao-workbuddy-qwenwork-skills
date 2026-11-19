@@ -38,7 +38,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | `crop_strategy` | `--crop-strategy` | string | 否 | "top_crop" | 枚举: ["top_crop","center_crop","frosted_glass_fill"] | 可选。裁剪后图片与目标宽高比例不一致时，使用降级裁剪策略；支持三种策略：top_crop（从图像顶部开始并水平居中裁剪，默认）、center_crop（从图像正中心开始向四周裁剪）、frosted_glass_fill（保持原图完整，并在两侧或上下添加毛玻璃背景以达到目标尺寸）。 |
 | `frosted_glass_strength` | `--frosted-glass-strength` | number | 否 | 100 | 最小值: 1 | 可选。毛玻璃填充的模糊强度，数值越大，模糊效果越强；仅在 crop_strategy 为 frosted_glass_fill 时生效。默认 100，推荐取值范围为 [10, 100]。 |
-| `image_url` | `--image-url` | string | 是 | - | - | 待处理图片的 URL。支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持 .png、.jpg、.jpeg、.webp、.tiff、.bmp、.heic 格式。图片宽和高均不得超过 6000 px，建议单张输入图片不超过 10 MB。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 10485760；仅支持格式: ["png","jpg","jpeg","webp","tiff","bmp","heic"]；宽高上限 px: 6000 | 待处理图片的 URL。支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持 .png、.jpg、.jpeg、.webp、.tiff、.bmp、.heic 格式。图片宽和高均不得超过 6000 px，建议单张输入图片不超过 10 MB。 |
 | `scene` | `--scene` | string | 否 | "person_face" | 枚举: ["person_face","cartoon_face"] | 可选。用于指定识别主体的裁剪场景模型；支持 person_face 和 cartoon_face 两种场景。person_face 表示普通人脸裁剪；cartoon_face 表示动漫人脸裁剪。默认 person_face。 |
 | `target_height` | `--target-height` | integer | 否 | 100 | 最小值: 1 | 可选。裁剪后的目标高度，单位 px；默认 100。 |
 | `target_width` | `--target-width` | integer | 否 | 100 | 最小值: 1 | 可选。裁剪后的目标宽度，单位 px；默认 100。 |

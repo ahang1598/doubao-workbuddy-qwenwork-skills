@@ -6,9 +6,9 @@
 
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：273
-- 当前索引文件数：4420
-- 最近变更：[2026-11-18-180008](doubao/change-logs/2026-11-18-180008.md) - Doubao 本次同步新增 79 个文件、修改 402 个文件、删除 304 个文件。 受影响范围：skills/derivatives-research, skills/doubao-academic-evaluator, skills/doubao-academic-polish, skills/doubao-academic-researcher...
+- 当前索引条目数：274
+- 当前索引文件数：4447
+- 最近变更：[2026-11-19-180005](doubao/change-logs/2026-11-19-180005.md) - Doubao 本次同步新增 37 个文件、修改 59 个文件、删除 10 个文件。 新增条目：skills/doubao-identity。 受影响范围：skills/byted-mediakit-image, skills/byted-mediakit-shared, skills/byted-mediakit-video, skills/douba...
 
 ## 数据来源
 
@@ -79,7 +79,7 @@
 | domain-consistent-translation | `doubao/skills/domain-consistent-translation` | skill | 1 | Use when the user requests professional translation, bidirectional translation, business communication translation, technical document/manual translation, attachment or image translation, terminology unification, styl... |
 | doubao-academic-evaluator | `doubao/skills/doubao-academic-evaluator` | skill | 8 | 用资深审稿人和导师的眼光，对科研工作做"只看不改"的诊断。两类任务：一是评判研究想法值不值得做（打分、查新颖性、判可行性）；二是论文评审，给文章成稿挑硬伤、判断能不能投。只负责找问题、下结论、给修改方向，不替你写正文、不替你画图。要动手写作、搭结构、润色语言，请用姊妹技能 doubao-academic-polish。触发于"帮我看看这个想法""值不值得做""投稿前帮我审一遍""能不能投"。 |
 | doubao-academic-polish | `doubao/skills/doubao-academic-polish` | skill | 53 | 学术论文正文写作、结构设计与语言润色总入口。完整起草、续写、扩写、补写或实质性修订各学科的中英文论文正文时，进入paper-write-zh或paper-write-en；只做提纲、结构诊断或重排方案时，进入paper-shape结构模式；只做忠实润色或不新增研究内容的中译英时，进入paper-shape润色模式。研究评价转/doubao-academic-evaluator；独立系统性文献调研转/doubao-literatur... |
-| doubao-academic-researcher | `doubao/skills/doubao-academic-researcher` | skill | 21 | 通用学术文献调研Skill，面向研究者、学生和论文写作者在未锁定具体论文题目前摸清某学术方向、概念、机制、热点前沿、学术史或选题依据。执行系统检索、引用真实性核验、证据分级、主题聚类、交叉综合、争议与空白识别，产出结论先行、引用可追溯的结构化调研结果。触发于用户要求调研某方向、梳理研究现状或related work、查看最新进展、梳理热点前沿或学术史、找文献支撑、做选题依据、解释某概念或机制。只做文献调研与证据支撑，不产出摘要引言... |
+| doubao-academic-researcher | `doubao/skills/doubao-academic-researcher` | skill | 52 | 通用学术文献调研Skill，面向研究者、学生和论文写作者在未锁定具体论文题目前摸清某学术方向、概念、机制、热点前沿、学术史或选题依据。执行系统检索、引用真实性核验、证据分级、主题聚类、交叉综合、争议与空白识别，产出结论先行、引用可追溯的结构化调研结果。触发于用户要求调研某方向、梳理研究现状或related work、查看最新进展、梳理热点前沿或学术史、找文献支撑、做选题依据、解释某概念或机制。只做文献调研与证据支撑，不产出摘要引言... |
 | doubao-announcement-analysis | `doubao/skills/doubao-announcement-analysis` | skill | 26 | 搜索并解读上市公司公告，覆盖 A股（沪深北）、港股（HKEX）、美股（SEC EDGAR）三大市场。支持两种模式：①单条/多条具体公告的深度解读（拆解公告要点、判断重要性、给出多视角分析）；②按公司或时间段批量监控并生成公告摘要合集（时效优先、覆盖面广）。适用于业绩报告解读、重大合同/协议公告解读、股权变动（增减持/回购）解读、股权激励（期权/限制性股票/员工持股计划）解读、监管问询函/关注函及回复公告解读、停牌复牌与退市风险公告... |
 | doubao-book-writer | `doubao/skills/doubao-book-writer` | skill | 72 | 豆包办公里的非虚构长文档工作台。用于手册、白皮书、报告、培训材料、人物口述、家谱、资料型书稿等长文档的新建、续写、组装、改写、扩写、精修、去AI味、质检和交付。不用于小说、网文、剧本、诗歌、世界观设定、角色剧情创作、短问答、翻译或代码任务。 |
 | doubao-clinical-decision-support | `doubao/skills/doubao-clinical-decision-support` | skill | 14 | 循证医学临床辅助决策 Skill。用户需要分析临床问题，解释临床表现，提供循证医学判断时使用，用于针对临床问题，结合病例资料，查阅指南和文献等循证依据，进行科学回答与诊疗决策，进行诊断鉴别、检查路径、用药安全、治疗比较、预后和风险分析，或需要基于病例情况整理生成病历、入院记录、住院病程和会诊记录等文书。医学文献检索调研改用 doubao-medical-literature-search，单纯报告解读改用 doubao-medic... |
@@ -116,6 +116,7 @@
 | doubao-game-designer | `doubao/skills/doubao-game-designer` | skill | 74 | 把游戏创意、参考作品、现有方案、配置或试玩证据转化为玩法成立、规则闭合、数值可复算且能进入制作的 GDD、玩法方案与系统规格；需要验证关键玩法时，联合前端或开发能力交付可直接运行的 HTML 游戏 Demo。用于核心循环、战斗、成长、经济、关卡、引导、平衡、活动、版本设计、方案评审与修订，以及按需追加的立项、发行、商业和制作内容。 |
 | doubao-headlines-calendar | `doubao/skills/doubao-headlines-calendar` | skill | 8 | 跨平台内容生成、改写、评估和A/B测试标题，并结合账号定位、受众、产能和节点规划可执行的周度或月度内容选题日历。用于爆款标题、多平台标题适配、标题优化、标题拆解、A/B标题、周选题、月度排期、栏目规划、热点日历和新媒体内容策划；不用于直接写完整文章、小说、脚本、PPT或其他成品。能力范围外或多意图任务先说明边界并提供可转化、分模块交付方案。除非用户明确指定其他格式，必须实际创建、写入并校验飞书/Lark文档后返回可访问链接；不得用... |
 | doubao-human-signal | `doubao/skills/doubao-human-signal` | skill | 13 | 去除或避免文本中的 AI 味。用于用户强制调用本 Skill，或写作/改写时提到“不要有 AI 味”“不要太假”“真情实感”“有人感”，或对已有文本/上一轮输出反馈“太像 AI”“太空泛”“太模板”“太官方”“不像我说的”等场景。 |
+| doubao-identity | `doubao/skills/doubao-identity` | skill | 6 | 当用户询问豆包工作、豆包专业版、豆包会员与付费服务（包含权益、充值、退款、发票、订阅、连续包月/包年比较、学生优惠、录音转写、创作额度等）、平台规则与隐私安全（使用条款、隐私政策、内容安全、客服投诉、聊天记录存储/删除/恢复、数据是否用于训练、个人数据、定位、IP）、记忆功能（用途、可记录内容、查询/删除/清空、开关及生效规则）或记忆认知（为什么记得、知道、忘记、记错个人信息）、产品功能问题（比如定时任务为什么不准时）时，必须先调... |
 | doubao-industry-analysis | `doubao/skills/doubao-industry-analysis` | skill | 15 | 针对某一行业（半导体、新能源、医药、消费等）的中长期基本面与产业研究，覆盖行业定义与规模、产业链与竞争格局、政策与驱动力、景气周期、趋势研判与三情景、盈利质量与落地建议。先想清楚这篇报告要证明什么判断（判断主线），再用三级数据分级取证、按固定五大板块写透，最终交付一份可直接用于战略规划、投资决策与商业化落地的飞书深度报告。默认简单模式，只回答用户所问问题；明确要求完整深度报告时执行完整模式。不触发并转其他场景：问该行业今天涨跌/热... |
 | doubao-journal-format | `doubao/skills/doubao-journal-format` | skill | 14 | 用于对学术论文类 Word/DOCX 文档进行期刊、学校、会议或课程要求的格式排版与修复。当用户需要把论文原稿套用.docx 模板或明确格式规则、或提到论文排版、期刊投稿格式、学位论文格式、会议论文模板、时使用；如果同一请求同时包含论文 Word 排版和任何非排版任务，必须先停止并询问用户选择“只做格式排版”还是“作为复合任务拆分处理”，在用户明确选择前不得执行排版。不用于论文写作、润色、降重、翻译、代写、文献检索、补引用、验证引... |
 | doubao-listing-localization | `doubao/skills/doubao-listing-localization` | skill | 10 | Cross-border ecommerce Listing and Product Optimization for Amazon, TEMU, Walmart Marketplace, TikTok Shop, Shopify, AliExpress, Etsy, Google Shopping, Shopee, Lazada, Ozon, and other marketplace or independent-store... |
@@ -189,7 +190,7 @@
 | grant-proposal-writer | `doubao/skills/grant-proposal-writer` | skill | 1 | 撰写完整的资助申请书，涵盖需求陈述、项目设计、目标与指标、评估计划、团队介绍与预算。 |
 | help-documentation | `doubao/skills/help-documentation` | skill | 1 | 撰写产品帮助文档，包含快速上手、功能说明、常见问题与故障排除，面向终端用户。 |
 | hr-material-analysis-writing | `doubao/skills/hr-material-analysis-writing` | skill | 1 | Use when the user asks to process HR-related materials by drafting, rewriting, fact-checking, summarizing constraints, counting lists, comparing payroll/attendance data, generating formal documents, or iterating offic... |
-| html | `doubao/skills/html` | skill | 11 | 专门设计、生成和修改可直接在浏览器中打开的 HTML 页面或已发布的 doubao-html 链接。交付物以独立 .html 文件为主，可包含内联或本地 CSS、JavaScript，支持页面布局、视觉样式、交互效果、响应式适配、组件设计和内容展示。适用于静态网页、单页展示、活动页、原型页、HTML 模板及页面片段。不处理前后端工程、应用框架、服务端接口、数据库、用户系统、构建部署或运营数据。 |
+| html | `doubao/skills/html` | skill | 1 | 专门设计、生成和修改可直接在浏览器中打开的 HTML 页面或已发布的 doubao-html 链接。交付物以独立 .html 文件为主，可包含内联或本地 CSS、JavaScript，支持页面布局、视觉样式、交互效果、响应式适配、组件设计和内容展示。适用于静态网页、单页展示、活动页、原型页、HTML 模板及页面片段。不处理前后端工程、应用框架、服务端接口、数据库、用户系统、构建部署或运营数据。 |
 | impact-report-builder | `doubao/skills/impact-report-builder` | skill | 1 | 为非营利组织生成年度影响力报告，包含成果数据、受益人群、故事案例、财务概览与未来展望。 |
 | industry-analysis | `doubao/skills/industry-analysis` | skill | 12 | 回答中文行业基本面问题，适用于行业、价值链环节、产品市场或技术路线的定义、空间、周期、竞争、利润迁移、传导、比较、进入与产业投资机会分析；不用于股票交易阶段研判或单家公司独立估值。 |
 | inspect-excel-before-work | `doubao/skills/inspect-excel-before-work` | skill | 1 | Use when 用户要求基于新版Excel或附件做分析、计算、填报、汇总、抽取、回填或导出，并出现“先看表头”“确认字段口径”“核对sheet结构”“样本抽查”“跨文件校验”“模板识别”“发现异常先确认”等信号，尤其适用于多sheet、多版本、多附件或模板变更。 |
@@ -304,6 +305,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-11-19-180005 | [2026-11-19-180005](doubao/change-logs/2026-11-19-180005.md) | Doubao 本次同步新增 37 个文件、修改 59 个文件、删除 10 个文件。 新增条目：skills/doubao-identity。 受影响范围：skills/byted-mediakit-image, skills/byted-mediakit-shared, skills/byted-mediakit-video, skills/douba... |
 | 2026-11-18-180008 | [2026-11-18-180008](doubao/change-logs/2026-11-18-180008.md) | Doubao 本次同步新增 79 个文件、修改 402 个文件、删除 304 个文件。 受影响范围：skills/derivatives-research, skills/doubao-academic-evaluator, skills/doubao-academic-polish, skills/doubao-academic-researcher... |
 | 2026-11-17-180001 | [2026-11-17-180001](doubao/change-logs/2026-11-17-180001.md) | Doubao 本次同步新增 1 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/doubao-map-moa。 受影响范围：skills/doubao-map-moa。 |
 | 2026-11-17-141159 | [2026-11-17-141159](doubao/change-logs/2026-11-17-141159.md) | Doubao 本次同步新增 345 个文件、修改 246 个文件、删除 469 个文件。 新增条目：skills/lark-meeting-realtime, skills/seedream-55。 移除条目已归档：skills/browser-record-replay, skills/byted-mediakit-audio, skills/byt... |
@@ -323,4 +325,3 @@
 | 2026-10-15-192505 | [2026-10-15-192505](doubao/change-logs/2026-10-15-192505.md) | Doubao 本次同步新增 82 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/android-native-build-debug, skills/app-builder-orchestration, skills/docker-env-troubleshooting, skills/evidence-based-constr... |
 | 2026-10-13-180008 | [2026-10-13-180008](doubao/change-logs/2026-10-13-180008.md) | Doubao 本次同步新增 1980 个文件、修改 18 个文件、删除 79 个文件。 新增条目：skills/ab-test-setup, skills/academic-journal-submission-planning, skills/ai-news-collector, skills/analyze-local-spreadsheet, s... |
 | 2026-10-08-180007 | [2026-10-08-180007](doubao/change-logs/2026-10-08-180007.md) | Doubao 本次同步新增 7 个文件、修改 76 个文件、删除 7 个文件。 受影响范围：skills/html, skills/lark-approval, skills/lark-base, skills/lark-calendar, skills/lark-drive, skills/lark-im, skills/lark-mail, ski... |
-| 2026-10-08-090557 | [2026-10-08-090557](doubao/change-logs/2026-10-08-090557.md) | Doubao 本次同步新增 5 个文件、修改 11 个文件、删除 0 个文件。 受影响范围：skills/lark-doc, skills/pdf。 |

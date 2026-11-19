@@ -74,7 +74,7 @@ mediakit-cli video drama-recap \
 | `drama_recap_config.text_speed` | - | number | 否 | 1 | 最小值: 0.5；最大值: 2 | 期望的解说词语速，范围为 [0.5, 2.0]，默认 1.0（标准语速）；数值越大语速越快，推荐 1.2 或 1.3 以获得更好的听感。 |
 | `drama_script_task_id` | `--drama-script-task-id` | string | 是 | - | 最短长度: 1 | 已成功完成的剧本还原任务的 task_id，取自剧本还原任务终态结果中的 drama_script_task_id；传入后系统参考该任务的剧本还原结果生成解说视频。用户未提供时不得编造，须先完成剧本还原再填入。 |
 | `erase_mode` | `--erase-mode` | string | 否 | "standard" | 枚举: ["standard"] | 字幕擦除模式；仅当 erase_subtitle 为 true 时生效。默认 standard；standard 表示标准版字幕擦除，平衡擦除效果和处理效率，会残留轻微的涂抹痕迹。 |
-| `erase_subtitle` | `--erase-subtitle` | boolean | 否 | false | - | 是否擦除原视频中的字幕；true 时移除原有字幕，false 时保留原有字幕，默认 false。 |
+| `erase_subtitle` | `--erase-subtitle` | boolean | erase_mode is provided 时是 | false | erase_mode is provided 时固定值: true | 是否擦除原视频中的字幕；true 时移除原有字幕，false 时保留原有字幕，默认 false。 |
 | `miniseries_edit` | `--miniseries-edit` | object | 否 | - | - | 仅竖屏的短剧三要素配置，使用预设视觉模板，为解说视频一键添加“短剧三要素”（剧名、角标、提示语）。 |
 | `miniseries_edit.hint` | - | string | 否 | - | 最长长度: 20 | 短剧提示语，是画面左右两侧的一行文字；可以是概括视频核心冲突或亮点的引导性文字，也可以是“影视效果 请勿模仿 无不良价值观引导”的免责声明；不得超过 20 个字。 |
 | `miniseries_edit.template` | - | string | 否 | - | 枚举: ["热门短剧1","热门短剧2","热门短剧3","热门短剧4","热门短剧5"] | “短剧三要素”视觉模板名称，不同模板决定剧名、角标、提示语的位置和样式；支持 热门短剧1、热门短剧2、热门短剧3、热门短剧4、热门短剧5。 |

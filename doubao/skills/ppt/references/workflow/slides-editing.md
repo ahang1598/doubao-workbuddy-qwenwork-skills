@@ -39,7 +39,7 @@
 
 **主原稿 PPTX**：导入成在线 Slides，导入结果就是之后编辑和交付的对象，不再回头动本地文件。
 
-> 主原稿或参考模板是 PPTX 时，拿到文件后第一步必须通过 lark-cli drive +import 导入在线 Slides。禁止先使用 python-pptx、解压 PPTX、LibreOffice、本地渲染或其他方式解析内容。导入完成后，通过服务端 XML 和 xml_inspect.py 理解原稿，需要查看原稿布局时再使用页面截图。导入失败时先排查导入问题，不得静默切换为本地解析后继续编辑。
+> 主原稿或参考模板是 PPTX 时，拿到文件后第一步必须通过 lark-cli drive +import 导入在线 Slides。禁止先使用 python-pptx、解压 PPTX、LibreOffice、本地渲染或其他方式解析内容。导入完成后，通过服务端 XML 和 xml_inspect.py 理解原稿。导入失败时先排查导入问题，不得静默切换为本地解析后继续编辑。
 
 ```bash
 lark-cli drive +import --file "./<deck>.pptx" --type slides --json
@@ -123,16 +123,7 @@ python3 scripts/xml_inspect.py --input "./source.xml" --slide-id "$SID" --mode r
 
 ### 1.4 按需理解原稿布局
 
-XML 内容与结构摘要用于定位页面，content 模式读取页面文字和数据，raw XML 确认对象结构。需要理解原稿布局时，可按需使用[截图](../cli/lark-slides-screenshot.md)查看相关页面。
-
-```bash
-# 单页传一个 --slide-id；多页重复该参数，单次最多 8 页
-lark-cli slides +screenshot \
-  --presentation "$PRES" \
-  --slide-id "$SID_1" \
-  --slide-id "$SID_2" \
-  --output-dir ./screenshots/
-```
+XML 内容与结构摘要用于定位页面，content 模式读取页面文字和数据，raw XML 确认对象结构。
 
 记录页数/页序、章节、主要文本和数据、图片/图表分布、字体/配色/对齐。内容保护任务保存文本与数据快照；视觉任务保留 `<p>`、`<note>`、表格单元格和图表数据的完整字符串，内容任务另列保护项及允许新增/改写的字段。保护项必须带语义锚点并保留完整表达、来源和结论，不能只存摘要或无上下文的数字。“更多/更少”任务记录修改前数量或覆盖页面。
 

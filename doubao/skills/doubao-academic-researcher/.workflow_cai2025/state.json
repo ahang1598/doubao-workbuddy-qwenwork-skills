@@ -1,0 +1,13 @@
+{
+  "topic": "Anthropic 2025 年 Constitutional AI 方向的最新论文及其技术脉络",
+  "current_stage": "done",
+  "completed": [
+    "literature-scout",
+    "research-synthesis",
+    "review-writing",
+    "document-delivery"
+  ],
+  "last_blocked": null,
+  "requirement_checklist": "C:\\Users\\15805\\AppData\\Local\\Doubao\\User Data\\Default\\.doubao\\agent_mode\\workspace\\.skills\\doubao-academic-researcher\\.workflow_cai2025\\requirement_checklist.json",
+  "updated_at": "2026-11-18T14:14:10+00:00"
+}

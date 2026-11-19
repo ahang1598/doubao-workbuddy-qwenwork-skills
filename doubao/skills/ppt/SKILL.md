@@ -1,6 +1,6 @@
 ---
 name: ppt
-version: 1.0.80
+version: 1.0.83
 description: 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。
 metadata:
   requires:
@@ -14,7 +14,7 @@ metadata:
 
 ## 权威经验
 
-1. **页面写入默认请求跳过 lint**：`+add-slide`、`+update-slide`、`+replace-slide` 均传 `--no-lint`；含图页的 `publish_slide()` 也采用此默认。成功后记录页面 ID 并继续。默认制作与交付不主动执行 lint、布局或视觉自检、成稿预览、截图复检和写后内容验收，也不分页阅读报告、建立 lint 基线或进入清零修复循环。独立检查与审查工具仅在用户明确要求检查时调用。服务端仍可能拒绝写入，失败处理见 [`error-handling.md`](references/workflow/error-handling.md)。
+1. **页面写入默认请求跳过 lint**：`+add-slide`、`+update-slide`、`+replace-slide` 均传 `--no-lint`；含图页的 `publish_slide()` 也采用此默认。成功后记录页面 ID 并继续。默认制作与交付不主动执行 lint、布局或视觉自检、成稿预览和写后内容验收，也不分页阅读报告、建立 lint 基线或进入清零修复循环。独立检查与审查工具仅在用户明确要求检查时调用。服务端仍可能拒绝写入，失败处理见 [`error-handling.md`](references/workflow/error-handling.md)。
 2. **开工通知和成稿交付都必须调用 present_files 工具**。
 3. **按当前场景、需求和步骤选中的必读文档必须完整读完，尾部有重要信息，不要中途截断**。Read 工具单次返回有 token 上限，`limit` 单位为行数；大文件需用 `offset` + `limit` 分段续读，直到返回 `[End of file.]` 为止。
 4. 牢记幻灯片 URL 和关键 ID（`xml_presentation_id`、`slide_id`、`revision_id`、`file_token`、`block_id`、`obj_token`）。
@@ -242,7 +242,7 @@ lark-cli slides +add-slide --no-lint \
 lark-cli wiki spaces get_node --params '{"token":"wiki_token"}'
 ```
 
-> `+replace-slide`、`+media-upload`、`+screenshot`、`+xml-get` 等 shortcut 会自动解析 `/slides/` 和 `/wiki/` URL；只有手动调 `xml_presentations.*` / `xml_presentation.slide.*` 原生 API 时才需要自己解析 wiki。
+> `+replace-slide`、`+media-upload`、`+xml-get` 等 shortcut 会自动解析 `/slides/` 和 `/wiki/` URL；只有手动调 `xml_presentations.*` / `xml_presentation.slide.*` 原生 API 时才需要自己解析 wiki。
 
 
 

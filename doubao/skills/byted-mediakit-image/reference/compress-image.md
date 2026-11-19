@@ -40,7 +40,7 @@ mediakit-cli image compress-image \
 
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `image_url` | `--image-url` | string | 是 | - | - | 待处理图片的 URL。仅支持静图；支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；支持 .png、.jpg、.jpeg、.webp 格式。建议单张输入图片不超过 35 MB。输入图像的宽和高分别都不得超过 10000 像素。输出为 avif 时，建议输入图像的宽×高不超过 100,000 像素，否则任务可能失败。输出为 heic 时，建议输入图像分辨率不超过 4K（约4096×4096 像素），否则任务可能失败。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 36700160；仅支持格式: ["png","jpg","jpeg","webp"]；宽高上限 px: 10000；最大像素总数: 100000，当 output_format=avif；宽高上限 px: 4096，当 output_format=heic | 待处理图片的 URL。仅支持静图；支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；支持 .png、.jpg、.jpeg、.webp 格式。建议单张输入图片不超过 35 MB。输入图像的宽和高分别都不得超过 10000 像素。输出为 avif 时，建议输入图像的宽×高不超过 100,000 像素，否则任务可能失败。输出为 heic 时，建议输入图像分辨率不超过 4K（约4096×4096 像素），否则任务可能失败。 |
 | `max_size` | `--max-size` | integer | 否 | - | 最小值: 1 | 输出图像的文件体积上限，单位为字节（Byte）。推荐设为 10,485,760 字节（10 MiB）。仅在 output_format 为 jpeg 或 webp 时生效；设置后，系统自动调整压缩参数以尽可能满足体积限制，手动设置的 quality 会被忽略。 |
 | `output_format` | `--output-format` | string | 否 | "webp" | 枚举: ["png","jpeg","webp","avif","heic"] | 输出图片格式。支持 png、jpeg、webp、avif、heic；未提供 output_format 时默认使用 webp。若希望保持原图格式，需要显式传入原格式。 |
 | `png_lossy` | `--png-lossy` | boolean | 否 | false | - | 可选开启 PNG 图片有损压缩，以获得更高压缩率；仅在 output_format 为 png 时生效；默认为 false。 |

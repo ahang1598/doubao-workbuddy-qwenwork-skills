@@ -1,0 +1,48 @@
+<whiteboard type="mermaid">
+%%{init: {'theme': 'base', 'themeVariables': {
+  'fontFamily': 'Inter, Arial, Microsoft YaHei, sans-serif',
+  'background': '#FAF9F6',
+  'primaryColor': '#E8EEF6',
+  'primaryTextColor': '#1F2933',
+  'primaryBorderColor': '#2F5D8C',
+  'lineColor': '#627D98',
+  'secondaryColor': '#E6F0EA',
+  'tertiaryColor': '#F4EFE6'
+}}}%%
+flowchart TD
+    Title["2024 年以来 RLHF 的研究脉络：奖励信号如何决定行为分布"]
+    Core["RLHF 的进展由什么决定：优化算法，还是奖励信号本身"]
+    Title --> Core
+    classDef title fill:#F4EFE6,stroke:#9A7B4F,color:#1F2933,stroke-width:1px
+    classDef core fill:#E8EEF6,stroke:#2F5D8C,color:#102A43,stroke-width:1.5px
+    classDef theme fill:#E6F0EA,stroke:#3B7C6E,color:#1F2933,stroke-width:1px
+    class Title title
+    class Core core
+    N1[["偏好优化算法与理论边界 (R1 R2 R3 R4 R5 R6 R7)"]]
+    class N1 theme
+    N2[["奖励建模：标量奖励到过程奖励与 rubric (R11 R12 R13 R14 R15)"]]
+    class N2 theme
+    N3[["可验证奖励 RL：GRPO 与 RLVR (R8 R9 R10 R25 R26 R32 R33)"]]
+    class N3 theme
+    N4[["反馈来源重构：AI 反馈与多元偏好聚合 (R16 R17 R18 R27)"]]
+    class N4 theme
+    N5[["多轮交互与 Agent 化 (R22 R23 R24 R30 R31)"]]
+    class N5 theme
+    N6[["对齐深度与安全后果 (R19 R20 R21 R28)"]]
+    class N6 theme
+    Core -->|引出| N1
+    Core -->|引出| N2
+    Core -->|引出| N3
+    Core -->|引出| N4
+    N1 -->|限定| N2
+    N1 -->|扩展| N3
+    N2 -->|分化| N3
+    N3 -->|补充| N2
+    N1 -->|扩展| N5
+    N3 -->|扩展| N5
+    N2 -->|补充| N5
+    N4 -->|补充| N2
+    N1 -->|限定| N6
+    N3 -->|限定| N6
+    N6 -->|反驳| N1
+</whiteboard>

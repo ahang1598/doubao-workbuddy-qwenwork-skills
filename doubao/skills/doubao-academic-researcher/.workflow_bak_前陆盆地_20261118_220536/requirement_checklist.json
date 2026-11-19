@@ -1,0 +1,45 @@
+{
+  "topic": "前陆盆地与增生楔形成关系的最新研究进展（构造地质/盆地动力学方向，面向拟开展相关研究的研究者）",
+  "requirements": [
+    {
+      "id": "R1",
+      "requirement": "梳理前陆盆地与增生楔形成关系的研究现状，并给出最新研究进展",
+      "priority": "main",
+      "in_scope": "yes",
+      "carrier": "一、核心结论；六、主题章节",
+      "resolution": ""
+    },
+    {
+      "id": "R2",
+      "requirement": "说清二者耦合的机制与主要模型流派（构造负载挠曲、临界锥体、楔顶/前缘盆地、剥蚀—沉积耦合等），而非只列论文",
+      "priority": "main",
+      "in_scope": "yes",
+      "carrier": "六、主题章节各分主题（机制解释型论证）",
+      "resolution": ""
+    },
+    {
+      "id": "R3",
+      "requirement": "突出“最新”：以近 5 年（2020—2026）文献为主，同时保留不可省略的奠基作与经典模型",
+      "priority": "secondary",
+      "in_scope": "yes",
+      "carrier": "二、研究范围与方法；六、主题章节中的“最新进展”证据",
+      "resolution": ""
+    },
+    {
+      "id": "R4",
+      "requirement": "指出该方向的争议、开放问题与可继续做的研究选题",
+      "priority": "secondary",
+      "in_scope": "yes",
+      "carrier": "七、争议与开放问题；八、可研究的方向",
+      "resolution": ""
+    },
+    {
+      "id": "R5",
+      "requirement": "提供经真实性与权威性核验、可点击追溯的参考文献",
+      "priority": "secondary",
+      "in_scope": "yes",
+      "carrier": "十一、参考文献；各主题“本节文献”",
+      "resolution": ""
+    }
+  ]
+}

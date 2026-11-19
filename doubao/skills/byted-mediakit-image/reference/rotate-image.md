@@ -32,7 +32,7 @@
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | `fill_color` | `--fill-color` | string | 否 | "Black" | 枚举: ["Black","White","Transparent"] | fill_color 用于填充旋转后因非正交角度产生的空白区域，支持 Black、White、Transparent。Black 表示黑色填充，White 表示白色填充，Transparent 表示透明填充，建议配合 png 格式输出，fill_color 默认为 Black。 |
-| `image_url` | `--image-url` | string | 是 | - | - | 待处理图片的 URL。支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议，仅支持 .png、.jpg、.jpeg、.webp 格式，仅支持处理静图。输入图片宽度和高度均不得超过 10000 像素，建议单张图片不超过 35 MB。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 36700160；仅支持格式: ["png","jpg","jpeg","webp"]；宽高上限 px: 10000 | 待处理图片的 URL。支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议，仅支持 .png、.jpg、.jpeg、.webp 格式，仅支持处理静图。输入图片宽度和高度均不得超过 10000 像素，建议单张图片不超过 35 MB。 |
 | `output_format` | `--output-format` | string | 否 | "webp" | 枚举: ["original","png","jpeg","webp"] | output_format 用于指定输出图片格式，支持 original、png、jpeg、webp。original 表示保持与原图一致的格式，output_format 默认为 webp。 |
 | `rotate_angle` | `--rotate-angle` | integer | 是 | - | 最小值: 1；最大值: 359 | rotate_angle 表示图像逆时针旋转的角度，必须大于 0 且必须小于 360。 |
 

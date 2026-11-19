@@ -83,7 +83,7 @@ mediakit-cli video drama-recap-vertical \
 | `max_count` | `--max-count` | integer | 否 | 3 | 最小值: 1；最大值: 100 | 单次任务期望生成的解说视频数量上限，最小值为 1，不得超过 100，默认为 3。 |
 | `max_duration` | `--max-duration` | number | 否 | 180 | 最小值: 1；最大值: 7200 | 每个解说视频的时长上限，单位为秒，最小值为 1，最大值为 7200，默认为 180 秒。 |
 | `min_duration` | `--min-duration` | number | 否 | 30 | 最小值: 1；最大值: 7200 | 每个解说视频的时长下限，单位为秒，最小值为 1，最大值为 7200，默认为 30 秒。 |
-| `mode` | `--mode` | string | 否 | "text" | 枚举: ["narrate","text"] | 默认为 text；支持 narrate 和 text 两种模式。narrate 生成原片高光混剪、AI 语音解说和 BGM；text 生成原片高光混剪与屏幕文字解说。 |
+| `mode` | `--mode` | string | narrate_options is provided 时是；text_options is provided 时是 | "text" | 枚举: ["narrate","text"]；narrate_options is provided 时固定值: "narrate"；text_options is provided 时固定值: "text" | 默认为 text；支持 narrate 和 text 两种模式。narrate 生成原片高光混剪、AI 语音解说和 BGM；text 生成原片高光混剪与屏幕文字解说。 |
 | `narrate_bgm_url` | `--narrate-bgm-url` | string | 否 | - | - | 指定旁白解说模式下使用的背景音乐音频 URL；支持本地文件路径和公网 HTTP/HTTPS URL；支持 mp3、m4a、wav 等主流音频格式；可选，不传时生成的解说视频不添加背景音乐。 |
 | `narrate_options` | `--narrate-options` | object | 否 | - | - | 仅当 mode 为 narrate 时生效。 |
 | `narrate_options.enable_narrate_bgm` | - | boolean | 否 | true | - | 默认为 true；true 启用 BGM 并使用 narrate_bgm_url 指定的音频，false 关闭背景音乐。 |

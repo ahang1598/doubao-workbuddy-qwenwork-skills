@@ -34,7 +34,7 @@
 | `corner_type` | `--corner-type` | string | 否 | "circle" | 枚举: ["circle","ellipse"] | 圆角类型支持 circle 和 ellipse。circle 表示正圆圆角，半径通过 circle_radius 配置；ellipse 表示椭圆圆角，X 轴和 Y 轴半径分别通过 ellipse_radius_x 和 ellipse_radius_y 配置。默认 circle。 |
 | `ellipse_radius_x` | `--ellipse-radius-x` | integer | 否 | 40 | 最小值: 0 | 椭圆圆角 X 轴（水平）半径，单位为 px，取值大于等于 0。 |
 | `ellipse_radius_y` | `--ellipse-radius-y` | integer | 否 | 60 | 最小值: 0 | 椭圆圆角 Y 轴（垂直）半径，单位为 px，取值大于等于 0。 |
-| `image_url` | `--image-url` | string | 是 | - | - | 待处理图片的 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持 .png、.jpg、.jpeg、.webp 格式，仅支持处理静图。建议单张图片不超过 35 MB，输入图片的宽和高均不得超过 10000 像素。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 36700160；仅支持格式: ["png","jpg","jpeg","webp"]；宽高上限 px: 10000 | 待处理图片的 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持 .png、.jpg、.jpeg、.webp 格式，仅支持处理静图。建议单张图片不超过 35 MB，输入图片的宽和高均不得超过 10000 像素。 |
 | `output_format` | `--output-format` | string | 否 | "webp" | 枚举: ["original","png","jpeg","webp"] | 输出图片格式支持 original、png、webp 和 jpeg，默认 webp。original 保持原图格式；png 和 webp 会对圆角外区域进行透明填充，jpeg 会对圆角外区域进行白色填充。 |
 
 ### 调用示例

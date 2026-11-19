@@ -33,7 +33,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | `background_color` | `--background-color` | string | 否 | - | 枚举: ["black","white","green"] | 输出视频的背景颜色；black 表示黑色，white 表示白色，green 表示绿色，默认为绿色；仅当 format 为 MP4 时生效。 |
 | `client_token` | `--client-token` | string | 否 | - | - | 用户请求凭证，用于幂等控制；大小写敏感，长度不超过 64 个 ASCII 可打印字符。 用于控制异步任务幂等；同步任务不支持幂等校验。异步任务首次提交时默认不传，服务端仍会对相同核心参数执行 24 小时默认幂等。用户明确指定 token 时原样使用。因网络超时、响应丢失等原因重试同一次提交时，原请求有 token 则复用原值，原请求未传则继续不传。任务已有结果后，用户要求“结果不对，重试”“重新跑一次”或“重新发起任务”时，必须生成并传递新的 token，避免返回原任务。新对话中用户要求“重新发起任务”时，若当前上下文具备完整任务参数，直接生成新 token 并提交；若参数不足，先向用户澄清，补齐后再使用新 token 发起，不得直接省略 token。新任务后续发生提交重试时复用该新 token。已有 task_id 且任务尚未完成时，只查询原任务，不得重新提交。CLI runtime 不判断用户意图，也不自动生成 token。 |
-| `format` | `--format` | string | 否 | "WEBM" | 枚举: ["MOV","WEBM","MP4"] | 输出视频的格式，默认为 WEBM。MP4 输出 MP4 格式和纯色背景，并可选用 background_color 指定背景颜色。MOV 输出 QuickTime Movie 格式和透明背景，支持 Alpha 透明通道。WEBM 输出 WebM 格式和透明背景，支持 Alpha 透明通道。 |
+| `format` | `--format` | string | background_color is provided 时是 | "WEBM" | 枚举: ["MOV","WEBM","MP4"]；background_color is provided 时固定值: "MP4" | 输出视频的格式，默认为 WEBM。MP4 输出 MP4 格式和纯色背景，并可选用 background_color 指定背景颜色。MOV 输出 QuickTime Movie 格式和透明背景，支持 Alpha 透明通道。WEBM 输出 WebM 格式和透明背景，支持 Alpha 透明通道。 |
 | `video_url` | `--video-url` | string | 是 | - | - | 指定待抠图的视频 URL，支持 mp4、flv、ts、avi、mov、mkv、wmv 等主流视频格式；支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议。 |
 
 ### 调用示例

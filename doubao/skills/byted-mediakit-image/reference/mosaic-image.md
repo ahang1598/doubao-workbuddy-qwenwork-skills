@@ -52,7 +52,7 @@ mediakit-cli image mosaic-image \
 
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `image_url` | `--image-url` | string | 是 | - | - | 仅支持处理静图；建议单张图片不超过 35 MB；输入图像的宽和高均不得超过 10000 像素。仅支持 .png、.jpg、.jpeg、.webp 格式。支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 36700160；仅支持格式: ["png","jpg","jpeg","webp"]；宽高上限 px: 10000 | 仅支持处理静图；建议单张图片不超过 35 MB；输入图像的宽和高均不得超过 10000 像素。仅支持 .png、.jpg、.jpeg、.webp 格式。支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议。 |
 | `mosaic_regions` | `--mosaic-regions` | array<object> | mosaic_type=specify-region 时是 | - | 最少项数: 1；最多项数: 3 | 最多支持 3 个矩形区域。 |
 | `mosaic_regions[].bottom_right_x` | - | integer | 是 | - | 最小值: 0 | 框选区域右下角的 X 轴坐标，单位为 px，坐标原点为图像左上角，必须大于 top_left_x。 |
 | `mosaic_regions[].bottom_right_y` | - | integer | 是 | - | 最小值: 0 | 框选区域右下角的 Y 轴坐标，单位为 px，坐标原点为图像左上角，必须大于 top_left_y。 |

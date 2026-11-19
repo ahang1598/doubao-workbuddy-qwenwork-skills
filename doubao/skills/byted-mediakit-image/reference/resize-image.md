@@ -46,9 +46,9 @@ mediakit-cli image resize-image \
 
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `image_url` | `--image-url` | string | 是 | - | - | image_url 是待处理图片的 URL，图片来源支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；输入支持 .png、.jpg、.jpeg、.webp 格式；输入仅支持静图；建议单张输入图片不超过 35 MB，输入图像的宽和高均不得超过 10000 像素。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 36700160；仅支持格式: ["png","jpg","jpeg","webp"]；宽高上限 px: 10000 | image_url 是待处理图片的 URL，图片来源支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；输入支持 .png、.jpg、.jpeg、.webp 格式；输入仅支持静图；建议单张输入图片不超过 35 MB，输入图像的宽和高均不得超过 10000 像素。 |
 | `output_format` | `--output-format` | string | 否 | "original" | 枚举: ["original","png","jpeg","webp"] | output_format 指定输出图片格式；支持 original、png、jpeg、webp，original 表示输出保持与原图一致的格式；默认 original。 |
-| `resize_adaptive` | `--resize-adaptive` | array<string> | 否 | ["enlarge","shrink"] | 最少项数: 1；元素枚举: ["enlarge","shrink"] | resize_adaptive 控制仅在特定条件下执行缩放；支持 enlarge、shrink；enlarge 仅在原图尺寸小于目标尺寸时执行放大，shrink 仅在原图尺寸大于目标尺寸时执行缩小；默认 enlarge、shrink，即总是执行缩放。 |
+| `resize_adaptive` | `--resize-adaptive` | array<string> | 否 | ["enlarge","shrink"] | 最少项数: 1；项值唯一: true；元素枚举: ["enlarge","shrink"] | resize_adaptive 控制仅在特定条件下执行缩放；支持 enlarge、shrink；enlarge 仅在原图尺寸小于目标尺寸时执行放大，shrink 仅在原图尺寸大于目标尺寸时执行缩小；默认 enlarge、shrink，即总是执行缩放。 |
 | `resize_long` | `--resize-long` | integer | 条件必填（resize_long 或 resize_short） | 0 | 最小值: 0 | 目标图像的长边尺寸，单位为像素。等比缩放：仅设置此参数（或将 resize_short 设为 0），图像将按原始比例缩放，使长边匹配此值。组合使用：当与 resize_short 同时设置时，缩放行为由 resize_mode 参数决定。与 resize_short 必须至少提供一个大于 0 的值。 |
 | `resize_mode` | `--resize-mode` | string | 否 | "contain" | 枚举: ["exact","contain","cover"] | resize_mode 定义同时指定 resize_long 和 resize_short 时的缩放行为；支持 exact、contain、cover；exact 强制将图像精确缩放到 resize_long x resize_short，可能导致拉伸或压缩变形；contain 保持原始宽高比，使图像完整包含在 resize_long x resize_short 矩形框内，最终宽高均不超过指定值；cover 保持原始宽高比，使图像完全填满 resize_long x resize_short 矩形框，并居中裁剪超出部分；默认 contain。 |
 | `resize_short` | `--resize-short` | integer | 条件必填（resize_long 或 resize_short） | 0 | 最小值: 0 | 目标图像的短边尺寸，单位为像素。等比缩放：仅设置此参数（或将 resize_long 设为 0），图像将按原始比例缩放，使短边匹配此值。组合使用：当与 resize_long 同时设置时，缩放行为由 resize_mode 参数决定。与 resize_long 必须至少提供一个大于 0 的值。 |

@@ -59,10 +59,10 @@ mediakit-cli image add-image-watermark \
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | `enable_tile` | `--enable-tile` | boolean | 否 | false | - | 默认 false。开启后水印将以固定的间距重复平铺在整个图片上；对于文字水印，会额外应用逆时针 30 度的旋转；对于图片水印，仅进行平铺，不应用旋转。 |
-| `image_url` | `--image-url` | string | 是 | - | - | 待处理的图片 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持处理静图；单张图片不得超过 35 MB；仅支持 .png、.jpg、.jpeg、.webp 格式；输入图片宽和高均不得超过 10000 像素。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 36700160；仅支持格式: ["png","jpg","jpeg","webp"]；宽高上限 px: 10000 | 待处理的图片 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持处理静图；单张图片不得超过 35 MB；仅支持 .png、.jpg、.jpeg、.webp 格式；输入图片宽和高均不得超过 10000 像素。 |
 | `output_format` | `--output-format` | string | 否 | "original" | 枚举: ["original","png","jpeg","webp"] | 输出图片格式可为 original、png、jpeg、webp；original 表示保持与原图一致的格式；默认 original。 |
 | `watermark_image_opacity` | `--watermark-image-opacity` | integer | 否 | 100 | 最小值: 0；最大值: 100 | 图片水印透明度范围为 [0,100]；值越小越透明；默认 100。 |
-| `watermark_image_url` | `--watermark-image-url` | string | watermark_type=image 时是 | - | - | 图片水印的 URL，必须为公网可访问的 HTTP 或 HTTPS URL；不是无条件必填；不得超过 5 MB；仅支持 .jpg、.jpeg、.webp 格式。 |
+| `watermark_image_url` | `--watermark-image-url` | string | watermark_type=image 时是 | - | 最大文件字节数: 5242880；仅支持格式: ["jpg","jpeg","webp"] | 图片水印的 URL，必须为公网可访问的 HTTP 或 HTTPS URL；不是无条件必填；不得超过 5 MB；仅支持 .jpg、.jpeg、.webp 格式。 |
 | `watermark_position` | `--watermark-position` | string | 否 | "bottom_right" | 枚举: ["top_left","top_right","bottom_left","bottom_right","left_center","right_center","top_center","bottom_center","center"] | 水印在图片上的九宫格布局位置，可为 top_left、top_center、top_right、left_center、center、right_center、bottom_left、bottom_center、bottom_right；默认 bottom_right；当使用包含 center 的值时，watermark_position_offset_x 和 watermark_position_offset_y 将不生效。 |
 | `watermark_position_offset_x` | `--watermark-position-offset-x` | integer | 否 | 0 | 最小值: 0 | 水印在 watermark_position 基础上沿 X 轴的微调距离，单位为像素；默认 0；仅在 watermark_position 取值不包含 center 时生效。 |
 | `watermark_position_offset_y` | `--watermark-position-offset-y` | integer | 否 | 0 | 最小值: 0 | 水印在 watermark_position 基础上沿 Y 轴的微调距离，单位为像素；默认 0；仅在 watermark_position 取值不包含 center 时生效。 |

@@ -26,7 +26,7 @@
 
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `image_url` | `--image-url` | string | 是 | - | - | 待处理图片 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议。输入图片仅支持 jpeg、jpg、png、heic、avif和webp 格式，暂不支持动图输入。建议单张输入图片不超过 50 MB；输入图像的宽度不得超过 10000 像素，高度不得超过 10000 像素。当输入图像格式为 avif 时，建议宽与高的乘积不要超过 100,000；当 avif 输入图像的宽与高乘积超过建议的 100,000 时，处理可能失败。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 52428800；仅支持格式: ["jpeg","jpg","png","heic","avif","webp"]；宽高上限 px: 10000；最大像素总数: 100000，当 input_format=avif | 待处理图片 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议。输入图片仅支持 jpeg、jpg、png、heic、avif和webp 格式，暂不支持动图输入。建议单张输入图片不超过 50 MB；输入图像的宽度不得超过 10000 像素，高度不得超过 10000 像素。当输入图像格式为 avif 时，建议宽与高的乘积不要超过 100,000；当 avif 输入图像的宽与高乘积超过建议的 100,000 时，处理可能失败。 |
 | `output_format` | `--output-format` | string | 否 | "original" | 枚举: ["original","png","jpeg","webp"] | 输出图片格式，默认 original；original 表示输出保持与原图一致的格式，支持 original、png、jpeg 或 webp。输入和输出格式均为 JPEG 时，部分已高度压缩的源文件处理后体积可能无明显变化；JPEG 输入输出时体积可能不降或略增，与原图压缩参数及 JPEG 重新编码特性有关，属于正常现象；输入和输出格式均为 JPEG 时，少数情况下处理后体积甚至会略微增大。 |
 
 ### 调用示例

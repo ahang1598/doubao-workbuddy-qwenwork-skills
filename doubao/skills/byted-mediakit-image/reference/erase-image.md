@@ -37,7 +37,7 @@
 
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `image_url` | `--image-url` | string | 是 | - | - | 待处理图像的 URL；图像来源支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；输入图像分辨率不得小于 10x10 像素，且不得超过 2560x1440 像素，顺序为宽x高；单张输入图片大小不得超过 10 MB；输入图片仅支持 .png、.jpg、.jpeg、.webp、.tiff、.bmp和.heic 格式。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 10485760；仅支持格式: ["png","jpg","jpeg","webp","tiff","bmp","heic"]；最小宽度 px: 10；最小高度 px: 10 | 待处理图像的 URL；图像来源支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；输入图像分辨率不得小于 10x10 像素，且不得超过 2560x1440 像素，顺序为宽x高；单张输入图片大小不得超过 10 MB；输入图片仅支持 .png、.jpg、.jpeg、.webp、.tiff、.bmp和.heic 格式。 |
 | `output_format` | `--output-format` | string | 否 | "webp" | 枚举: ["png","jpeg","webp"] | 输出图片的格式，支持 webp、png 和 jpeg；默认 webp。 |
 | `standard_erase_text` | `--standard-erase-text` | string | 否 | - | - | standard_erase_text 指定需要擦除的文字内容；仅当 standard_scene 为 full_screen_text_erase 时生效；不提供 standard_erase_text 时会擦除识别到的所有文字。 |
 | `standard_scene` | `--standard-scene` | string | 否 | "full_screen_text_erase" | 枚举: ["full_screen_text_erase","full_screen_icon_erase","selected_area_erase"] | 标准版擦除场景，仅当 tool_version 为 standard 时生效。默认值为 full_screen_text_erase。full_screen_text_erase：全屏文字擦除。可通过 standard_erase_text 字段指定要擦除的文字，不指定则默认擦除所有文字内容。full_screen_icon_erase：全屏图标擦除。selected_area_erase：指定区域擦除。使用此场景时，您必须至少提供 selected_area（矩形坐标）或 mask_url（遮罩图）中的一个参数来定义擦除范围。如果同时提供了这两个参数，系统将擦除它们所定义区域的并集。 |

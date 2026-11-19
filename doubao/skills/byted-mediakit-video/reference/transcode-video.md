@@ -71,7 +71,7 @@ mediakit-cli video transcode-video \
 | `video.bitrate_kbps` | - | integer | 是 | 2000（Schema 默认；仍需显式提供） | 最小值: 10；最大值: 50000 | video.bitrate_kbps 在 crf、abr、cbr 模式下分别表示最大码率限制、平均码率目标、恒定码率目标。 |
 | `video.bitrate_mode` | - | string | 是 | "crf"（Schema 默认；仍需显式提供） | 枚举: ["crf","abr","cbr"] | crf 推荐用于大多数场景，尽量保持 bitrate_crf 指定的视觉质量，并以 bitrate_kbps 限制瞬时码率。abr 调整码率使整体平均码率接近 bitrate_kbps，适合将文件大小控制在特定范围。cbr 尝试让视频流每秒严格保持 bitrate_kbps 设定码率，适合要求网络传输稳定的流媒体场景。 |
 | `video.codec` | - | string | 是 | "h264"（Schema 默认；仍需显式提供） | 枚举: ["h264","h265"] | 视频编码格式支持 h264 和 h265，默认是 h264。 |
-| `video.fps` | - | integer | 否 | - | 最小值: 1；最大值: 240 | fps 范围 [1, 240]；vfr 下是最大帧率，cfr 下是恒定帧率。 |
+| `video.fps` | - | integer | video.fps_mode is provided 时是 | - | 最小值: 1；最大值: 240 | fps 范围 [1, 240]；vfr 下是最大帧率，cfr 下是恒定帧率。 |
 | `video.fps_mode` | - | string | 否 | "vfr" | 枚举: ["vfr","cfr"] | 只有设置 fps 后 fps_mode 才生效；未提供 fps 时遵循原视频帧率并忽略 fps_mode。cfr 将 fps 作为强制恒定输出帧率。vfr 将 fps 作为最高帧率；源帧率较低时保留，较高时降低到 fps。 |
 | `video.is_hdr_to_sdr` | - | boolean | 否 | true | - | true 将 HDR 转换为 SDR；false 保留 HDR。 |
 | `video.scale_height` | - | integer | 否 | - | 最小值: 0；最大值: 4320 | scale_height 单位为 px，范围 [0, 4320]，仅在 scale_type=2 时生效；只传宽或高之一时另一边按比例缩放。 |

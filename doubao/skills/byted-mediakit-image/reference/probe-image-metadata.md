@@ -19,7 +19,7 @@
 
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `image_url` | `--image-url` | string | 是 | - | - | 待探测的图片 URL。支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持 .png、.jpg、.jpeg、.webp 格式。图片输入分辨率的宽和高均不得超过 10000 像素，建议单张图片文件大小不超过 35 MB。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 36700160；仅支持格式: ["png","jpg","jpeg","webp"]；宽高上限 px: 10000 | 待探测的图片 URL。支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持 .png、.jpg、.jpeg、.webp 格式。图片输入分辨率的宽和高均不得超过 10000 像素，建议单张图片文件大小不超过 35 MB。 |
 | `info_type` | `--info-type` | string | 否 | "metadata" | 枚举: ["metadata","avghue","alpha","blurhash"] | 查询信息类型。metadata 获取图像的基本元信息；avghue 提取图像的主题色；alpha 分析图像的 Alpha 透明通道；blurhash 生成图像的 BlurHash 值。默认 metadata。 |
 
 ### 调用示例

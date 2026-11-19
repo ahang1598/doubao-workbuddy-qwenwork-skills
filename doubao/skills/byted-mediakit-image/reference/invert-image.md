@@ -21,7 +21,7 @@
 
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `image_url` | `--image-url` | string | 是 | - | - | 待处理的图片 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持 .png、.jpg、.jpeg、.webp 格式，且仅支持处理静图；建议单张图片不超过 35 MB，输入图像的宽和高均不得超过 10000 像素。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 36700160；仅支持格式: ["png","jpg","jpeg","webp"]；宽高上限 px: 10000 | 待处理的图片 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持 .png、.jpg、.jpeg、.webp 格式，且仅支持处理静图；建议单张图片不超过 35 MB，输入图像的宽和高均不得超过 10000 像素。 |
 | `output_format` | `--output-format` | string | 否 | "original" | 枚举: ["original","png","jpeg","webp"] | 输出图片的格式，支持 png、jpeg、webp，默认使用 original 保持与原图一致的格式。 |
 
 ### 调用示例

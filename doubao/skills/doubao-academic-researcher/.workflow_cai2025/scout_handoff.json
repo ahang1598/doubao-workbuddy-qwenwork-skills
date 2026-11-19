@@ -1,0 +1,107 @@
+{
+  "stage": "literature-scout",
+  "read_gate": "pass",
+  "seed_query": "done",
+  "verification": "done",
+  "role_tags": "present",
+  "ready_for_synthesis": "yes",
+  "literature_count": 9,
+  "core_literature": [
+    {
+      "id": "R1",
+      "citation_key": "Bai et al.（2022）",
+      "title": "Constitutional AI: Harmlessness from AI Feedback",
+      "venue": "arXiv (Anthropic technical report)",
+      "url": "https://arxiv.org/abs/2212.08073",
+      "read_status": "abstract",
+      "source_quality": "A",
+      "authority_signal": "classic",
+      "quality_basis": "该方向奠基作：首次提出 SL-CAI 与 RL-CAI 两阶段流程与 RLAIF，后续 Constitutional AI 研究普遍以其为起点",
+      "is_seminal": "yes"
+    },
+    {
+      "id": "R2",
+      "citation_key": "Kundu et al.（2023）",
+      "title": "Specific versus General Principles for Constitutional AI",
+      "venue": "arXiv (Anthropic technical report)",
+      "url": "https://arxiv.org/abs/2310.13798",
+      "read_status": "abstract",
+      "source_quality": "A",
+      "authority_signal": "official",
+      "quality_basis": "Anthropic 官方研究；首次系统比较具体原则与单一一般原则对无害性及细粒度行为控制的影响",
+      "is_seminal": "no"
+    },
+    {
+      "id": "R3",
+      "citation_key": "Huang et al.（2024）",
+      "title": "Collective Constitutional AI: Aligning a Language Model with Public Input",
+      "venue": "ACM FAccT 2024",
+      "url": "https://doi.org/10.1145/3630106.3658979",
+      "read_status": "abstract",
+      "source_quality": "A",
+      "authority_signal": "top_journal",
+      "quality_basis": "ACM FAccT 2024 主会论文（DOI 10.1145/3630106.3658979），首个以公众参与程序生成宪法并据此训练模型的实证研究",
+      "is_seminal": "no"
+    },
+    {
+      "id": "R4",
+      "citation_key": "Sharma et al.（2025）",
+      "title": "Constitutional Classifiers: Defending against Universal Jailbreaks across Thousands of Hours of Red Teaming",
+      "venue": "arXiv (Anthropic Safeguards Research Team)",
+      "url": "https://arxiv.org/abs/2501.18837",
+      "read_status": "abstract",
+      "source_quality": "A",
+      "authority_signal": "official",
+      "quality_basis": "Anthropic Safeguards Research Team 官方技术报告，2025 年该主题主论文；含约 3,000 小时红队与生产流量评估",
+      "is_seminal": "no"
+    },
+    {
+      "id": "R5",
+      "citation_key": "Cunningham et al.（2025）",
+      "title": "Cost-Effective Constitutional Classifiers via Representation Re-use",
+      "venue": "Anthropic Alignment Science technical report",
+      "url": "https://alignment.anthropic.com/2025/cheap-monitors/",
+      "read_status": "full_text",
+      "source_quality": "B",
+      "authority_signal": "official",
+      "quality_basis": "Anthropic Alignment Science 官方技术报告（2025），以线性探针与末层微调复用模型内部表示，给出可核查的成本-检测性能曲线",
+      "is_seminal": "no"
+    },
+    {
+      "id": "R6",
+      "citation_key": "Kyrychenko et al.（2025）",
+      "title": "C3AI: Crafting and Evaluating Constitutions for Constitutional AI",
+      "venue": "ACM Web Conference 2025 (WWW '25)",
+      "url": "https://doi.org/10.1145/3696410.3714705",
+      "read_status": "abstract",
+      "source_quality": "A",
+      "authority_signal": "top_journal",
+      "quality_basis": "ACM WWW 2025 主会论文（DOI 10.1145/3696410.3714705），系统评估宪法原则设计与微调后模型实际遵循度之间的差距",
+      "is_seminal": "no"
+    },
+    {
+      "id": "R7",
+      "citation_key": "Cunningham et al.（2026）",
+      "title": "Constitutional Classifiers++: Efficient Production-Grade Defenses against Universal Jailbreaks",
+      "venue": "ICLR 2026 (arXiv:2601.04603)",
+      "url": "https://arxiv.org/abs/2601.04603",
+      "read_status": "abstract",
+      "source_quality": "A",
+      "authority_signal": "official",
+      "quality_basis": "Anthropic 官方技术报告，ICLR 2026 会议论文；exchange classifier 与两级级联，报告 40 倍成本下降与 1,700 小时红队结果",
+      "is_seminal": "no"
+    },
+    {
+      "id": "R8",
+      "citation_key": "McKenzie et al.（2025）",
+      "title": "STACK: Adversarial Attacks on LLM Safeguard Pipelines",
+      "venue": "arXiv preprint (UK AISI / FAR.AI)",
+      "url": "https://arxiv.org/abs/2506.24068",
+      "read_status": "abstract",
+      "source_quality": "B",
+      "authority_signal": "official",
+      "quality_basis": "UK AI Security Institute 与 FAR.AI 联合研究，针对前沿实验室采用的输入-输出分类器管线构建分阶段攻击，并报告黑盒与迁移设定下的攻击成功率",
+      "is_seminal": "no"
+    }
+  ]
+}

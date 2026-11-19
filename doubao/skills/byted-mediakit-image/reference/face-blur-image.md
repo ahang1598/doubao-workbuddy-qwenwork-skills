@@ -32,7 +32,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | `blur_shape` | `--blur-shape` | string | 否 | "circle" | 枚举: ["circle","rectangle"] | 人脸模糊区域的形状，支持 circle 或 rectangle：circle 表示圆形，rectangle 表示矩形；默认 circle。 |
 | `face_detect_thresh` | `--face-detect-thresh` | number | 否 | 0.9 | 大于: 0；小于: 1 | 人脸检测置信度阈值必须大于 0 且小于 1；越高过滤越严格，过低可能误判非人脸区域，过高可能漏检人脸；默认 0.9。 |
-| `image_url` | `--image-url` | string | 是 | - | - | 待打码的图像 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持 .png、.jpg、.jpeg、.webp、.avif 格式，不支持动图。建议图像文件大小不超过 35 MB；图片文件过大可能导致处理失败；图片宽度和高度的乘积不得超过 4 亿像素。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 36700160；仅支持格式: ["png","jpg","jpeg","webp","avif"]；最大像素总数: 400000000 | 待打码的图像 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持 .png、.jpg、.jpeg、.webp、.avif 格式，不支持动图。建议图像文件大小不超过 35 MB；图片文件过大可能导致处理失败；图片宽度和高度的乘积不得超过 4 亿像素。 |
 | `mosaic_step` | `--mosaic-step` | integer | 否 | 12 | 最小值: 5；最大值: 100 | 马赛克像素格大小，单位 px，必须为正整数；越大，马赛克颗粒越大且脱敏强度越高；建议范围为 [5, 100]；默认 12。 |
 | `output_format` | `--output-format` | string | 否 | "webp" | 枚举: ["png","jpeg","webp"] | 输出图片格式，支持 png、jpeg 或 webp；默认 webp。 |
 

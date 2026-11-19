@@ -22,7 +22,7 @@
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | `blur_strength` | `--blur-strength` | integer | 否 | 10 | 最小值: 1；最大值: 100 | 高斯模糊强度，数值越大越模糊，范围 1 到 100，默认 10。推荐 10 为轻度模糊，推荐 30 为中度模糊，推荐 100 为重度模糊。 |
-| `image_url` | `--image-url` | string | 是 | - | - | 待处理图片 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持处理静图；支持 .png、.jpg、.jpeg、.webp 格式。输入图像的宽和高均不得超过 10000 像素，建议单张图片不超过 35 MB。 |
+| `image_url` | `--image-url` | string | 是 | - | 最大文件字节数: 36700160；仅支持格式: ["png","jpg","jpeg","webp"]；宽高上限 px: 10000 | 待处理图片 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；仅支持处理静图；支持 .png、.jpg、.jpeg、.webp 格式。输入图像的宽和高均不得超过 10000 像素，建议单张图片不超过 35 MB。 |
 | `output_format` | `--output-format` | string | 否 | "original" | 枚举: ["original","png","jpeg","webp"] | 输出图片格式，original 表示保持与原图一致的格式；支持 original、png、jpeg、webp，默认 original。 |
 
 ### 调用示例
