@@ -8,7 +8,7 @@
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：647
 - 当前索引文件数：17922
-- 最近变更：[2026-11-18-180008](workbuddy/change-logs/2026-11-18-180008.md) - WorkBuddy 本次同步新增 1 个文件、修改 3 个文件、删除 0 个文件。 受影响范围：skills/ctrip-wendao, skills/vibe-knowledge-film。
+- 最近变更：[2026-11-19-180005](workbuddy/change-logs/2026-11-19-180005.md) - WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。
 
 ## 数据来源
 
@@ -715,6 +715,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-11-19-180005 | [2026-11-19-180005](workbuddy/change-logs/2026-11-19-180005.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。 |
 | 2026-11-18-180008 | [2026-11-18-180008](workbuddy/change-logs/2026-11-18-180008.md) | WorkBuddy 本次同步新增 1 个文件、修改 3 个文件、删除 0 个文件。 受影响范围：skills/ctrip-wendao, skills/vibe-knowledge-film。 |
 | 2026-11-17-180001 | [2026-11-17-180001](workbuddy/change-logs/2026-11-17-180001.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。 |
 | 2026-11-17-141159 | [2026-11-17-141159](workbuddy/change-logs/2026-11-17-141159.md) | WorkBuddy 本次同步新增 219 个文件、修改 1 个文件、删除 0 个文件。 新增条目：experts/academic-expert, experts/arxiv-watcher, experts/literature-research, experts/literature-research-expert, experts/literat... |
@@ -734,4 +735,3 @@
 | 2026-09-25-085343 | [2026-09-25-085343](workbuddy/change-logs/2026-09-25-085343.md) | WorkBuddy 本次同步新增 593 个文件、修改 108 个文件、删除 9 个文件。 新增条目：connectors/marketplace/connectors/chainlon-geo-mcp, connectors/marketplace/connectors/duoguan-course, connectors/marketplace/c... |
 | 2026-09-23-180002 | [2026-09-23-180002](workbuddy/change-logs/2026-09-23-180002.md) | WorkBuddy 本次同步新增 540 个文件、修改 9 个文件、删除 196 个文件。 新增条目：connectors/marketplace/connectors/beatapi-beatdesign, connectors/marketplace/connectors/cloudhub, connectors/marketplace/conne... |
 | 2026-09-22-180002 | [2026-09-22-180002](workbuddy/change-logs/2026-09-22-180002.md) | WorkBuddy 本次同步新增 679 个文件、修改 62 个文件、删除 2 个文件。 新增条目：connectors/marketplace/connectors/aholo-lux3d, connectors/marketplace/connectors/meituan-for-business, connectors/marketplace/c... |
-| 2026-09-21-180001 | [2026-09-21-180001](workbuddy/change-logs/2026-09-21-180001.md) | WorkBuddy 本次同步新增 20 个文件、修改 42 个文件、删除 0 个文件。 新增条目：connectors/marketplace/connectors/3chat-customer-growth, connectors/marketplace/connectors/charge-order-query, connectors/market... |
