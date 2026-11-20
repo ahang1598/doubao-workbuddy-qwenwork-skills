@@ -2,10 +2,10 @@
   "status": "pass",
   "failures": [],
   "result": {
-    "paragraph_count": 6,
-    "visible_length": 1885,
+    "paragraph_count": 5,
+    "visible_length": 2199,
     "numbered_citations": 0,
-    "author_year_citations": 27,
+    "author_year_citations": 10,
     "status": "pass"
   }
 }

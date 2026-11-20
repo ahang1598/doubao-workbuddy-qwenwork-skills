@@ -1,13 +1,12 @@
 {
-  "topic": "2024 年以来 RLHF 最新进展调研",
+  "topic": "2023年以来基于 self-instruct 类自生成指令数据、训练小模型并做 benchmark 评测的 instruction tuning 论文",
   "current_stage": "done",
   "completed": [
     "literature-scout",
     "research-synthesis",
-    "review-writing",
-    "document-delivery"
+    "review-writing"
   ],
   "last_blocked": null,
   "requirement_checklist": "C:\\Users\\15805\\AppData\\Local\\Doubao\\User Data\\Default\\.doubao\\agent_mode\\workspace\\.skills\\doubao-academic-researcher\\.workflow\\requirement_checklist.json",
-  "updated_at": "2026-11-18T14:20:53+00:00"
+  "updated_at": "2026-11-20T08:50:48+00:00"
 }

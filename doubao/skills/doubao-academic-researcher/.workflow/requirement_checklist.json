@@ -1,10 +1,37 @@
 {
-  "topic": "前陆盆地与增生楔形成关系的最新研究进展（构造地质/盆地动力学方向）",
+  "topic": "2023 年以来基于 self-instruct（自生成指令数据）做 instruction tuning、训练小模型并完成 benchmark 评测的论文",
   "requirements": [
-    {"id": "R1", "requirement": "梳理前陆盆地与增生楔形成关系的研究现状与最新进展（用户核心诉求）", "priority": "main", "in_scope": "yes", "carrier": "一、核心结论；六、主题章节各分主题", "resolution": "已落实：一、核心结论给出总体判断与 6 条分点结论；六、主题章节（一）至（四）按力学、空间、质量、深部动力学四层展开实质论证"},
-    {"id": "R2", "requirement": "讲清二者的耦合机制与主要模型流派：岩石圈挠曲负载、临界锥体理论、楔顶/前缘盆地分带、剥蚀—沉积质量平衡", "priority": "main", "in_scope": "yes", "carrier": "六、主题章节（一）力学耦合；（二）空间耦合；（三）质量耦合", "resolution": "已落实：六（一）交代 Beaumont 挠曲负载、Davis 等临界楔与 Naylor-Sinclair 的顺/反前陆不对称；六（二）交代四带系统与楔顶沉积条件；六（三）交代沉积供给、underplating、再增生与增生—侵蚀端元判据，并各附对比表"},
-    {"id": "R3", "requirement": "突出最新：以近 5 年（2020—2026）成果为主，同时保留奠基作作为基线", "priority": "secondary", "in_scope": "yes", "carrier": "二、研究范围与方法；六、主题章节各分主题", "resolution": "已落实：二、研究范围与方法写明时间范围与新旧配比原则；各分主题显式区分奠基基线（1981—2008）与近五年推进（2020—2025）"},
-    {"id": "R4", "requirement": "指出该方向的争议、开放问题与可继续做的选题", "priority": "secondary", "in_scope": "yes", "carrier": "七、争议与开放问题；八、可研究的方向；九、局限性", "resolution": "已落实：七列出 4 组带条件差异与倾向判断的争议、5 条真空白；八给出 5 条含参考题目、缺口依据与方法思路的选题；九说明检索与证据层局限"},
-    {"id": "R5", "requirement": "提供经核验、可点击追溯的参考文献", "priority": "secondary", "in_scope": "yes", "carrier": "十一、参考文献；各分主题的本节文献", "resolution": "已落实：十一逐条列出作者、题名、期刊、年份并附 DOI 或可访问原文链接；正文用作者-年份夹注，各分主题标题下附本节文献索引"}
+    {
+      "id": "R1",
+      "requirement": "找出 2023 年以来在 instruction tuning 上用 self-instruct 方法（Self-Instruct 原范式及 Evol-Instruct / OSS-Instruct / Magpie 等自生成指令数据变体）生成训练数据、训练小模型（参数量约 1B–13B）的论文",
+      "priority": "main",
+      "in_scope": "yes",
+      "carrier": "六、主题章节（按三条路线分）+ 文献清单表",
+      "resolution": "六、主题章节（一）–（三）逐条列出并分析；第十一节参考文献第 1–10 条"
+    },
+    {
+      "id": "R2",
+      "requirement": "每篇入选论文须核实确实做了 benchmark 评测（给出评测 benchmark 名称与结果方向），不能只是人工偏好比较",
+      "priority": "main",
+      "in_scope": "yes",
+      "carrier": "文献清单表「评测 benchmark」列 + 各主题章节正文",
+      "resolution": "第三节文献多维地图表与（一）（二）（三）对比表的「评测方式 / benchmark」列，主题章节正文逐篇给出 benchmark 名称"
+    },
+    {
+      "id": "R3",
+      "requirement": "区分「严格复现 Self-Instruct 流水线」与「self-instruct 类自生成数据」两条路线，并标出不符合条件的边界工作（如只训 65B/175B 大模型、或只有人工评测无 benchmark）",
+      "priority": "secondary",
+      "in_scope": "yes",
+      "carrier": "第四、研究视角与本文结构 导航段 + 七、争议与开放问题中的「边界判定」",
+      "resolution": "四、研究视角与本文结构的分类轴说明；七、争议与开放问题末尾「条件不完全满足的边界工作」清单（6 篇）"
+    },
+    {
+      "id": "R4",
+      "requirement": "给出该方向现阶段的研究现状判断：共识、争议、明显空白，供选题参考",
+      "priority": "secondary",
+      "in_scope": "yes",
+      "carrier": "一、核心结论 + 七、争议与开放问题 + 八、可研究的方向",
+      "resolution": "一、核心结论 6 条判断；七、争议与开放问题；八、可研究的方向 5 条"
+    }
   ]
 }

@@ -83,9 +83,5 @@
 
 以上仅为确需图解时的选型参考，是否使用图解按创建工作流 Step 3.2 判断。
 
-### Presentation Decision
-
-选择本 Profile 时，默认使用 `presentation_mode: "rich"`。`rich` 表示按内容需要主动使用本 Profile 允许的原生组件、图片、附件预览与画板，不表示每个章节必须使用视觉元素，也不得放宽本文件对 HTML5 block、素材和可维护性的限制。
-
-`visual_plan.reason` 应说明读者任务、信息更新方式、附件图片使用计划，以及表格、待办、画板和 HTML5 block 的分工。使用 HTML5 block 时，必须说明其不可编辑性为何可接受。`visual_plan.blocks` 仅记录确有最低数量要求的 `img`、`whiteboard`、`html5-block`；没有硬性数量要求时，写 `"blocks": []`。
+需要持续更新的明细和行动项使用原生表格或待办，读者需要调整节点与连线时使用画板。图片和附件预览放在相应说明旁。选择 HTML5 block 前，确认读者可以接受块内内容不可编辑。
 

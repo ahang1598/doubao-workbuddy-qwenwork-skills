@@ -1,6 +1,6 @@
 ---
 name: doubao-creative-design
-description: 用于商业、品牌、社媒、电商与知识表达视觉的创作、既有源编辑、复刻、系列延展、多比例适配及审查；覆盖海报、科普说明类信息图、关系与流程图、Logo、VI、IP、包装、应用物料和可编辑HTML设计。
+description: 用于简单的图片生成、编辑、同时zhi c商业、品牌、社媒、电商与知识表达视觉的创作、既有源编辑、复刻、系列延展、多比例适配及审查；覆盖海报、科普说明类信息图、关系与流程图、Logo、VI、IP、包装、应用物料和可编辑HTML设计。
 ---
 # doubao-creative-design
 

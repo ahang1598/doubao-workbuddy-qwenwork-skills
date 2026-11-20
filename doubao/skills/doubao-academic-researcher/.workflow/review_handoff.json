@@ -3,11 +3,5 @@
   "read_gate": "pass",
   "self_gate": "pass",
   "draft_shape_checked": "pass",
-  "ready_for_final": "yes",
-  "draft_path": ".workflow/review_draft.md",
-  "draft_check_report": ".workflow/review_draft_check.json",
-  "draft_paragraphs": 6,
-  "draft_visible_length": 1885,
-  "author_year_citations": 27,
-  "notes": "6 段连续综述正文，无标题、无编号、无列表、无超链接；引用与文档第六、七节同一批文献池，作者-年份口径一致"
+  "ready_for_final": "yes"
 }

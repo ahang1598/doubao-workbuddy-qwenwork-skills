@@ -1,0 +1,13 @@
+{
+  "topic": "2024 年以来 RLHF 最新进展调研",
+  "current_stage": "done",
+  "completed": [
+    "literature-scout",
+    "research-synthesis",
+    "review-writing",
+    "document-delivery"
+  ],
+  "last_blocked": null,
+  "requirement_checklist": "C:\\Users\\15805\\AppData\\Local\\Doubao\\User Data\\Default\\.doubao\\agent_mode\\workspace\\.skills\\doubao-academic-researcher\\.workflow\\requirement_checklist.json",
+  "updated_at": "2026-11-18T14:20:53+00:00"
+}

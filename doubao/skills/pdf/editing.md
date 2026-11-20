@@ -61,14 +61,6 @@ page.insert_htmlbox(
 )
 ```
 
-For translation tasks specifically, classify same-script vs cross-language
-first — see [`references/workflows/translation.md`](references/workflows/translation.md).
-Same-script variants (e.g. Traditional ↔ Simplified Chinese) allow direct
-in-place substitution with default redaction flags. Cross-language translation
-(e.g. English ↔ Chinese) changes text length and must preserve highlight fills
-and image positions, which requires the non-default `apply_redactions` flags
-and the drawings/image anchor handling shown in that workflow.
-
 ## Image and Page-Content Editing
 
 | Task | PyMuPDF Tool | Notes |

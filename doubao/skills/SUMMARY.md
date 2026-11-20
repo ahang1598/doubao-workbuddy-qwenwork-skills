@@ -6,9 +6,9 @@
 
 - 目录：`doubao/skills/`
 - 来源：`/mnt/c/Users/15805/AppData/Local/Doubao/User Data/Default/.doubao/agent_mode/workspace/.skills`
-- 条目数：274
-- 文件数：4447
-- 最近同步：2026-11-19 18:00:05 +0800
+- 条目数：275
+- 文件数：4458
+- 最近同步：2026-11-20 21:05:02 +0800
 
 ## 场景导航（按用途）
 
@@ -85,7 +85,7 @@
 - **lark-whiteboard** — 飞书画板：查询和编辑飞书云文档中的画板。支持导出画板为预览图片、导出原始节点结构、使用多种格式更新画板内容。 当用户需要查看画板内容、导出画板图片、编辑画板时使用此 skill。不负责：飞书云文档内容编辑（lark-doc）、文档内嵌电子表格/Base（sheet / lark-base）。
 - **logistics-workbook-analysis** — 用于物流或供应链表格已由 sheet 读取后，需要库存对账、运费核算、KPI、合同执行或供应链台账分析的场景。非物流通用表格任务不使用。
 - **marketing-material-generator** — 基于飞书多维表格的电商营销素材自动化生成工具。当用户需要为商品生成全套营销素材、产品精修图、细节特写、详情页设计、场景图、动态视频，或提到"营销素材"、"商品图"、"精修"、"详情页"、"白底图"、"场景图"、"Cinemagraph"时使用。支持从飞书Base读取产品信息，自动完成5个环节的素材生成并回写到表格。
-- **pdf** — 用于处理所有 PDF 相关任务，包括读取、创建、编辑、转换、内容提取、页面处理、表单填写、扫描件解析、PDF转化word文件和PDF转化飞书云文档。用户提供、提及或要求生成 PDF 时使用。
+- **pdf** — 用于处理所有 PDF 相关任务，包括读取、创建、编辑、转换、内容提取、页面处理、表单填写和扫描件解析。用户提供、提及或要求生成 PDF 时使用。
 - **ppt-framework-planning** — Use when the user needs to plan, review, restructure, or optimize a reporting PPT framework from meeting minutes, drafts, existing slides, 申报材料, 评分标准, 新增要求, or feedback; trigger keywords include “PPT框架”, “汇报逻辑”, “会议纪要...
 - **read-local-attachments-first** — Use when 用户要求基于本地附件开展写作、分析、核对、汇总或清洗，尤其提到“读取附件”“本地文件解析”“Excel清洗”“图片转表格”“解压核对清单”“多源材料整合”“解析失败补救”或“结构化提取”，并需要先检查文件类型、sheet、表头、目录或图片区域再形成可直接使用的依据。
 - **reference-curation** — 整理参考文献，核验 DOI 与元数据，输出带证据、冲突、待核实标记的规范结果与引用草稿；支持 BibTeX/JSON/JSONL 书目整理，不做全文下载、会议纪要、论文代写、绕过受限数据库。
@@ -118,7 +118,7 @@
 - **doubao-coding-diagnose-and-fix-bugs** — 在已有代码出现报错、崩溃、错误结果、测试或构建失败、回归、环境差异或间歇故障时定位根因，并在用户要求修复时实施原因级补丁。新增需求或有意改变既有预期改用功能开发；正确预期尚未确定时先澄清或设计；纯审查、无故障重构、单纯补测试、无回归基线的性能优化或纯运维操作不使用。
 - **doubao-coding-optimize-performance** — 当任务的裁决标准是可测量的性能指标（延迟、吞吐、CPU、内存、I/O、竞争、启动时间、扩展性）时使用：解释 profile/benchmark、建立可重复基线、定位瓶颈机制、验证单变量优化、建立性能回归守卫。用户问为什么慢、能否更快、内存为何增长、优化是否有效、如何 profile 或压测时触发。不用于普通功能调试、无测量的一般方案设计或代码审查；组合任务只处理性能子问题。
 - **doubao-coding-review-code** — 审查 MR/PR、分支、commit 范围、本地改动或独立 diff，报告本次变更新引入、激活或明显放大且当前可触发、证据闭合的代码缺陷。用于 Code Review、代码审查、CR；不用于设计评审或直接实现修复。
-- **doubao-creative-design** — 用于商业、品牌、社媒、电商与知识表达视觉的创作、既有源编辑、复刻、系列延展、多比例适配及审查；覆盖海报、科普说明类信息图、关系与流程图、Logo、VI、IP、包装、应用物料和可编辑HTML设计。
+- **doubao-creative-design** — 用于简单的图片生成、编辑、同时zhi c商业、品牌、社媒、电商与知识表达视觉的创作、既有源编辑、复刻、系列延展、多比例适配及审查；覆盖海报、科普说明类信息图、关系与流程图、Logo、VI、IP、包装、应用物料和可编辑HTML设计。
 - **doubao-game-designer** — 把游戏创意、参考作品、现有方案、配置或试玩证据转化为玩法成立、规则闭合、数值可复算且能进入制作的 GDD、玩法方案与系统规格；需要验证关键玩法时，联合前端或开发能力交付可直接运行的 HTML 游戏 Demo。用于核心循环、战斗、成长、经济、关卡、引导、平衡、活动、版本设计、方案评审与修订，以及按需追加的立项、发行、商业和制作内容。
 - **doubao-marketing-material-review** — 营销素材审核。当用户上传待审核的广告宣传语、营销海报、社交媒体推广文案、直播话术等营销素材时，从虚假宣传、夸大宣传、绝对化用语、比较广告、引证数据真实准确性、价格违规、有奖营销、知识产权、风险行业违规宣传（如金融、医疗、三品一械、教育等特殊监管行业）、数据对外披露、不当承诺或表达等维度开展全面审查与风险扫描，对违规点归类、逐条分析判断并直接给出修改建议。当用户提到"营销素材审核""广告文案合规审查""宣传语合规""看看这段宣传/文...
 - **doubao-personal-info-audit** — 开展中国个人信息保护合规审计、审计触发判断、证据登记与证明力评价、事实和不确定性分析、数据分类、处理活动盘点、法律角色和处理情形识别、适用规则检索、上下位法与配套规范衔接、26模块107子项评价、风险与整改设计，并生成可追溯的Word审计报告和Excel底稿。用于个人信息保护法、网络数据安全、App/SDK、敏感个人信息、未成年人、人脸识别、自动化决策、AI、委托共享、数据出境、监管检查准备及整改复核任务。
@@ -198,7 +198,7 @@
 - **create-seedream-product-posters** — Turn one casual product photo into a planned, polished Chinese or English commercial poster with Seedream 5.0 Pro. Use when the user asks to 策划商品海报、商品图生海报、电商主图、促销长图、新品发布图、英文海报、English product poster、campaign poster, o...
 - **creator-content-calendar** — 为个人创作者规划30天多平台内容日历，融入支柱主题、SEO、钩子、CTA与节奏建议，并说明每日内容目的。
 - **doubao-coding-optimize-performance** — 当任务的裁决标准是可测量的性能指标（延迟、吞吐、CPU、内存、I/O、竞争、启动时间、扩展性）时使用：解释 profile/benchmark、建立可重复基线、定位瓶颈机制、验证单变量优化、建立性能回归守卫。用户问为什么慢、能否更快、内存为何增长、优化是否有效、如何 profile 或压测时触发。不用于普通功能调试、无测量的一般方案设计或代码审查；组合任务只处理性能子问题。
-- **doubao-creative-design** — 用于商业、品牌、社媒、电商与知识表达视觉的创作、既有源编辑、复刻、系列延展、多比例适配及审查；覆盖海报、科普说明类信息图、关系与流程图、Logo、VI、IP、包装、应用物料和可编辑HTML设计。
+- **doubao-creative-design** — 用于简单的图片生成、编辑、同时zhi c商业、品牌、社媒、电商与知识表达视觉的创作、既有源编辑、复刻、系列延展、多比例适配及审查；覆盖海报、科普说明类信息图、关系与流程图、Logo、VI、IP、包装、应用物料和可编辑HTML设计。
 - **doubao-creative-video** — 当用户需要通用视频生成、视频创作、视频提示词规划或文生/图生视频时使用，包括创意视频、长视频规划、产品广告、商品广告、UGC 口播/带货/信息流视频、品牌 TVC、企业宣传片、商务视频、品牌形象片、产品功能介绍、知识讲解/科普/操作教程视频、门店服务/文旅推广视频、带旁白视频，以及带参考素材的视频生成。只有用户明确提出短剧、微电影、剧情短片、影视短片、动画短片、动态漫、分集剧情、长篇剧本或等价剧情影视制作场景时，才应调用 doub...
 - **doubao-cross-border-growth-content** — Evidence-grounded cross-border ecommerce content operations for short-video and livestream scripts, UGC or creator briefs, multilingual captions, localized content angles, image/video briefs, content calendars, hook m...
 - **doubao-customer-service** — 面向电商商家及客服团队，生成在线文字客服的可执行处理方案和正式交付文档。适用于客户回复、售前咨询、催发货、物流履约、退换货、质量问题、补偿争议、差评投诉、私聊舆情询问、聊天截图分析、客服标准流程、权限矩阵、升级规则和自动客服配置。不适用于消费者个人购物咨询或维权建议，也不适用于电话客服、线下接待、媒体公关、客服培训质检、真实系统操作或法律责任最终认定。
@@ -278,7 +278,6 @@
 - **lark-workflow-standup-report** — 日程待办摘要：编排 calendar +agenda 和 task +get-my-tasks，生成指定日期的日程与未完成任务摘要。适用于了解今天/明天/本周的安排。
 - **local-life-service-peer-comparison** — 抖音生活服务商家对比分析报告技能。用于生成或更新对比数据的经营分析报告、行业对标解读、差距归因与行动计划；当用户要求做行业对比、流量对比、商品对比、经营差距分析或输出飞书文档版/网页版报告时使用。不用于全量经营体检（转 local-life-service-business-report）或用户上传附件的离线数据分析。
 - **marketing-material-generator** — 基于飞书多维表格的电商营销素材自动化生成工具。当用户需要为商品生成全套营销素材、产品精修图、细节特写、详情页设计、场景图、动态视频，或提到"营销素材"、"商品图"、"精修"、"详情页"、"白底图"、"场景图"、"Cinemagraph"时使用。支持从飞书Base读取产品信息，自动完成5个环节的素材生成并回写到表格。
-- **pdf** — 用于处理所有 PDF 相关任务，包括读取、创建、编辑、转换、内容提取、页面处理、表单填写、扫描件解析、PDF转化word文件和PDF转化飞书云文档。用户提供、提及或要求生成 PDF 时使用。
 - **ppt** — 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。
 - **ppt-framework-planning** — Use when the user needs to plan, review, restructure, or optimize a reporting PPT framework from meeting minutes, drafts, existing slides, 申报材料, 评分标准, 新增要求, or feedback; trigger keywords include “PPT框架”, “汇报逻辑”, “会议纪要...
 - **presentation-change-control** — 用于已有 PPT 或飞书幻灯片需要局部新增、删除、重排、替换或样式继承，且必须保护页序、关键数字和交付质量的场景。新建整份演示或简单读取不使用。
@@ -412,6 +411,7 @@
 - **doubao-enterprise-search** — 判断是否调用 `enterprise_agentic_search` 工具前，必须先完整读取 `doubao-enterprise-search` skill。适用场景包括：用户本轮输入包含 `[企业知识]` 或 `doubao-enterprise-search` 的 Skill 调用标记；问题明确或高度可能依赖企业内部资料、内部口径、内部系统、业务背景、历史讨论、协作记录、制度流程、员工权益、差旅报销，或内部产品、项目、客户、...
 - **doubao-headlines-calendar** — 跨平台内容生成、改写、评估和A/B测试标题，并结合账号定位、受众、产能和节点规划可执行的周度或月度内容选题日历。用于爆款标题、多平台标题适配、标题优化、标题拆解、A/B标题、周选题、月度排期、栏目规划、热点日历和新媒体内容策划；不用于直接写完整文章、小说、脚本、PPT或其他成品。能力范围外或多意图任务先说明边界并提供可转化、分模块交付方案。除非用户明确指定其他格式，必须实际创建、写入并校验飞书/Lark文档后返回可访问链接；不得用...
 - **doubao-identity** — 当用户询问豆包工作、豆包专业版、豆包会员与付费服务（包含权益、充值、退款、发票、订阅、连续包月/包年比较、学生优惠、录音转写、创作额度等）、平台规则与隐私安全（使用条款、隐私政策、内容安全、客服投诉、聊天记录存储/删除/恢复、数据是否用于训练、个人数据、定位、IP）、记忆功能（用途、可记录内容、查询/删除/清空、开关及生效规则）或记忆认知（为什么记得、知道、忘记、记错个人信息）、产品功能问题（比如定时任务为什么不准时）时，必须先调...
+- **doubao-interpretation** — AI 同传（同声传译）：开启后对正在说的话实时转写并翻译；需要查看转写记录与译文、读取纪要文档、处理结束与设置类问题时使用本技能。不用于文本翻译与普通录音。
 - **doubao-multiplatform-rewrite** — 基于用户提供的已有素材（母稿、文章、新闻稿、活动稿、产品稿、报告摘要、访谈素材、口播稿、散乱素材等），改写成可发布的多平台分发版本，标准场景为≥2个平台，有素材的单平台改写也可支持，覆盖微信公众号、短视频脚本、微博等平台。当用户提到"一稿多发""多平台分发""内容矩阵""跨平台改写""同一内容发多个平台""分发执行包"，或提供母稿并说"适合不同平台""不同平台都能发""平台化处理""适合平台传播""改成某平台版"时触发。不适用场景...
 - **doubao-pc-optimizer** — 用户需要清理磁盘垃圾、释放空间、处理电脑卡顿或开机慢、优化 Windows/macOS 性能、提升游戏帧率、生成安全清理脚本，或提到 C 盘满、磁盘空间不足、掉帧、运行慢时使用。
 - **doubao-product-selection** — 面向电商商家、卖家和经营团队的选品与品类机会分析技能。根据商家的预算、目标平台、货源优势，按“市场需求×竞争度×利润空间×季节性×复购率”五维打分，输出3-5个候选品类及切入建议。适用于新手商家不知道卖什么、老商家想拓新品类、想判断某个品是否值得进货的场景。
@@ -562,7 +562,7 @@
 | domain-consistent-translation | `doubao/skills/domain-consistent-translation` | 其他 | domain-consistent-translation | 1 | Use when the user requests professional translation, bidirectional translation, business communication translation, technical document/manual translation, attachment or image translation, terminology unification, styl... |
 | doubao-academic-evaluator | `doubao/skills/doubao-academic-evaluator` | 研究/调研 | doubao-academic-evaluator | 8 | 用资深审稿人和导师的眼光，对科研工作做"只看不改"的诊断。两类任务：一是评判研究想法值不值得做（打分、查新颖性、判可行性）；二是论文评审，给文章成稿挑硬伤、判断能不能投。只负责找问题、下结论、给修改方向，不替你写正文、不替你画图。要动手写作、搭结构、润色语言，请用姊妹技能 doubao-academic-polish。触发于"帮我看看这个想法""值不值得做""投稿前帮我审一遍""能不能投"。 |
 | doubao-academic-polish | `doubao/skills/doubao-academic-polish` | 设计可视化 | doubao-academic-polish | 53 | 学术论文正文写作、结构设计与语言润色总入口。完整起草、续写、扩写、补写或实质性修订各学科的中英文论文正文时，进入paper-write-zh或paper-write-en；只做提纲、结构诊断或重排方案时，进入paper-shape结构模式；只做忠实润色或不新增研究内容的中译英时，进入paper-shape润色模式。研究评价转/doubao-academic-evaluator；独立系统性文献调研转/doubao-literatur... |
-| doubao-academic-researcher | `doubao/skills/doubao-academic-researcher` | 研究/调研 | doubao-academic-researcher | 52 | 通用学术文献调研Skill，面向研究者、学生和论文写作者在未锁定具体论文题目前摸清某学术方向、概念、机制、热点前沿、学术史或选题依据。执行系统检索、引用真实性核验、证据分级、主题聚类、交叉综合、争议与空白识别，产出结论先行、引用可追溯的结构化调研结果。触发于用户要求调研某方向、梳理研究现状或related work、查看最新进展、梳理热点前沿或学术史、找文献支撑、做选题依据、解释某概念或机制。只做文献调研与证据支撑，不产出摘要引言... |
+| doubao-academic-researcher | `doubao/skills/doubao-academic-researcher` | 研究/调研 | doubao-academic-researcher | 69 | 通用学术文献调研Skill，面向研究者、学生和论文写作者在未锁定具体论文题目前摸清某学术方向、概念、机制、热点前沿、学术史或选题依据。执行系统检索、引用真实性核验、证据分级、主题聚类、交叉综合、争议与空白识别，产出结论先行、引用可追溯的结构化调研结果。触发于用户要求调研某方向、梳理研究现状或related work、查看最新进展、梳理热点前沿或学术史、找文献支撑、做选题依据、解释某概念或机制。只做文献调研与证据支撑，不产出摘要引言... |
 | doubao-announcement-analysis | `doubao/skills/doubao-announcement-analysis` | 金融研究 | doubao-announcement-analysis | 26 | 搜索并解读上市公司公告，覆盖 A股（沪深北）、港股（HKEX）、美股（SEC EDGAR）三大市场。支持两种模式：①单条/多条具体公告的深度解读（拆解公告要点、判断重要性、给出多视角分析）；②按公司或时间段批量监控并生成公告摘要合集（时效优先、覆盖面广）。适用于业绩报告解读、重大合同/协议公告解读、股权变动（增减持/回购）解读、股权激励（期权/限制性股票/员工持股计划）解读、监管问询函/关注函及回复公告解读、停牌复牌与退市风险公告... |
 | doubao-book-writer | `doubao/skills/doubao-book-writer` | 其他 | doubao-book-writer | 72 | 豆包办公里的非虚构长文档工作台。用于手册、白皮书、报告、培训材料、人物口述、家谱、资料型书稿等长文档的新建、续写、组装、改写、扩写、精修、去AI味、质检和交付。不用于小说、网文、剧本、诗歌、世界观设定、角色剧情创作、短问答、翻译或代码任务。 |
 | doubao-clinical-decision-support | `doubao/skills/doubao-clinical-decision-support` | 研究/调研 | doubao-clinical-decision-support | 14 | 循证医学临床辅助决策 Skill。用户需要分析临床问题，解释临床表现，提供循证医学判断时使用，用于针对临床问题，结合病例资料，查阅指南和文献等循证依据，进行科学回答与诊疗决策，进行诊断鉴别、检查路径、用药安全、治疗比较、预后和风险分析，或需要基于病例情况整理生成病历、入院记录、住院病程和会诊记录等文书。医学文献检索调研改用 doubao-medical-literature-search，单纯报告解读改用 doubao-medic... |
@@ -578,7 +578,7 @@
 | doubao-contract-amendment | `doubao/skills/doubao-contract-amendment` | 协作/办公 | doubao-contract-amendment | 2 | 用于在已签原协议基础上，依据用户提供的新情况起草补充协议、变更协议或终止协议。先重建主体、标的、资金、条件、时间和文件构成的整体法律状态，再在用户明确授权范围内成文。仅处理既有协议的派生修改；不用于全新合同起草、既有合同风险审查、一般法律咨询或纯 Word 排版与纯文件处理，纯文档编辑改用 lark-doc。 |
 | doubao-contract-drafting | `doubao/skills/doubao-contract-drafting` | 法务/合规 | doubao-contract-drafting | 24 | 直接起草中国大陆商业合同并生成无批注、无颜色、中文字体正确的可编辑 Word 文件。适用于采购、服务、营销、工程施工、软件许可、SaaS、委托开发、联合研发、知识产权、租赁、数据处理和保密等场景；读取题干及附件后完成交易信息拆解、风险识别、起草方标准条款与默认商业参数填充、合同生成与交付校验。涉及跨境交易、境外法域或境外争议解决安排时，需升级并要求复核。 |
 | doubao-contract-reviewer | `doubao/skills/doubao-contract-reviewer` | 文档/表格/PPT | doubao-contract-reviewer | 35 | 专业审查合同并逐条批注。上传 .doc/.docx → 输出带 Track Changes + 批注的修订版 Word（.docx）。触发：合同审查/审核/审阅/看合同/帮我看看这份合同/合同风险/合同有没有问题/这份合同能签吗/合同把关/review contract/legal review；上传合同文件要求查问题也触发。 |
-| doubao-creative-design | `doubao/skills/doubao-creative-design` | 设计可视化 | doubao-creative-design | 178 | 用于商业、品牌、社媒、电商与知识表达视觉的创作、既有源编辑、复刻、系列延展、多比例适配及审查；覆盖海报、科普说明类信息图、关系与流程图、Logo、VI、IP、包装、应用物料和可编辑HTML设计。 |
+| doubao-creative-design | `doubao/skills/doubao-creative-design` | 设计可视化 | doubao-creative-design | 178 | 用于简单的图片生成、编辑、同时zhi c商业、品牌、社媒、电商与知识表达视觉的创作、既有源编辑、复刻、系列延展、多比例适配及审查；覆盖海报、科普说明类信息图、关系与流程图、Logo、VI、IP、包装、应用物料和可编辑HTML设计。 |
 | doubao-creative-drama | `doubao/skills/doubao-creative-drama` | 投资银行/私募 | doubao-creative-drama | 32 | 完整制作短剧、微电影、剧情短片、动画短片、动态漫、剧情视频和长篇剧本。用户明确需要角色驱动、冲突因果、剧情弧线、角色与道具资产、分段视频、抽帧连续性和成片交付时调用。当用户提出短剧、动画短片、微电影、短片、电影、剧情视频、AI视频、影视化短片、动态漫、宣传片、预告片等影视剧制作需求，或包含"做个短剧"、"拍个微电影"、"弄个动画短片"、"做个长视频"、"宣传片"等表达时调用。只有宣传片、预告片或广告片被明确要求做成完整剧情链、角色... |
 | doubao-creative-video | `doubao/skills/doubao-creative-video` | 营销/内容运营 | doubao-creative-video | 30 | 当用户需要通用视频生成、视频创作、视频提示词规划或文生/图生视频时使用，包括创意视频、长视频规划、产品广告、商品广告、UGC 口播/带货/信息流视频、品牌 TVC、企业宣传片、商务视频、品牌形象片、产品功能介绍、知识讲解/科普/操作教程视频、门店服务/文旅推广视频、带旁白视频，以及带参考素材的视频生成。只有用户明确提出短剧、微电影、剧情短片、影视短片、动画短片、动态漫、分集剧情、长篇剧本或等价剧情影视制作场景时，才应调用 doub... |
 | doubao-critical-reading-companion | `doubao/skills/doubao-critical-reading-companion` | 其他 | doubao-critical-reading-companion | 5 | 深度解读文章，把新闻、长评或宣传文案等非学术公共文本转成便于理解、可追溯的阅读地图；用于重建论证链、评价证据与推理、识别隐藏前提、补充替代解释、核查关键事实，并输出可追溯的阅读地图。适用于可信度判断、论证拆解、宣传分析、作者自检和行动决策。 |
@@ -601,6 +601,7 @@
 | doubao-human-signal | `doubao/skills/doubao-human-signal` | 其他 | doubao-human-signal | 13 | 去除或避免文本中的 AI 味。用于用户强制调用本 Skill，或写作/改写时提到“不要有 AI 味”“不要太假”“真情实感”“有人感”，或对已有文本/上一轮输出反馈“太像 AI”“太空泛”“太模板”“太官方”“不像我说的”等场景。 |
 | doubao-identity | `doubao/skills/doubao-identity` | 法务/合规 | doubao-identity | 6 | 当用户询问豆包工作、豆包专业版、豆包会员与付费服务（包含权益、充值、退款、发票、订阅、连续包月/包年比较、学生优惠、录音转写、创作额度等）、平台规则与隐私安全（使用条款、隐私政策、内容安全、客服投诉、聊天记录存储/删除/恢复、数据是否用于训练、个人数据、定位、IP）、记忆功能（用途、可记录内容、查询/删除/清空、开关及生效规则）或记忆认知（为什么记得、知道、忘记、记错个人信息）、产品功能问题（比如定时任务为什么不准时）时，必须先调... |
 | doubao-industry-analysis | `doubao/skills/doubao-industry-analysis` | 金融研究 | doubao-industry-analysis | 15 | 针对某一行业（半导体、新能源、医药、消费等）的中长期基本面与产业研究，覆盖行业定义与规模、产业链与竞争格局、政策与驱动力、景气周期、趋势研判与三情景、盈利质量与落地建议。先想清楚这篇报告要证明什么判断（判断主线），再用三级数据分级取证、按固定五大板块写透，最终交付一份可直接用于战略规划、投资决策与商业化落地的飞书深度报告。默认简单模式，只回答用户所问问题；明确要求完整深度报告时执行完整模式。不触发并转其他场景：问该行业今天涨跌/热... |
+| doubao-interpretation | `doubao/skills/doubao-interpretation` | 通用工具/平台 | doubao-interpretation | 1 | AI 同传（同声传译）：开启后对正在说的话实时转写并翻译；需要查看转写记录与译文、读取纪要文档、处理结束与设置类问题时使用本技能。不用于文本翻译与普通录音。 |
 | doubao-journal-format | `doubao/skills/doubao-journal-format` | 文档/表格/PPT | doubao-journal-format | 14 | 用于对学术论文类 Word/DOCX 文档进行期刊、学校、会议或课程要求的格式排版与修复。当用户需要把论文原稿套用.docx 模板或明确格式规则、或提到论文排版、期刊投稿格式、学位论文格式、会议论文模板、时使用；如果同一请求同时包含论文 Word 排版和任何非排版任务，必须先停止并询问用户选择“只做格式排版”还是“作为复合任务拆分处理”，在用户明确选择前不得执行排版。不用于论文写作、润色、降重、翻译、代写、文献检索、补引用、验证引... |
 | doubao-listing-localization | `doubao/skills/doubao-listing-localization` | 营销/内容运营 | doubao-listing-localization | 10 | Cross-border ecommerce Listing and Product Optimization for Amazon, TEMU, Walmart Marketplace, TikTok Shop, Shopify, AliExpress, Etsy, Google Shopping, Shopee, Lazada, Ozon, and other marketplace or independent-store... |
 | doubao-map-moa | `doubao/skills/doubao-map-moa` | 金融研究 | doubao-map-moa | 1 | 当用户查询地点地址、自己所在位置或街道、附近地点、两地距离或耗时、怎么走、公交地铁线路，或要求导航、地图展示时使用。交易类与非交易类地点的纯位置查询均适用；包括“从 A 到 B”“多久到”“哪个更近”“导航去这里”等短句、比较和上下文承接，起终点省略时先读取再定位或追问。消费推荐、消费事实咨询和整体旅行编排由 doubao-trade-locallife 主导，不用于路线费用、打车耗时与费用或接驾 ETA。 |
@@ -717,7 +718,7 @@
 | organization-workforce-planning | `doubao/skills/organization-workforce-planning` | 其他 | organization-workforce-planning | 11 | 基于业务目标、能力地图、当前组织、工作量、技能供需、HC 与人力成本构建组织与人力情景及迁移路线。用于组织单元、能力组合、岗位序列和规划周期决策；不自动裁员、调整汇报线、批准预算或套用固定管理跨度阈值。 |
 | paper-craft-master | `doubao/skills/paper-craft-master` | 研究/调研 | paper-craft-master | 10 | 帮助已有研究问题、论文材料或实证结果的社科研究者诊断、起草与修改中英文实证论文，覆盖信息收集、IMRaD 章节组织、文献与假设论证、结果汇报、讨论及表达润色。适用于量化、实验或准实验论文的全文和单节写作请求；不用于纯理论、质性、元分析、统计计算或演示文稿制作。 |
 | paper-review-assistant | `doubao/skills/paper-review-assistant` | 研究/调研 | paper-review-assistant | 9 | 从目标期刊审稿人视角评审社会科学论文草稿，支持全文或单节诊断、逐节 10 分制评分、目标期刊与相似论文检索比对、P0/P1/P2 修改清单和投稿策略。用户要求投稿前评审、审稿人视角诊断、论文逐章评分、期刊匹配、对标已发表论文或制定投稿前修改计划时，应主动使用；不用于纯语法润色、翻译、rebuttal、研究计划或统计分析。 |
-| pdf | `doubao/skills/pdf` | 文档/表格/PPT | pdf | 21 | 用于处理所有 PDF 相关任务，包括读取、创建、编辑、转换、内容提取、页面处理、表单填写、扫描件解析、PDF转化word文件和PDF转化飞书云文档。用户提供、提及或要求生成 PDF 时使用。 |
+| pdf | `doubao/skills/pdf` | 文档/表格/PPT | pdf | 14 | 用于处理所有 PDF 相关任务，包括读取、创建、编辑、转换、内容提取、页面处理、表单填写和扫描件解析。用户提供、提及或要求生成 PDF 时使用。 |
 | photo-abstract-editorial | `doubao/skills/photo-abstract-editorial` | 其他 | photo-abstract-editorial | 18 | Create a clean, vertical editorial artwork that preserves an uploaded photograph as the original image and pairs it with a restrained, photo-derived abstract memory panel and poetic English title. Use when asked to tr... |
 | pipeline-outbound-account-growth | `doubao/skills/pipeline-outbound-account-growth` | 营销/内容运营 | pipeline-outbound-account-growth | 15 | 对CRM锚定或用户给定的账户/线索集合完成公司研究与字段补全、账户信号、可解释优先级、拓客草稿、管道健康、确定性forecast及扩建保有，输出管道拓客与账户增长经营包。CRM和Sales Intelligence连接器只负责真值读取、字段来源、映射与受控动作，不作为业务Skill。 |
 | plan-course-registration-cn | `doubao/skills/plan-course-registration-cn` | 教育/考试 | plan-course-registration-cn | 18 | 帮助中国大陆高校学生比较本校具体课程或教学班并制定可复核的选课、换课与退补选方案。用于核对培养方案、先修条件、时间冲突、学分归属或操作风险；单独做成绩统计、教师评价、课堂笔记或院校职业规划时不使用。 |

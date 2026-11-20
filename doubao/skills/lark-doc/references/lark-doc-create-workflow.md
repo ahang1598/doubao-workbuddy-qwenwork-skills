@@ -4,14 +4,14 @@
 
 本工作流统一处理飞书云文档创建：
 
-- **从零创作**：进入[“从零创作”](#从零创作)，按以下核心顺序依次完成：**理解需求与体裁 → 理解材料与内容规划 → 排版与可视化规划 → 提交 Decision 并初始化 → 生成 XML → 创建 → 交付。**
+- **从零创作**：进入[“从零创作”](#从零创作)，按以下核心顺序依次完成：**理解需求与体裁 → 理解材料与内容规划 → 排版与可视化规划 → 生成 XML → 创建 → 交付。**
 - **Shortcut**：仅创建空文档或原样导入用户提供的完整内容时，跳过完整创作流程，直接进入[“Shortcut”](#shortcut)。
 
 ---
 
 ## 从零创作
 
-**CRITICAL：从零创作文档时，阅读以下经验并按 Step 1–7 依次执行；各步骤中的专项子项按 Step 1 确定的体裁要求执行。有适用体裁时读取对应指南，没有匹配体裁时读取[兜底体裁指南](genres/fallback.md)。**
+**CRITICAL：从零创作文档时，阅读以下经验并按 Step 1–6 依次执行；各步骤中的专项子项按 Step 1 确定的体裁要求执行。**
 **内容与排版共同规划。** 文档创作需要同时组织内容逻辑和阅读层级，提高全文可读性。段落组织与标题层级是各体裁的共同基础；列表、表格、分栏等文本排版组件，以及图片等可视化组件按体裁指南选用，主动可视化选型按 Step 1 确定的范围执行。组件的使用场景、组合与样式必须严格遵循体裁指南，未规定的部分按本流程执行。
 
 ### 权威经验
@@ -58,22 +58,8 @@
 
 #### Step 1.2 · 判断体裁，并读取该体裁的参考文件
 
-下表文件均位于当前 Skill 的 `references/genres/` 目录。
-
-- **先看用户要求**：用户明确指定内容、结构或样式时，按用户要求执行。
-- **再看体裁指南**：按任务选择并阅读对应指南，有专门排版要求则按该指南执行。已匹配某个体裁、但未列出对应细分场景时，仍按该体裁的总原则执行；不匹配现有体裁时，读取[兜底体裁指南](genres/fallback.md)。
-
-| 场景类型 | 典型诉求 | 读者任务 | Content Profile |
-|---|---|---|---|
-| 分析报告与决策支持 | 咨询、经营分析、行业研究、战略、市场机会、消费评测、投资分析 | 核验证据，比较选项，形成判断，支撑决策 | [`strategy-and-analysis.md`](genres/strategy-and-analysis.md) |
-| 企业经营与组织协同 | 总结、计划、汇报、纪要、项目推进、流程与 SOP | 掌握现状，明确责任，确认下一步 | [`organization-collaboration.md`](genres/organization-collaboration.md) |
-| 产品 PRD 与技术协作 | PRD、技术方案、架构设计、测试记录、故障复盘 | 看清问题、约束、依赖、验证方式与技术取舍 | [`product-and-engineering-document.md`](genres/product-and-engineering-document.md) |
-| 营销策划全案 | 品牌、上市、种草、活动、增长、渠道与整合营销 | 理解策略，评估资源，拆解传播与转化动作 | [`marketing-plan.md`](genres/marketing-plan.md) |
-| 媒体传播 | 公众号、小红书、邮件等发布渠道，内容重点包括品牌与广告表达、活动传播与行动引导、产品推荐与种草、现场与口头表达 | 获取信息，理解内容，完成传播或行动 | [`media-and-communication.md`](genres/media-and-communication.md) |
-| 实用指南与规划 | 服务于个人生活，教程、旅行、健身、菜谱与个人规划 | 理解、选择并正确执行下一步 | [`practical-guides-and-planning.md`](genres/practical-guides-and-planning.md) |
-| 创意写作 | 小说、故事、剧本、人物与世界观设定；短视频脚本、分镜 | 进入故事，理解角色和冲突，获得叙事体验 | [`creative-writing.md`](genres/creative-writing.md) |
-| 观点与文化评论 | 围绕新闻、热点、公共议题、文化现象或具体作品，解释对象并形成有依据的评价或观点 | 理解事实或作品，跟随论证形成判断 | [`opinion-and-culture.md`](genres/opinion-and-culture.md) |
-| 通用在线文档（兜底） | 已确定交付在线文档，但不匹配上述体裁的说明、介绍、材料整合等任务 | 理解核心内容、关系与差异，完成当前阅读任务 | [`fallback.md`](genres/fallback.md) |
+- **先看用户要求**。用户明确指定内容、结构或样式时，按用户要求执行。
+- **选择体裁**。按[体裁索引](writing-taxonomy.md#按成稿用途选择体裁)确定主体裁并读取对应指南。已匹配大类但未覆盖细分场景时，沿用该类总原则。涉及多种用途时，按主要用途选定主体裁，其他指南只用于对应段落。没有匹配体裁时，按[通用写作指南](writing-taxonomy.md#围绕读者的问题组织材料)组织内容和选用组件。
 
 ### Step 2 · 理解材料，形成具体内容与全文主线
 
@@ -271,57 +257,22 @@ blockquote用于确有引用性质的原话、邮件、话术或示例文案。�
 整体视觉方向：
 ```
 
-### Step 4：提交 Presentation Decision，并初始化草稿。
+### Step 4 · 生成 XML 草稿
 
-- `presentation_mode` 表示视觉策略：
-   - `formal`：视觉正式、克制；不使用高亮块、emoji 或装饰性组件，只保留正式体裁确有必要的结构。
-   - `rich`（**默认**）：在已读取并锁定的内容 contract 允许范围内，主动规划和使用图片、表格、画板及基础富文本样式；HTML 仅按 Step 3.2 的条件使用。
+读取 [XML 制作指导](lark-doc-xml.md)。使用 HTML block 时，另读 [HTML block 视觉与文字指导](lark-doc-html-block.md)。按 Step 2 和 Step 3 确定的内容与排版生成完整 XML。
 
-- 生成完整 JSON；字段值必须来自 Step 1–3，不得照抄示例。
-- `word_count` 仅在用户明确提出字数要求时加入，使用 `min` / `max`；单边无限制写 `null`，“约 N 字”按 ±10%，无要求时省略整个字段：
-- `visual_plan.blocks` 只记录确需最低数量约束的 `whiteboard`、`img`、`html5-block`。三类均无硬性数量要求时写 `"blocks": []`。
-
-```json
-{
-  "audience": "负责评审并推进改进方案的项目团队",
-  "reader_task": "理解偏差成因，确认优先行动及其依赖",
-  "genre_contract": null,
-  "adapter": null,
-  "presentation_mode": "rich",
-  "visual_plan": {
-    "reason": "用正文说明结论和证据，用画板展示偏差成因与行动依赖，避免重复表达",
-    "blocks": [
-      {"type": "whiteboard", "min_count": 3, "purpose": "展示偏差成因与行动依赖"}
-    ]
-  }
-}
-```
-
-不预建临时目录、草稿或决策文件。将上述 JSON 原样替换命令中的占位符并实际执行：
-
-```bash
-lark-cli docs +script --command init-draft --presentation-decision '<上方完整 JSON>' --format json
-```
-
-成功后：
-
-- 返回的 `data` 字段包含 cwd、workspace、draft_path，后续 CLI 在 `data.cwd` 下执行；将 `data.workspace` 记为 `work_dir`、`data.draft_path` 记为 `draft_path`（已含工作区前缀）。
-- CLI 会创建独占的 `work_dir` 并保存 `.presentation-decision.json` 作为固定基线，**但不会创建 `draft_path` 指向的 XML**。`draft_path` 是当前任务可直接写入的新文件路径。
-
-### Step 5：生成 release candidate。
-
-读取 [`lark-doc-xml.md`](lark-doc-xml.md)，仅实际使用 HTML block 时再读取 [HTML block 视觉与文字指导](lark-doc-html-block.md)，并结合 Presentation Decision、适用 contract 生成完整 XML。
+将本次执行 CLI 的可写目录记为 `draft_cwd`，其中本次任务的独占子目录记为 `work_dir`。草稿路径 `draft_path` 相对 `draft_cwd`，包含 `work_dir` 前缀，例如 `draft/draft.xml`。
 
 1. 公开网络图片使用 `<img href="URL"/>`；已有本地图片使用 `<img path="@./downloads/image.png"/>`；画板使用 `<whiteboard type="svg" path="@./<work_dir>/diagram.svg"/>` 并遵循[`画板工作流`](lark-doc-whiteboard.md)；HTML 使用 `<html5-block path="@./<work_dir>/widget.html"/>` 并遵循[`拓展标签`](lark-doc-xml-extended-blocks.md)。
-2. 直接在 `<data.cwd>/<draft_path>` 创建并写入完整 release candidate。新建资源建议放 `<data.cwd>/<work_dir>`，已有资源可原地复用；CWD 内优先用相对路径，其他位置用允许访问的绝对路径。XML 内相对资源先查 CWD，仅文件不存在时回退到 XML 所在目录。
+2. 直接在 `<draft_cwd>/<draft_path>` 创建并写入完整 release candidate。新建资源建议放 `<draft_cwd>/<work_dir>`，已有资源可原地复用；CWD 内优先用相对路径，其他位置用允许访问的绝对路径。XML 内相对资源先查 CWD，仅文件不存在时回退到 XML 所在目录。
 3. 首次写入后，发现 XML 语法问题时只修复最小范围，不无故重写正确内容。
 
-### Step 6：创建文档并处理局部失败。
+### Step 5 · 创建文档并处理局部失败
 
 1. 按[创建命令](#创建命令)使用同一个 `draft_path` 创建文档；读取创建响应，成功且无影响交付的明确异常时直接交付，不再执行草稿检查、全文回读或渲染检查。用户明确要求验收时，再执行相应检查。
 2. 创建结果存在影响交付的 warning 或局部资源失败时，不得再次新建文档；读取 [`lark-doc-update.md`](lark-doc-update.md)，对已创建文档做最小范围修复。
 
-### Step 7：交付。
+### Step 6 · 交付
 
 只交付用户需要的结果，并说明必要来源、未关闭缺口、异常、失败或阻塞原因，以及文档 URL 或 token。
 

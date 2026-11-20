@@ -1,29 +1,25 @@
 {
-  "logic_title": "2024 年以来 RLHF 的研究脉络：奖励信号如何决定行为分布",
-  "core_question": "RLHF 的进展由什么决定：优化算法，还是奖励信号本身",
+  "logic_title": "self-instruct 系数据训练小模型：三条改造路线与一条反证",
+  "core_question": "2023 年以来，自生成指令数据要怎样改造才能在 1B–13B 小模型上真正换来 benchmark 提升？",
   "nodes": [
-    {"id": "M1", "label": "偏好优化算法与理论边界", "evidence": ["R1", "R2", "R3", "R4", "R5", "R6", "R7"]},
-    {"id": "M2", "label": "奖励建模：标量奖励到过程奖励与 rubric", "evidence": ["R11", "R12", "R13", "R14", "R15"]},
-    {"id": "M3", "label": "可验证奖励 RL：GRPO 与 RLVR", "evidence": ["R8", "R9", "R10", "R25", "R26", "R32", "R33"]},
-    {"id": "M4", "label": "反馈来源重构：AI 反馈与多元偏好聚合", "evidence": ["R16", "R17", "R18", "R27"]},
-    {"id": "M5", "label": "多轮交互与 Agent 化", "evidence": ["R22", "R23", "R24", "R30", "R31"]},
-    {"id": "M6", "label": "对齐深度与安全后果", "evidence": ["R19", "R20", "R21", "R28"]}
+    {"id": "M1", "label": "规模与多样性优先（LaMini-LM）", "evidence": ["R1", "R2"]},
+    {"id": "M2", "label": "改指令生成器（Evol-Instruct / Ada-Instruct）", "evidence": ["R3", "R4", "R7"]},
+    {"id": "M3", "label": "换种子来源（OSS-Instruct / Magpie）", "evidence": ["R5", "R6"]},
+    {"id": "M4", "label": "配比与规模边界（Tülu / Ensemble-Instruct）", "evidence": ["R8", "R9"]},
+    {"id": "M5", "label": "人类指令不可替代（反证）", "evidence": ["R10"]}
   ],
   "edges": [
     {"source": "core", "target": "M1", "relation": "引出"},
     {"source": "core", "target": "M2", "relation": "引出"},
     {"source": "core", "target": "M3", "relation": "引出"},
     {"source": "core", "target": "M4", "relation": "引出"},
-    {"source": "M1", "target": "M2", "relation": "限定"},
+    {"source": "core", "target": "M5", "relation": "引出"},
+    {"source": "M4", "target": "M1", "relation": "限定"},
+    {"source": "M4", "target": "M2", "relation": "限定"},
     {"source": "M1", "target": "M3", "relation": "扩展"},
     {"source": "M2", "target": "M3", "relation": "分化"},
     {"source": "M3", "target": "M2", "relation": "补充"},
-    {"source": "M1", "target": "M5", "relation": "扩展"},
-    {"source": "M3", "target": "M5", "relation": "扩展"},
-    {"source": "M2", "target": "M5", "relation": "补充"},
-    {"source": "M4", "target": "M2", "relation": "补充"},
-    {"source": "M1", "target": "M6", "relation": "限定"},
-    {"source": "M3", "target": "M6", "relation": "限定"},
-    {"source": "M6", "target": "M1", "relation": "反驳"}
+    {"source": "M5", "target": "M1", "relation": "反驳"},
+    {"source": "M5", "target": "M3", "relation": "限定"}
   ]
 }

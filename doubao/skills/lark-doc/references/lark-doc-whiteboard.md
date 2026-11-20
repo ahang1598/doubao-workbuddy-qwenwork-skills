@@ -4,8 +4,8 @@
 
 | Skill             | 核心职责                                                      | 约束                              |
 |-------------------|-----------------------------------------------------------|---------------------------------|
-| `lark-doc`        | 识别画板机会、使用 Mermaid/SVG 创建图表、调度 SubAgent、插入简单图表或复杂空白画板 | 简单图可由主 Agent 直接写入；复杂图再隔离到 SubAgent |
-| `lark-whiteboard` | 查询/导出已有画板；复杂图表生成（Mermaid/DSL/SVG 路由、场景选型）；写入已有/空白画板  | 仅特别复杂的图表或已有画板更新时由独立 SubAgent 读取 |
+| `lark-doc`        | 识别画板机会、使用 Mermaid/SVG 创建图表、插入简单图表或复杂空白画板 | 简单图可直接写入 |
+| `lark-whiteboard` | 查询/导出已有画板；复杂图表生成（Mermaid/DSL/SVG 路由、场景选型）；写入已有/空白画板  | 仅特别复杂的图表或已有画板更新时读取 |
 
 ## 画板适用规则
 
@@ -27,9 +27,9 @@
 > [!IMPORTANT]
 > ⚠️ **分别对每个图表进行决策**
 
-如果有多个位置需要插入图表，你需要根据每个图表的内容**分别决定**采用步骤 2A 还是 2B。思维导图、时序图、类图、饼图、甘特图可插入 mermaid 块；其他类型图表使用 SVG，简单图由主 Agent 直接写入，复杂图再启动 SubAgent。
+如果有多个位置需要插入图表，你需要根据每个图表的内容**分别决定**采用步骤 2A 还是 2B。思维导图、时序图、类图、饼图、甘特图可插入 mermaid 块；其他类型图表使用 SVG。
 
-简单 Mermaid / SVG 图可由主 Agent 直接写入本地 XML；需要专门视觉设计、信息密度较高或容易布局翻车的 SVG，再启动 SubAgent 产出完整片段。
+简单 Mermaid / SVG 图可直接写入本地 XML；需要专门视觉设计、信息密度较高或容易布局翻车的 SVG，先编写完整片段。
 
 ### 步骤 2A: 使用 mermaid 插入图表
 
@@ -42,9 +42,9 @@
 
 如果 Mermaid 已在本地文件中，可写成 `<whiteboard type="mermaid" path="@./diagram.mmd"></whiteboard>`；CLI 会在写入前读取文件并展开为内联内容。
 
-### 步骤 2B: SubAgent 使用 SVG 插入图表
+### 步骤 2B: 使用 SVG 插入图表
 
-主 Agent 启动 SubAgent，让它用 `docs +create` / `docs +update` 插入：
+用 `docs +create` / `docs +update` 插入：
 
 ```xml
 
@@ -56,7 +56,7 @@
 
 如果 SVG 已在本地文件中，可写成 `<whiteboard type="svg" path="@./diagram.svg"></whiteboard>`；PlantUML 文件同理使用 `<whiteboard type="plantuml" path="@./sequence.puml"></whiteboard>`。
 
-Sub Agent 需要携带以下的最小上下文，以及后续的 [SVG 设计 Workflow] 章节指南：
+插图时需结合以下信息，并参照后续的 [SVG 设计 Workflow] 章节指南：
 
 - doc token、插入位置（标题 / block_id / command）
 - 图表目标、受众、源段落或数据
@@ -114,18 +114,16 @@ Sub Agent 需要携带以下的最小上下文，以及后续的 [SVG 设计 Wor
 - `<pattern>` / `<clipPath>` / `<mask>` / 非阴影用途的 `<filter>` (blur / hue-rotate / 复合合成 / `flood-color=url(...)` / 多个 `<feDropShadow>` 等) → 画板不支持，**请避免使用，否则会导致画板渲染问题**
 - 渐变边界：`gradientUnits="userSpaceOnUse"` / `spreadMethod="reflect|repeat"` / stops 少于 2 个 / 复杂 `gradientTransform` 会变成不可编辑图片, 视觉正确但失去可编辑性, 若无必要请沿用默认 `objectBoundingBox`
 
-### 步骤 3B：编辑已有画板 — 启动 lark-whiteboard SubAgent
+### 步骤 3B：编辑已有画板
 
-复杂图和已有画板更新必须启动 SubAgent。主 Agent 只传最小上下文，不直接执行 `lark-whiteboard` 的渲染和写入流程。
+复杂图和已有画板更新按 `lark-whiteboard` 的渲染和写入流程执行。
 
-复杂图 SubAgent 的最小上下文：
+复杂图所需的信息：
 
 - board_token
 - 图表目标、推荐画板类型、受众
 - 与图表直接相关的源段落或数据
 - 要求读取 [`../../lark-whiteboard/SKILL.md`](../../lark-whiteboard/SKILL.md)，按其格式和写入说明将图表写入该 board_token
-
-多个画板互不依赖时，可并行启动多个 SubAgent；每个 SubAgent 只负责一个画板或一个 SVG 插入点，不要互相复用上下文。
 
 复杂路径使用空白画板作为插入点时，须将图表写入该画板后再交付。
 
