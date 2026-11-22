@@ -47,24 +47,28 @@ Base、表、字段、选项、ID 必须来自本次任务的可信返回；未�
 | jq 对象键 | 裸中文键会被拒：{日期:.[0]} 报 unexpected token；写 {"日期":.[0]} 或英文键。 |
 | +record-list 参数 | 只有 --filter-json、--sort-json、--field-id（可重复）、--view-id、--limit、--offset、--format、--output、--jq；无 --sort/--filter/--fields/--field-ids。 |
 | +record-list 全量 | 默认 NDJSON：stdout 是多行 manifest（record_file、records_count、has_more），记录在 record_file 里逐行；manifest 整体 json.load，不套 data 层。只看条数：\| grep -o '"records_count":[0-9]*'。 |
-| +record-batch-create | 只有 --json，无 --records/--data：--json '{"create_records":[{"名称":"A","单选":["待处理"],"负责人":[{"id":"ou_xxx"}],"关联表":[{"id":"recxxx"}],"日期":"2026-10-21 08:00:00","数量":3}]}' |
+| +record-batch-create | 只有 --json，无 --records/--data：--json '{"create_records":[{"名称":"A","单选":["待处理"],"负责人":[{"id":"ou_xxx"}],"关联表":[{"id":"recxxx"}],"日期":"2026-10-21 08:00:00","数量":3,"电话":"13800000001"}]}'；电话写完整号码，不写 138****5678 这类打码值（电话样式字段会拒绝或存成空，文本字段会原样存下打码值）；样例行未指定人员时 ou_xxx 取当前用户：lark-cli contact +get-user --as user --jq '.data.user.open_id'；写 Mock 样例前按 [Mock 开工必读](../scenes/mock-data.md#开工必读)。 |
 | batch-create 前置／原子性 | 先 +field-list 取字段名和选项列表；选项不够先 +field-update 加。任一条记录出错，整批都不写。 |
 | batch-create not_found | 触发：字段名不存在、单选／多选选项不存在、人员 ID 不存在、table_id 不存在；不触发：关联记录 ID 错误、数字写成字符串、日期只到天。 |
 | +record-batch-update | --json '{"update_records":{"recxxx":{"状态":["完成"]}}}' |
+| +base-create | 新建业务 Base 同时传 --table-name 和 --fields 建第一张业务表，CLI 建好后自动删平台默认表（回包 default_table_deleted=true）；多表系统也这样建第一张，其余表用 +table-create，不要“先建空 Base 再逐张建表”。第一张选主档表（项目、客户、商品等），--fields 只放基础字段，不放指向尚未创建的表的 link（报 not_found），关联放在后建的表上指回它，或对端建好后 +field-create 补；--fields 首项就是主字段，放能标识记录的文本类字段，不放附件、人员；任一字段非法时整次失败，CLI 会删掉刚建的 Base，按报错改正后整条重发；只传 --table-name 只改名、保留默认的文本／单选／日期／附件字段；都不传会留下 0 条的默认「数据表」。default_table_deleted=false 时按 stderr 里的表 ID 用 +table-delete --yes 再删，失败重试，不当作可选清理；原话明确要空白或平台默认结构时除外。 |
 | +table-create / +base-create --fields | 每项 {"name","type"}，可选 style/options/link_table；无 property/formatter/default_value/date；双向关联必带 bidirectional_link_field_name；select 的 options 每项写 {"name":"选项"}，写成字符串数组会被拒。+table-create 必带 --name 和非空 --fields；--table-name 只属 +base-create。模板见[字段 JSON 模板](table-commands.md#字段-json-模板)。 |
 | +field-create | 只有 --json，一律传数组 '[{...}]'，单字段也包数组；无 --name/--type。formula、lookup 必带 --i-have-read-guide；formula 用 expression 且不收 style；lookup 必带 where。类型与样式按[字段选型](../scenes/field.md)，表单题按 Form Scene；formula 带 style 报 Unrecognized key(s) in object: 'style'。返回结构与取 ID 见上方返回键速查。示例见[创建字段](field-commands.md#调用示例)。 |
 | +field-update | --field-id --yes --json；JSON 是完整字段定义（覆盖写），必带 name 和 type，只传 style、options 或 multiple 会报 Invalid discriminator value；无 --name。 |
-| +view-create | --json `'{"name":"<视图名>","type":"kanban"}'`；type=grid/kanban/gallery/calendar/gantt；无 --name/--type，键不是 view_name/view_type。 |
+| +view-create | --json `'{"name":"<视图名>","type":"kanban"}'`；type=grid/kanban/gallery/calendar/gantt；无 --name/--type，键不是 view_name/view_type。建完先把这个视图配完再建下一个：视图名和原话里的时间、人员、状态、分组词逐项 +view-set-*，不留“稍后处理”。kanban 回包 `_meta.group` 是平台默认字段（常是表里第一个人员字段），不算分组，必须 +view-set-group 指定字段。 |
 | +view-set-sort/-group/-visible-fields/-timebar | --table-id --view-id 加 --json，依次为 {"sort_config":[{"field":"金额","desc":true}]}、{"group_config":[{"field":"状态","desc":false}]}、{"visible_fields":["标题","状态"]}。 |
-| +view-set-filter | --json '{"logic":"and","conditions":[["状态","intersects",["进行中"]]]}'，不包 filter_config 外层。条件写法见[视图筛选](view-filter.md)。 |
+| +view-set-filter | --json '{"logic":"and","conditions":[["状态","intersects",["进行中"]]]}'，不包 filter_config 外层。今天：["截止日期","==","Today"]；我的／我负责：["负责人","intersects",[{"id":"<当前用户 open_id>"}]]（open_id 取法同 +record-batch-create 行）；本周：先建公式字段「是否本周」`IF(AND(YEAR([日期])=YEAR(TODAY()),WEEKNUM([日期])=WEEKNUM(TODAY())),"是","否")`，再筛 ["是否本周","==","是"]；“或”用 "logic":"or"。其余写法见[视图筛选](view-filter.md)。 |
 | timebar JSON | {"start_time":"开始日期","end_time":"结束日期","title":"标题"}；三项必填，起止只能是日期字段或创建时间。 |
 | +form-create | --table-id --name `"<表单名>"`，无 --json；创建前 +view-list 查同名 form。建好后先配完这一份再建别的对象：+form-questions-list 取得完整题目 → +form-questions-update 把有效提交缺不得的输入设必填（备注、补充说明选填）→ +view-set-visible-fields --view-id <form_id> --json '{"visible_fields":["fldC","fldA","fldB"]}' 按填写顺序提交全部题目（平台默认题序不能沿用，整表备注、补充说明放最后）；多份表单逐份执行，细则见 [Form 开工必读](../scenes/form.md#开工必读)。 |
 | +form-share-update | 必带 --table-id --form-id。每次只带一个设置项，分条依次调用 --enabled=true、--access-scope tenant（invite/tenant/anyone）、--require-login=true；布尔用等号；无 --shared/--json。见[分享设置示例](form-share.md#分享设置示例)。 |
 | +form-questions-* | 均必带 --table-id --form-id；新表单含全部可用字段。更新：+form-questions-update --questions '[{"id":"fldX","title":"...","required":true}]'，无 --question-id；全量覆盖不是 patch，省略的 description、visible_rule 会被清空，先 +form-questions-list 读完整配置并带回要保留的属性，见[全量覆盖与更新基线](form-questions.md#全量覆盖与更新基线)；它不改题序，题序用 +view-set-visible-fields --view-id <form_id>。 |
 | 删除表单题 | +form-questions-delete --question-ids '["fldX"]' --keep-field --yes，≤10 个；`+form-questions-list` 已列出的题目按 id 删除。新加或复用题目的支持范围以[题目协议](form-questions.md#创建请求与支持类型)为准。 |
 | +dashboard-create | --base-token --name，可选 --theme-style；取 ID：--jq '.data.dashboard.dashboard_id'。同名再建报 API error [1]；创建报错或取到 null 时先 +dashboard-list 查是否已建，不重建。 |
-| +dashboard-block-create | 必带 --dashboard-id。先按[Dashboard 开工必读](../scenes/dashboard.md#开工必读)写范围、粒度、指标、排序；调用 --name --type --data-config '{...}' --position '{"x":<x>,"y":<y>,"w":<w>,"h":<h>}'（坐标按视觉规范的组件清单和尺寸表定）--jq '.data.block.block_id'。 |
-| dashboard create 配置 | 表名放 data_config.table_name；无 --table-id/--json。data_config 形态见[常用形态示例](dashboard-chart-config.md#常用形态示例)。 |
+| +dashboard-block-create（普通组件） | 必带 --dashboard-id。先按[Dashboard 开工必读](../scenes/dashboard.md#开工必读)写范围、粒度、指标、排序；调用 --name --type --data-config '{...}' --position '{"x":<x>,"y":<y>,"w":<w>,"h":<h>}'（坐标按视觉规范的组件清单和尺寸表定）--jq '.data.block.block_id'。 |
+| Dashboard AI Block | `--type ai_chart --ai-config`，与 `--data-config` 互斥；创建／编辑先读 [AI Block](ai-block.md)，不套普通图表 data_config。 |
+| App 页面与组件 | 使用 `--app-token` 与页面／组件真实 ID；命令与返回见 [App 命令](base-app/app-commands.md)，布局见 [App 布局](../scenes/app-mode/layout.md)。 |
+| App 角色权限 | 使用 `+app-role-* --app-token`，按 [App 权限](../scenes/app-permission.md) 执行；不以关联 Base 的 `+role-*` 替代。 |
+| dashboard 普通组件配置 | 表名放 data_config.table_name；无 --table-id/--json。data_config 形态见[常用形态示例](dashboard-chart-config.md#常用形态示例)。 |
 | +dashboard-block-list | 必带 --dashboard-id；返回 data.items[]（block_id/name/type/position），不是 data.blocks。 |
 | +dashboard-layout | 必带 --dashboard-id 和 --layout '[{"block_id":"<block_id>","x":<x>,"y":<y>,"w":<w>,"h":<h>},...]'（坐标按视觉规范的组件清单和尺寸表定）；坐标只走 --layout，不包 blocks，须含盘上全部组件。get-data 报 API error [1] 时同一组件只重读一次，仍报错就改用 +dashboard-block-get 核对配置并在答复说明，不串 sleep。 |
 | +role-create 前置 | 先按[Permission 开工必读](../scenes/permission.md#开工必读)逐句映射角色、表、能力、记录范围；+base-get 查 data.base.is_advanced，false 时执行 +advperm-enable（不收 --yes）。 |
@@ -85,6 +89,7 @@ Base、表、字段、选项、ID 必须来自本次任务的可信返回；未�
 | 文件路径或输入方式被拒 | 使用允许任务目录内的一致 cwd 和相对路径；`@file` / stdin 以精确命令帮助为准；不得靠切目录、软链、复制受限文件绕过校验。 |
 | unknown flag / JSON、schema、枚举错误 | 按[命令确认](#命令确认)和对应 Reference，在主入口预算内修正；不得移植其他命令参数或删除用户要求。 |
 | 写入 timeout / 502 / 重名 | 先 get/list 核对原目标。已生效则复用；只有确认未生效才重试原请求；仍未知则报告受阻，不改名再建。 |
+| `800004135`（`... limited`） | 接口频控，不是字段类型或能力不支持；隔 1～2 秒重试原请求，不换字段、不改方案。 |
 | `1254291` | 并发写冲突；串行写入，按[主入口等待与重试规则](../SKILL.md#异常恢复与停止条件)处理，保持原目标并先确认已完成结果。 |
 ## 专项错误索引
 

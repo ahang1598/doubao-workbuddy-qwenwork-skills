@@ -5,10 +5,10 @@
 | 命令 | 参数与返回 |
 |---|---|
 | `+dashboard-block-list` | `--base-token`、`--dashboard-id`；返回组件清单和分页信息，组件含 `block_id`、`name`、`type`、`position` |
-| `+dashboard-block-get` | 上述参数加 `--block-id`；从 `data.block` 读名称、类型、位置和配置 |
+| `+dashboard-block-get` | 上述参数加 `--block-id`；从 `data.block` 读名称、类型、位置和配置；AI Block 读 `ai_config`，普通组件读 `data_config` |
 | `+dashboard-block-get-data` | 只需 `--base-token`、`--block-id`，不需要 `--dashboard-id`；返回计算结果，不含组件元数据，按 [结果协议](dashboard-chart-result.md) 解析 |
 
-`data_config` 结构由 `type` 决定，从 [类型入口](dashboard-chart-config.md#支持的组件类型type-枚举) 选专属协议。`view` 的详情返回视图引用，用其中的 `tableId`、`viewId` 读记录，见 [视图协议](dashboard-view.md)。坐标的读取与输入见 [布局协议](dashboard-layout.md)。
+普通组件的 `data_config` 结构由 `type` 决定；`type=ai_chart` 改用 [AI Block](ai-block.md) 的 `ai_config`，两者互斥。从 [类型入口](dashboard-chart-config.md#支持的组件类型type-枚举) 选专属协议。`view` 的详情返回视图引用，用其中的 `tableId`、`viewId` 读记录，见 [视图协议](dashboard-view.md)。坐标的读取与输入见 [布局协议](dashboard-layout.md)。
 
 ## 组件列表与分页
 
@@ -18,10 +18,14 @@
 
 创建或追加组件后按 [统一布局流程](../scenes/dashboard.md#统一布局流程) 收尾。后续决策依赖图表结果或结果异常时读取计算结果。
 
-- 创建用 `+dashboard-block-create --base-token --dashboard-id`，必填 `--name`、`--type`。取 ID 加 `--jq '.data.block.block_id'`，不要把 `2>&1` 的输出交给 JSON 解析。本月等范围在 `data_config.filter` 里对日期字段写 `{"field_name":"<日期字段>","operator":"is","value":["CurrentMonth"]}`。配置用 `--data-config` 提交，必填字段按类型协议；位置可选，见 [坐标输入](dashboard-layout.md#组件坐标---position)。
-- 更新用 `+dashboard-block-update`，定位参数再加 `--block-id`；可改 `--name`、`--data-config`、`--linkage`、`--position`。外层 `type` 不可改；倒计时内部模式切换按 [倒计时更新协议](dashboard-countdown.md#更新语义)。
+- 创建用 `+dashboard-block-create --base-token --dashboard-id`，必填 `--name`、`--type`。取 ID 加 `--jq '.data.block.block_id'`，不要把 `2>&1` 的输出交给 JSON 解析。本月等范围在 `data_config.filter` 里对日期字段写 `{"field_name":"<日期字段>","operator":"is","value":["CurrentMonth"]}`。普通组件配置用 `--data-config`，AI Block 用 `--ai-config`，必填字段按类型协议；位置可选，见 [坐标输入](dashboard-layout.md#组件坐标---position)。
+- 更新用 `+dashboard-block-update`，定位参数再加 `--block-id`；普通组件可改 `--name`、`--data-config`、`--linkage`、`--position`；AI Block 见下文。外层 `type` 不可改；倒计时内部模式切换按 [倒计时更新协议](dashboard-countdown.md#更新语义)。
 - 普通图表配置更新按 [更新语义](dashboard-chart-config.md#更新语义)，特殊组件按专属协议；联动单独按 [联动协议](dashboard-linkage.md)，不整包回传 Get 结果。
 - 删除用 `+dashboard-block-delete --base-token <base_token> --dashboard-id <dashboard_id> --block-id <block_id> --yes`；`--yes` 是高风险写入的确认参数。
+
+## AI Block 创建与编辑
+
+`type=ai_chart` 用 `--ai-config`（与 `--data-config` 互斥），更新只支持名称、位置和 AI 配置；创建先读 [AI Block](ai-block.md) 及对应 family；ECharts patch 与存量 VChart 处理按 [编辑](ai-block.md#编辑)。编辑前先 get，不整包回传 get 结果；get-data 返回的是计算结果，不是可再次提交的 `ai_config`。
 
 ## 多个组件串行读取
 

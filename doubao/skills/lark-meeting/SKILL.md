@@ -1,7 +1,7 @@
 ---
 name: lark-meeting
 version: 1.0.0
-description: "飞书视频会议：查询会议记录与会议产物(纪要/逐字稿/妙记)、妙记搜索/上传/下载/编辑；基于 meeting_id、meeting_no、event_id、note_id、minute_token、vc-node-id 或妙记 URL 查询相关信息。预约会议、忙闲和会议室管理走 lark-calendar。实时发言、会议字幕及事件、会中互动、录制控制和主持管理走 lark-meeting-realtime。"
+description: "飞书视频会议：查询会议记录与会议产物(纪要/逐字稿/妙记)、妙记搜索/上传/下载/编辑；基于 meeting_id、meeting_no、event_id、note_id、minute_token、vc-node-id 或妙记 URL 查询相关信息。预约会议、忙闲和会议室管理走 lark-calendar。实时发言、会议字幕及事件、会中互动、文档共享、录制控制和主持管理走 lark-meeting-realtime。"
 metadata:
   requires:
     bins: ["lark-cli"]
@@ -12,7 +12,7 @@ metadata:
 
 会议正在进行中或当前处于会议侧边栏时，**必须先读取 [lark-meeting-realtime](../lark-meeting-realtime/SKILL.md)**，再按其行动指南执行。
 
-本技能与 [lark-meeting-realtime](../lark-meeting-realtime/SKILL.md) **共同覆盖会议查询与会中操作**：本技能负责查询会议基础信息、会议记录、录音及录制产物，读取智能纪要、逐字稿及管理妙记；对方负责实时发言/聊天/共享内容问答、进行中会议状态查询、邀请参会人、会中文本/表情、会议聊天、倒计时、录制控制、主持管理和个人笔记。涉及对方能力时，先读取对方 Skill，不因本技能未列出而判断功能不支持。
+本技能与 [lark-meeting-realtime](../lark-meeting-realtime/SKILL.md) **共同覆盖会议查询与会中操作**：本技能负责查询会议基础信息、会议记录、录音及录制产物，读取智能纪要、逐字稿及管理妙记；对方负责实时发言/聊天/共享内容问答、进行中会议状态查询、邀请参会人、会中文本/表情、会议聊天、倒计时、文档共享、录制控制、主持管理和个人笔记。涉及对方能力时，先读取对方 Skill，不因本技能未列出而判断功能不支持。
 
 本产物所有命令自动以当前登录用户身份执行，无需传入身份参数，也没有身份选择或切换的需要。遇到未认证、token 或 scope 错误时，直接根据错误响应中的提示（如 `missing_scopes`、`console_url`）引导用户在应用后台补开权限后重试。
 

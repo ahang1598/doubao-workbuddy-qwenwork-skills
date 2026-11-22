@@ -1,7 +1,7 @@
 ---
 name: lark-meeting-realtime
 version: 1.0.0
-description: "基于会议或关联录音的实时发言、聊天和共享内容回答问题；查询进行中的飞书会议，邀请参会人，发送会中文本/表情，管理会议聊天、倒计时、录制、本人麦克风、主持操作及个人笔记。"
+description: "基于会议或关联录音的实时发言、聊天和共享内容回答问题；查询进行中的飞书会议，邀请参会人，发送会中文本/表情，管理会议聊天、倒计时、文档共享、录制、本人麦克风、主持操作及个人笔记。"
 metadata:
   requires:
     bins: ["lark-cli"]
@@ -10,7 +10,7 @@ metadata:
 
 # lark-meeting-realtime
 
-本技能与 [lark-meeting](../lark-meeting/SKILL.md) **共同覆盖会议查询与会中操作**：本技能负责实时发言/聊天/共享内容问答、进行中会议状态查询、邀请参会人、会中文本/表情、会议聊天、倒计时、录制控制、主持管理和个人笔记；对方负责查询会议基础信息、会议记录、录音及录制产物，读取智能纪要、逐字稿及管理妙记。涉及对方能力时，必须读取对方 Skill 并按其流程执行，不因本技能未列出而判断功能不支持。
+本技能与 [lark-meeting](../lark-meeting/SKILL.md) **共同覆盖会议查询与会中操作**：本技能负责实时发言/聊天/共享内容问答、进行中会议状态查询、邀请参会人、会中文本/表情、会议聊天、倒计时、文档共享、录制控制、主持管理和个人笔记；对方负责查询会议基础信息、会议记录、录音及录制产物，读取智能纪要、逐字稿及管理妙记。涉及对方能力时，必须读取对方 Skill 并按其流程执行，不因本技能未列出而判断功能不支持。
 
 交接时传递已有标识、用户目标和必要查询结果，不重复发现会议。预约会议、忙闲和会议室管理使用 [lark-calendar](../lark-calendar/SKILL.md)。
 
@@ -29,6 +29,8 @@ metadata:
 - 闭麦与请求开麦按用户 ID 操作；CLI 不接受或展开 `device_id`。请求开麦的成功响应只确认请求已发送，目标参会人是否实际开麦是后续状态。
 - 转移主持人、结束会议和移出参会人都必须先确认用户的明确目标；真实执行只有在确认后才传 `--yes`。预览按需使用 `--dry-run`。
 - 会中事件不能替代已结束会议的参会人快照、纪要、逐字稿或录制；会后产物转交 lark-meeting。
+
+共享文档时，评论面板优先按用户要求设置；未指定时，由 Agent 按当前任务需要决定是否展开。详见 [文档共享参考](references/lark-vc-meeting-share.md)。
 
 ## 快速行动
 
@@ -111,7 +113,7 @@ lark-cli vc +meeting-events --meeting-id <meeting_id> --page-all --format pretty
 
 按任务目标选择一个主场景，只执行所需章节。
 
-- [会中事件、互动与主持管理](scenes/live-meeting-interact.md)：查询当前登录用户所在的活跃会议、查看发言/聊天/共享内容、按需读取当前会议画面；获取正在进行的会议绑定群、创建/复用会议聊天并按需转 IM，或发送文本/表情、查询或操作倒计时；用户明确要求转移主持人、结束会议、移出参会人、闭麦或请求开麦时，也从这里路由到对应命令。
+- [会中事件、互动与主持管理](scenes/live-meeting-interact.md)：查询当前登录用户所在的活跃会议、查看发言/聊天/共享内容、按需读取当前会议画面；获取正在进行的会议绑定群、创建/复用会议聊天并按需转 IM，或发送文本/表情、查询或操作倒计时、控制文档共享；用户明确要求转移主持人、结束会议、移出参会人、闭麦或请求开麦时，也从这里路由到对应命令。
 - [会议个人笔记](scenes/lark-meeting-personal-note.md)：仅当用户有明确表达记录意图（「写/划/记/标记/备忘/摘抄」等）时创建并追加个人笔记飞书文档；意图不明确时先询问、要求用户给出明确指令，不主动建文档；会议结束后基于完整会议内容自动整理完善。
 
 ## 命令参考
@@ -127,6 +129,7 @@ lark-cli vc +meeting-events --meeting-id <meeting_id> --page-all --format pretty
 | `vc +meeting-message-send` | 发送会中文本消息或表情 | [lark-vc-meeting-message-send](references/lark-vc-meeting-message-send.md) |
 | `vc +meeting-screenshot` | 获取视频会议截图 | [lark-vc-meeting-screenshot](references/lark-vc-meeting-screenshot.md) |
 | `vc +meeting-countdown` | 查询、设置、延长、提前结束或关闭会中倒计时 | [lark-vc-meeting-countdown](references/lark-vc-meeting-countdown.md) |
+| `vc +meeting-share` / `vc +meeting-share-status` | 控制会中文档共享并查询当前共享快照 | [lark-vc-meeting-share](references/lark-vc-meeting-share.md) |
 | `vc +meeting-transfer-host` | 将会议主持人权限转移给指定参会人 | [lark-vc-meeting-transfer-host](references/lark-vc-meeting-transfer-host.md) |
 | `vc +meeting-end` | 结束整场进行中的会议 | [lark-vc-meeting-end](references/lark-vc-meeting-end.md) |
 | `vc +meeting-participant-kickout` | 移出一至十个指定参会人 | [lark-vc-meeting-participant-kickout](references/lark-vc-meeting-participant-kickout.md) |

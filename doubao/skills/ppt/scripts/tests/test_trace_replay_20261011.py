@@ -707,8 +707,7 @@ def test_publish_requests_no_lint_once_and_skips_success_findings(tmp_path, monk
     assert written["errors"] == [] and written["waived"] == [] and written["ignored"] == 0
     assert written["screenshot"] == "" and written["preview"] == ""
     assert written["summary"] == []
-    assert run.call_count == 2
-    assert run.call_args_list[0].args[0][1] == '+xml-get'
+    run.assert_called_once()
     assert "--no-lint" in run.call_args.args[0]
     capture.assert_not_called()
     assert json.loads((tmp_path / ".lark-slides/pages-d.json").read_text()) == {"p01": "s1"}
@@ -733,8 +732,7 @@ def test_publish_returns_rejection_without_retry_or_registration(tmp_path, monke
     assert rejected["errors"][0]["cli_code"] == code
     assert rejected["errors"][0]["message"] == message
     assert rejected["preview"] == "" and rejected["screenshot"] == ""
-    assert run.call_count == 2
-    assert run.call_args_list[0].args[0][1] == '+xml-get'
+    run.assert_called_once()
     assert "--no-lint" in run.call_args.args[0]
     capture.assert_not_called()
     assert not (tmp_path / ".lark-slides/pages-d.json").exists()

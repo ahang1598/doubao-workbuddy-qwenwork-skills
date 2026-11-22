@@ -18,6 +18,7 @@ This guide covers essential PDF processing operations using bundled Python libra
 - Use the bundled Python libraries and scripts for all default workflows. Do not invoke a system CLI when PyMuPDF, pypdf, pdfplumber, reportlab, or Pillow can perform the operation.
 - Install the locked Python dependencies with `python -m pip install -r requirements.txt`.
 - **If the user has no explicit file format requirements, keep the same file extension as the source file.** If the user explicitly specifies an output format, follow it.
+- When users ask to translate a PDF, deliver it in a simple format (like Markdown) unless they explicitly ask for another format.
 
 ## Quick Start
 

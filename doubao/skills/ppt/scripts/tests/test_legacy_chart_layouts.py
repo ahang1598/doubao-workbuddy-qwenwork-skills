@@ -2,6 +2,7 @@
 
 import copy
 import math
+import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -14,9 +15,10 @@ sys.path.insert(0, str(SCRIPTS))
 import gen_svg_charts as charts
 from embed_svg_validator import detect_embedded_svg_overlaps, validate_embedded_svgs
 from svg_lib.chart_examples import EXAMPLES
+from svg_lib.charts.nested_donut import VARIANTS
 from svg_lib.charts.stress_strain import _auto_detect_features, _youngs_modulus
 
-SLUGS = ("grouped_bar", "stress_strain", "titration")
+SLUGS = ("grouped_bar", "nested_donut", "stress_strain", "titration")
 
 
 def clean_svg(svg):
@@ -31,14 +33,16 @@ def text(root):
 
 
 @pytest.mark.parametrize(
-    "slug, palette", [(slug, None) for slug in SLUGS] + [("titration", "nightlab")]
+    "slug, palette", [(slug, None) for slug in SLUGS] + [("nested_donut", "archive_ink"), ("titration", "nightlab")]
 )
 def test_original_legacy_example_is_clean_without_extra_configuration(slug, palette):
     kwargs = copy.deepcopy(EXAMPLES[slug])
     original = copy.deepcopy(kwargs)
     root = clean_svg(getattr(charts, "make_" + slug)(**kwargs, title=slug.title(), palette=palette))
     assert kwargs == original
-    if slug == "titration":
+    if slug == "nested_donut":
+        assert "Domain A" in text(root) and "Domain B" in text(root)
+    elif slug == "titration":
         assert "pH_eq = 7.40" in text(root)
     elif slug == "stress_strain":
         assert "150 GPa" in text(root)
@@ -71,6 +75,37 @@ def test_grouped_pairwise_values_and_raw_samples_survive_auto_mode():
     assert sorted(float(node.get("data-value")) for node in samples) == sorted(expected)
     with pytest.raises(ValueError, match="shared grouped plot"):
         charts.make_grouped_bar(**kwargs, multi_mode="with_facet_by_series")
+
+
+@pytest.mark.parametrize("variant", VARIANTS)
+def test_nested_variants_keep_clean_rendering(variant):
+    root = clean_svg(charts.make_nested_donut(**EXAMPLES["nested_donut"], variant=variant, title=variant))
+    assert root.tag.endswith("svg")
+
+
+@pytest.mark.parametrize("variant", [None, *VARIANTS])
+def test_nested_small_sectors_and_long_names_keep_every_label(variant):
+    name = "Research & development with a long complete department name"
+    sub = "Core programme with the complete label retained"
+    data = [
+        (name, 99.9, [(sub, 50), ("Secondary programme", 49.9)]),
+        ("Tiny but important domain", 0.1, [("Rare category retained", 0.1)]),
+    ]
+    root = clean_svg(charts.make_nested_donut(data, title="Full hierarchy", palette="nightlab", variant=variant))
+    for label in (name, sub, "Tiny but important domain", "Rare category retained"):
+        assert label in text(root)
+    assert "…" not in text(root)
+
+
+def test_nested_full_circle_and_polar_area_encoding():
+    root = clean_svg(charts.make_nested_donut([("Only domain", 100, [("Only subcategory", 100)])]))
+    rings = root.findall(".//{*}path")[:2]
+    assert len(rings) == 2 and all(node.get("d").count("A ") == 4 for node in rings)
+    assert "Only domain" in text(root) and "Only subcategory" in text(root)
+    root = clean_svg(charts.make_nested_donut(**EXAMPLES["nested_donut"], variant="polar_area_outlined"))
+    radii = [float(re.search(r"A ([\d.]+)", node.get("d")).group(1)) for node in root.findall(".//{*}path")]
+    areas = [r * r - 4 * 4 for r in radii]
+    assert [v / areas[0] for v in areas] == pytest.approx([1, 25 / 35, 25 / 35, 15 / 35], abs=0.001)
 
 
 def test_stress_strain_yield_percent_strain_and_tangent_mode():

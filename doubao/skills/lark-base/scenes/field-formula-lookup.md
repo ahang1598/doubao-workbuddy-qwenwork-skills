@@ -7,7 +7,7 @@
 - **`expression` 写在字段 JSON 顶层。** `--json '[{"name":"状态","type":"formula","expression":"IF(...)"}]'`，不包成 `formula:{...}`。
 - **先查重名。** 用 `+field-list`。Formula／Lookup 重名时报 `validation_error: validation_error`；Formula 创建不校验引用字段和函数；Lookup 的 `from` 表或 `select` 字段不存在时报 `not_found`。失败后先查是否已建，不换表达式重试。
 - **聚合关联记录前确认括号里是关联字段名。** 双向关联不写 `bidirectional_link_field_name` 时，对端反向字段自动以本表表名命名；`[表名].[字段].SUM()`、`COUNTA([表名])` 算的是整张表，每行结果相同。反向字段与表同名时先改名：`+field-update --field-id <id> --yes --json '{"name":"关联<表名>","type":"link","link_table":"<table_id>","bidirectional":true}'`，再写 `[关联<表名>].[字段].SUM()`。公式引用不存在的字段也能创建成功，只是结果为空。
-- **关联取值写 `[关联字段].[目标字段]`。** 不写 `[表].[字段].FIRST()`（整表第一条），不以 `[表].FILTER(CONTAIN(...))` 拼匹配；多关联按业务用 `SUM`、`MAX` 聚合。
+- **关联取值先按 [Field](field.md#字段类型选择含公式关联) 判断独立列必要性，再写 `[关联字段].[目标字段]`。** 不写 `[表].[字段].FIRST()`（整表第一条），不以 `[表].FILTER(CONTAIN(...))` 拼匹配；多关联按业务用 `SUM`、`MAX` 聚合。
 - **空值用 `ISBLANK`／`IFBLANK` 判断。** `BLANK()`、`NULL` 不在支持的函数清单中，不用来构造空值。
 - **同行可计算的量建 Formula。** 如差额、剩余，不建普通字段手填。
 - **由日期、金额、阈值决定的状态建 Formula。** 是否逾期、是否达标、是否迟到、档位都一样；手填单选不会随数据变化。

@@ -14,7 +14,7 @@
 
 ## 对象与支持范围
 
-用 `+dashboard-block-get-data` 获取仪表盘图表组件（block）的最终计算结果，即供 AI 消费的图表协议 JSON，而非 block 配置。需读取 `name`、`type`、`layout`、`data_config` 或所属 dashboard 时，先用 `+dashboard-block-get`。
+用 `+dashboard-block-get-data` 获取仪表盘图表组件（block）的最终计算结果，即供 AI 消费的图表协议 JSON，而非 block 配置。需读取 `name`、`type`、`layout`、`data_config` / `ai_config` 或所属 dashboard 时，先用 `+dashboard-block-get`。
 
 文本组件（`text`）不产生可计算数据，不适用本协议。视图组件用[视图组件数据读取](dashboard-view.md#读取视图组件数据)获取记录，也不使用本协议。
 
@@ -24,6 +24,16 @@
 |---|---|
 | 二维图表（11 种） | 柱状图、条形图、折线图、饼图、环形图、面积图、组合图、散点图、漏斗图、雷达图、排行榜 |
 | 特殊类型（3 种） | 词云、指标卡（statistics）、透视表（pivotTable） |
+| AI Block | `type=ai_chart` 的 ECharts 图表，14 family / 46 subtype，见 [AI Block 结果](#ai-block-结果) |
+
+## AI Block 结果
+
+同样用 `+dashboard-block-get-data --base-token --block-id` 读取，无需 dashboard-id；`engine=VChart` 或缺失 engine 的存量组件也直接取数，不为取数修改组件。配置用 get 读 `ai_config`，不按普通 `data_config` 解析。
+
+- 以返回的 `dimensions`/`measures` 及 alias 解释 `main_data`，不拼接字段名或旧 alias 格式；`visualization` 声明 family/type/variant。
+- 有序 dimensions 是角色事实源：层级图为父到子；多系列 subtype 的末位维度为系列；Sankey 两维为来源/去向，三维及以上为完整相邻层路径，不把首对 source/target 当全部层级。
+- `result_structure` 里的 `roleBindings`、`referenceValues`（如 Gauge）按实际返回读取，不是额外数据源。
+- 结果（含展示 option）不是可回写的 `ai_config`/`spec`；错误码或结构化失败不等于成功数据，保留错误并停止相关分析，不补猜空结果。
 
 ## 命令与参数
 
@@ -73,6 +83,7 @@ GET /open-apis/base/v3/bases/bascn_example_token/dashboards/blocks/chtxxxxxxxx/d
 | 二维图表、词云 | `dimensions`、`measures`、`main_data` | 无 |
 | 指标卡 | `dimensions`、`measures`、`main_data` | `comparison_data`、`trend_data` |
 | 透视表 | `dimensions`、`measures`、`sort`、`result_structure`、`main_data` | 无 |
+| AI Block | `visualization`、`datasource`、`dimensions`、`measures`、`main_data` | `sort`、`result_structure` 等，依 subtype 与实际返回 |
 
 透视表规则见[透视表（pivotTable）](#四透视表pivottable)。
 

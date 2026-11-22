@@ -195,7 +195,7 @@ _一个或多个子表的 typed 数据，每个数组元素写入一张子表；
 - `header` (boolean?) — 是否写一行列名表头
 - `allow_overwrite` (boolean?) — 为 false 时，若写入会落在非空单元格则拒写以保护原数据（返回 partial_success）
 - `columns` (array<string>) — 列名字符串数组，顺序与 `data` 中每行取值一一对应
-- `data` (array<array<string|number|boolean|null>>) — 数据行；每行是一个数组，长度必须等于 `columns` 数
+- `data` (array<array<string|number|boolean|null>>) — 数据行；每行数组可短于 `columns` 数，未提供的位置保留原内容
 - `dtypes` (object?) — 可选
 - `formats` (object?) — 可选
 
@@ -466,4 +466,6 @@ lark-cli sheets +sheet-hide-gridline --url "..." --sheet-id "$SID"
 - `Validate`：XOR 公共四件套；`+sheet-create` 校验 `--title` 非空、`--row-count` ≤ 50000、`--col-count` ≤ 200；`+sheet-delete` 必须 `--yes` 或 `--dry-run`；`+workbook-create` 的 `--sheets` 与 `--values` **互斥**，给了 `--sheets` 则按 typed 协议校验 payload（其余约束同 `+table-put`）。
 - `DryRun`：`+sheet-*` 写操作输出"将要 PATCH 的 sheet metadata"；`--sheet-name` 在 dry-run 输出里生成为 `<resolve:Sheet1>` 占位符，不实际解析为 sheet-id。
 
-===== 全文完（共 469 行）=====
+- 写入回执中的字体 warning 必须保留并告知用户，不因 warning 拒绝写入、重试或擅自替换字体。
+
+===== 全文完（共 471 行）=====

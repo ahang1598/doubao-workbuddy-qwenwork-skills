@@ -6,9 +6,9 @@
 
 - 目录：`doubao/skills/`
 - 来源：`/mnt/c/Users/15805/AppData/Local/Doubao/User Data/Default/.doubao/agent_mode/workspace/.skills`
-- 条目数：275
-- 文件数：4458
-- 最近同步：2026-11-20 21:05:02 +0800
+- 条目数：277
+- 文件数：4473
+- 最近同步：2026-11-22 17:39:31 +0800
 
 ## 场景导航（按用途）
 
@@ -267,8 +267,8 @@
 - **lark-im** — 飞书即时通讯：收发消息和管理群聊。发送和回复消息、搜索聊天记录、管理群聊成员（含用户、AE / Agent Employee 和应用机器人）、上传下载图片和文件、管理表情回复、发送应用内/短信/电话加急、发送交互卡片（Interactive Card）。当用户需要发消息、查看或搜索聊天记录、创建或读取消息分享链接快照、下载聊天中的文件、查看群成员、搜索群、创建群聊或话题群、管理标记数据、管理 Feed 置顶（添加/移除/查询置顶会...
 - **lark-mail** — 飞书邮箱：Use when user mentions 起草邮件、写邮件、草稿、发送/回复/转发邮件、查阅邮件、看邮件、搜索邮件、邮件文件夹、邮件标签、邮件联系人、邮件收信规则、自动回复等；use for mail/email intent only. Do not use for docs/sheets/calendar/auth setup/pure contact lookup/IM chat tasks.
 - **lark-markdown** — 飞书 Markdown：查看、创建、上传、编辑和比较飞书中的原生 Markdown 文件。当用户要操作飞书 Markdown 文件，或比较其远端版本及本地草稿时使用。纯本地 Markdown 文件操作不触发本 skill。不负责将 Markdown 导入为飞书在线文档，也不负责文件搜索、权限、评论、移动、删除等云空间管理操作。
-- **lark-meeting** — 飞书视频会议：查询会议记录与会议产物(纪要/逐字稿/妙记)、妙记搜索/上传/下载/编辑；基于 meeting_id、meeting_no、event_id、note_id、minute_token、vc-node-id 或妙记 URL 查询相关信息。预约会议、忙闲和会议室管理走 lark-calendar。实时发言、会议字幕及事件、会中互动、录制控制和主持管理走 lark-meeting-realtime。
-- **lark-meeting-realtime** — 基于会议或关联录音的实时发言、聊天和共享内容回答问题；查询进行中的飞书会议，邀请参会人，发送会中文本/表情，管理会议聊天、倒计时、录制、本人麦克风、主持操作及个人笔记。
+- **lark-meeting** — 飞书视频会议：查询会议记录与会议产物(纪要/逐字稿/妙记)、妙记搜索/上传/下载/编辑；基于 meeting_id、meeting_no、event_id、note_id、minute_token、vc-node-id 或妙记 URL 查询相关信息。预约会议、忙闲和会议室管理走 lark-calendar。实时发言、会议字幕及事件、会中互动、文档共享、录制控制和主持管理走 lark-meeting-realtime。
+- **lark-meeting-realtime** — 基于会议或关联录音的实时发言、聊天和共享内容回答问题；查询进行中的飞书会议，邀请参会人，发送会中文本/表情，管理会议聊天、倒计时、文档共享、录制、本人麦克风、主持操作及个人笔记。
 - **lark-okr** — 飞书 OKR：管理目标与关键结果。查看和编辑 OKR 周期、目标、关键结果、对齐关系、量化指标和进展记录。当用户需要查看或创建 OKR、管理目标和关键结果、查看对齐关系时使用。不负责：待办任务管理（lark-task）、日程/会议安排（lark-calendar）、绩效评估
 - **lark-openapi-explorer** — 飞书/Lark 原生 OpenAPI 探索：从官方文档库中挖掘未经 CLI 封装的原生 OpenAPI 接口。当用户的需求无法被现有 lark-* skill 或 lark-cli 已注册命令满足，需要查找并调用原生飞书 OpenAPI 时使用。
 - **lark-shortdrama-studio** — 基于飞书多维表格的短剧创作全流程工作流。从剧本到视频的完整闭环生产，支持项目看板、剧本库、分镜库、资产库四层数据模型，资产优先保证角色一致性，按15秒/段输出视频。使用场景：短剧创作、短视频制作、动画分镜、视频内容生产、AI视频批量生成、飞书多维表格项目管理。
@@ -394,6 +394,7 @@
 ### 通用工具/平台
 - **ai-news-collector** — AI 新闻聚合与热度排序工具。当用户询问 AI 领域最新动态时触发，如："今天有什么 AI 新闻？""总结一下这周的 AI 动态""最近有什么火的 AI 产品？""AI 圈最近在讨论什么？"。覆盖：新产品发布、研究论文、行业动态、融资新闻、开源项目更新、社区病毒传播现象、AI 工具/Agent 热门项目。输出中文摘要列表，按热度排序，附带原文链接。
 - **book-proposal** — 撰写面向出版代理人和编辑的非虚构图书提案，覆盖卖点钩子、作者平台、对标书目、营销计划与章节大纲。
+- **browser-operator** — Read this skill before any built-in-browser discovery, tab selection, navigation, observation or interaction. Read and operate pages in the built-in browser through omni_device_use. Use for browser page tasks, includi...
 - **browser-use** — Control websites through the Aha Browser Use backend with `browser_use`, `plane="bu"`, and `aha_browser_use`. Use whenever the user asks to open or navigate a web page, inspect visible content or UI state, click, type...
 - **browser-use-automation** — Control websites through the Aha Browser Use backend with `computer_use_tool`, `plane="bu"`, and `aha_browser_use`. Use whenever the user asks to open or navigate a web page, inspect visible content or UI state, click...
 - **byted-mediakit-shared** — MediaKit 是面向音视频与图像处理的专业工具集，覆盖音视频剪辑与合成、音频媒资探测与人声分离、视频理解与增强、图像增强与内容理解等工作流。用户明确提出叠加、字幕压制、滤镜、运镜、提取字幕、语音转字幕、裁剪、拼接、调速、混音、音视频处理、图片增强或擦除、视频分析或画质增强目标时，先加载本 Skill，再按对象和目标选择 audio、editing、image 或 video；仅说明媒体类型而未说明处理目标时先澄清。不承担具体能...
@@ -426,7 +427,7 @@
 - **general-computer-use** — Operate macOS apps using the exact tool name general_computer_use, with persistent Python, accessibility observations and screenshots.
 - **global-ad-creative-advisor** — 出海广告公开情报探查（广告主视角，基于公开信息查询）。当用户需要为出海 App、游戏、电商或工具产品围绕产品×地区做同类型产品数据扫描、官方广告透明库付费素材查询与搜索词采集、内容平台近 7 天原生热点探查，或对公开素材/热点做结构化拆解与模式分析时使用。覆盖海外买量同类型产品调研、广告透明库查询、跑量素材模式、搜索词包、地区原生热点；只查公开信息，不产出广告创意、分镜文案与成片。
 - **lark-base** — 多维表格：可视化表格数据库与业务系统，可搭建台账/进度/项目/订单/客户/排班等业务场景，具备多表联动、多视图、表单问卷、仪表盘、自动化工作流、行列权限；遇到 /record/ 记录分享链接时使用
-- **lark-meeting-realtime** — 基于会议或关联录音的实时发言、聊天和共享内容回答问题；查询进行中的飞书会议，邀请参会人，发送会中文本/表情，管理会议聊天、倒计时、录制、本人麦克风、主持操作及个人笔记。
+- **lark-meeting-realtime** — 基于会议或关联录音的实时发言、聊天和共享内容回答问题；查询进行中的飞书会议，邀请参会人，发送会中文本/表情，管理会议聊天、倒计时、文档共享、录制、本人麦克风、主持操作及个人笔记。
 - **local-life-service-aigc-video** — 抖音生活服务商家专用AIGC宣传视频生成技能。当已确认是抖音生活服务商家，且需要结合经营数据（团购、评价、门店信息）生成到店推广视频时使用。包括探店视频、种草视频、团购推广视频、门店引流视频。通用视频/企业宣传片/产品广告/UGC视频走 doubao-creative-video，本技能不处理非生活服务商家的通用视频需求。
 - **local-life-service-business-report** — 抖音生活服务商家运营分析技能。根据商家抖音数据，生成报纸头版风格的HTML经营分析报告。触发场景：生成商家运营报告、商家经营体检、/local-life-service-business-report 等。不用于仅做商家对比（转 local-life-service-peer-comparison）或用户上传附件的离线数据分析（转通用数据分析）。
 - **local-life-service-hot-find** — 抖音生活服务热点查找技能。为抖音生活服务商家生成一页 HTML 热点报告，直接推荐商家相关的热点选题、内容打法和可挂商品。触发场景：商家热点选题、同城热点推荐、内容机会选择、挂品建议。不用于宏观金融热点、社会热点追踪、品牌舆情监控（分别走通用热点/舆情类能力）。
@@ -460,6 +461,7 @@
 - **clarify-map-then-analyze** — Use when 用户提出工业数据抽取、差异比对、重算排序、参数核验或技术文档结构化任务，且需要先澄清目标、做字段映射与数据源定位、完成口径确认，再重新计算排序、差异比对核验、批量抽取结构化并标注待确认参数。
 - **comfyui-workflow-validation** — Use when the user asks for ComfyUI workflow JSON generation/import, ComfyUI报错, 节点找不到, 模型不匹配, 导入失败, CLIP/Flux/MiniMax H3/海螺H3/GGUF model-node adaptation, 本地模型清单, 官方模板复用, dependency installation, or download-link valida...
 - **competition-scholarship-application** — 当用户请求竞赛、奖学金、科研、大创或项目申报帮助时，使用本技能；包括时间线、证据矩阵、材料草稿、答辩稿或缺口清单。
+- **computer-operator** — Read this skill before any desktop-app discovery, selection, observation or interaction, including checking whether a user-specified app is available. Operate Windows and macOS desktop apps through omni_device_use, in...
 - **cost-accounting** — Establishes what something actually costs — fixed, variable and mixed cost behavior, absorption versus variable costing, job-order, process and activity-based methods, breakeven and operating leverage, and price/volum...
 - **cover-letter-writer** — 根据简历与职位描述定制求职信，以简历证据匹配岗位核心要求。
 - **cvp-breakeven** — When the user wants cost-volume-profit analysis, breakeven points, or operating leverage assessment. Also use when the user mentions "breakeven," "contribution margin," "margin of safety," "operating leverage," "how m...
@@ -520,6 +522,7 @@
 | audit-support | `doubao/skills/audit-support` | 法务/合规 | audit-support | 4 | 准备可追溯的审计请求、证据包和问题跟踪。 Use when the user needs 审计支持准备; route out when a hard boundary applies. |
 | baidu-netdisk | `doubao/skills/baidu-netdisk` | 其他 | baidu-netdisk | 1 | Use when the user invokes $baidu-netdisk, mentions Baidu Netdisk or the Baidu Netdisk MCP, or asks to browse, search, inspect, organize, upload, copy, move, rename, share, or check storage information for files in the... |
 | book-proposal | `doubao/skills/book-proposal` | 通用工具/平台 | book-proposal | 1 | 撰写面向出版代理人和编辑的非虚构图书提案，覆盖卖点钩子、作者平台、对标书目、营销计划与章节大纲。 |
+| browser-operator | `doubao/skills/browser-operator` | 通用工具/平台 | browser-operator | 1 | Read this skill before any built-in-browser discovery, tab selection, navigation, observation or interaction. Read and operate pages in the built-in browser through omni_device_use. Use for browser page tasks, includi... |
 | browser-use | `doubao/skills/browser-use` | 代码开发 | browser-use | 11 | Control websites through the Aha Browser Use backend with `browser_use`, `plane="bu"`, and `aha_browser_use`. Use whenever the user asks to open or navigate a web page, inspect visible content or UI state, click, type... |
 | browser-use-automation | `doubao/skills/browser-use-automation` | 代码开发 | browser-use-automation | 11 | Control websites through the Aha Browser Use backend with `computer_use_tool`, `plane="bu"`, and `aha_browser_use`. Use whenever the user asks to open or navigate a web page, inspect visible content or UI state, click... |
 | build-club-recruitment-kit | `doubao/skills/build-club-recruitment-kit` | 设计可视化 | build-club-recruitment-kit | 16 | 为校园社团负责人按需制作招新流程、宣传文案、宣讲稿、选拔题、群公告、摊位话术或排班。适用于负责人策划或起草招新物料；不用于报名者备试、企业招聘、非招新运营、图片设计及实际发送或写入外部系统。 |
@@ -540,6 +543,7 @@
 | compare-and-summarize-metrics | `doubao/skills/compare-and-summarize-metrics` | 文档/表格/PPT | compare-and-summarize-metrics | 1 | Use when 用户要求基于多源表格、截图、报告或文档做指标对比分析、经营复盘总结、口径核验、异常原因定位、多表数据汇总、趋势增减说明、报告提炼或数据差异解释时。 |
 | competition-scholarship-application | `doubao/skills/competition-scholarship-application` | 其他 | competition-scholarship-application | 16 | 当用户请求竞赛、奖学金、科研、大创或项目申报帮助时，使用本技能；包括时间线、证据矩阵、材料草稿、答辩稿或缺口清单。 |
 | compliant-customer-scripts | `doubao/skills/compliant-customer-scripts` | 营销/内容运营 | compliant-customer-scripts | 1 | Use when the user asks to 撰写、改写、优化或演练销售、客服、报价异议、营销卖点、健康产品、财富规划、税务/法规、直播脚本、FAQ 或跟进回复，并提到“客户话术”“合规表达”“报价异议”“营销卖点”“健康产品”“事实核验”“风险提示”“可复用回复”，或要求兼顾事实准确、风险边界与可直接使用的表达。 |
+| computer-operator | `doubao/skills/computer-operator` | 其他 | computer-operator | 1 | Read this skill before any desktop-app discovery, selection, observation or interaction, including checking whether a user-specified app is available. Operate Windows and macOS desktop apps through omni_device_use, in... |
 | computer-use-automation | `doubao/skills/computer-use-automation` | 通用工具/平台 | computer-use-automation | 1 | Use this Windows Computer Use skill whenever the user wants to open, switch to, or operate a desktop app or local GUI and complete a task in it—even when they never mention "computer use" explicitly. Trigger on reques... |
 | consistent-style-images | `doubao/skills/consistent-style-images` | 设计可视化 | consistent-style-images | 14 | 根据参考图或风格描述生成风格统一的系列宣传图，内置品牌资料包管理、结构化批次记录、精确本地排版与可追溯审核，适用于任意品牌或无标识的单张海报、系列物料、多尺寸广告及视觉升级。 |
 | content-brief | `doubao/skills/content-brief` | 营销/内容运营 | content-brief | 1 | 生成可直接交给写作者执行的SEO内容简报，覆盖关键词、搜索意图、页面大纲、字数建议、内链、CTA与内容缺口。 |
@@ -683,7 +687,7 @@
 | keyword-configuration-analysis | `doubao/skills/keyword-configuration-analysis` | 文档/表格/PPT | keyword-configuration-analysis | 1 | Use when the user asks for keyword configuration, keyword screening, ad diagnosis, bidding suggestions, spreadsheet analysis, configuration updates, lexicon maintenance, Search Term optimization, negative keywords, or... |
 | lark-approval | `doubao/skills/lark-approval` | 协作/办公 | lark-approval | 20 | 飞书审批：查询和处理审批待办/已办/实例，搜索可发起审批定义、查看定义详情、发起原生审批实例，以及查询、创建、回复、编辑、删除审批评论。当用户要处理审批任务、查看审批实例、搜索或发起审批、操作审批评论时使用。审批待办不是飞书任务；非审批类待办走 lark-task。不负责创建审批定义；三方审批定义不走原生提单。 |
 | lark-attendance | `doubao/skills/lark-attendance` | 协作/办公 | lark-attendance | 1 | 飞书考勤打卡：查询自己的考勤打卡记录 |
-| lark-base | `doubao/skills/lark-base` | 数据分析 | lark-base | 100 | 多维表格：可视化表格数据库与业务系统，可搭建台账/进度/项目/订单/客户/排班等业务场景，具备多表联动、多视图、表单问卷、仪表盘、自动化工作流、行列权限；遇到 /record/ 记录分享链接时使用 |
+| lark-base | `doubao/skills/lark-base` | 数据分析 | lark-base | 169 | 多维表格：可视化表格数据库与业务系统，可搭建台账/进度/项目/订单/客户/排班等业务场景，具备多表联动、多视图、表单问卷、仪表盘、自动化工作流、行列权限；遇到 /record/ 记录分享链接时使用 |
 | lark-calendar | `doubao/skills/lark-calendar` | 协作/办公 | lark-calendar | 15 | 飞书日历：管理日历日程和会议室。查看/搜索日程、创建/更新/回复日程、管理参会人、查询忙闲和推荐时段、预定会议室。当用户需要查看日程安排、创建/修改会议、查询/预定会议室时使用。不负责：查询过去的视频会议记录（走 lark-meeting）、待办任务（走 lark-task）。 |
 | lark-contact | `doubao/skills/lark-contact` | 协作/办公 | lark-contact | 5 | 飞书 / Lark 通讯录:按姓名 / 邮箱解析成 open_id,或按 open_id 反查姓名 / 部门 / 邮箱 / 联系方式 / 个人状态 / 签名,以及按关键词搜索当前用户可见的机器人 / 智能体(agent),也支持修改本人的签名、头像、飞书名片背景图/封面。当用户提到一个名字要下一步发消息 / 排日程,或拿到 open_id 想查具体信息,或要修改本人签名、头像或名片背景时使用。不支持修改他人资料。不负责部门树遍历、... |
 | lark-doc | `doubao/skills/lark-doc` | 文档/表格/PPT | lark-doc | 25 | 飞书/豆包在线文档（`/docx`、`/wiki`）的阅读、新建和修改以及操作思维笔记，使用此技能。不处理 Office Word(.docx)、PDF文件；创建文档副本走 drive；`/page/<token>` 为妙搭应用，非飞书云文档 |
@@ -691,9 +695,9 @@
 | lark-im | `doubao/skills/lark-im` | 协作/办公 | lark-im | 61 | 飞书即时通讯：收发消息和管理群聊。发送和回复消息、搜索聊天记录、管理群聊成员（含用户、AE / Agent Employee 和应用机器人）、上传下载图片和文件、管理表情回复、发送应用内/短信/电话加急、发送交互卡片（Interactive Card）。当用户需要发消息、查看或搜索聊天记录、创建或读取消息分享链接快照、下载聊天中的文件、查看群成员、搜索群、创建群聊或话题群、管理标记数据、管理 Feed 置顶（添加/移除/查询置顶会... |
 | lark-mail | `doubao/skills/lark-mail` | 协作/办公 | lark-mail | 38 | 飞书邮箱：Use when user mentions 起草邮件、写邮件、草稿、发送/回复/转发邮件、查阅邮件、看邮件、搜索邮件、邮件文件夹、邮件标签、邮件联系人、邮件收信规则、自动回复等；use for mail/email intent only. Do not use for docs/sheets/calendar/auth setup/pure contact lookup/IM chat tasks. |
 | lark-markdown | `doubao/skills/lark-markdown` | 协作/办公 | lark-markdown | 6 | 飞书 Markdown：查看、创建、上传、编辑和比较飞书中的原生 Markdown 文件。当用户要操作飞书 Markdown 文件，或比较其远端版本及本地草稿时使用。纯本地 Markdown 文件操作不触发本 skill。不负责将 Markdown 导入为飞书在线文档，也不负责文件搜索、权限、评论、移动、删除等云空间管理操作。 |
-| lark-meeting | `doubao/skills/lark-meeting` | 协作/办公 | lark-meeting | 21 | 飞书视频会议：查询会议记录与会议产物(纪要/逐字稿/妙记)、妙记搜索/上传/下载/编辑；基于 meeting_id、meeting_no、event_id、note_id、minute_token、vc-node-id 或妙记 URL 查询相关信息。预约会议、忙闲和会议室管理走 lark-calendar。实时发言、会议字幕及事件、会中互动、录制控制和主持管理走 lark-meeting-realtime。 |
-| lark-meeting-realtime | `doubao/skills/lark-meeting-realtime` | 协作/办公 | lark-meeting-realtime | 16 | 基于会议或关联录音的实时发言、聊天和共享内容回答问题；查询进行中的飞书会议，邀请参会人，发送会中文本/表情，管理会议聊天、倒计时、录制、本人麦克风、主持操作及个人笔记。 |
-| lark-okr | `doubao/skills/lark-okr` | 协作/办公 | lark-okr | 26 | 飞书 OKR：管理目标与关键结果。查看和编辑 OKR 周期、目标、关键结果、对齐关系、量化指标和进展记录。当用户需要查看或创建 OKR、管理目标和关键结果、查看对齐关系时使用。不负责：待办任务管理（lark-task）、日程/会议安排（lark-calendar）、绩效评估 |
+| lark-meeting | `doubao/skills/lark-meeting` | 协作/办公 | lark-meeting | 21 | 飞书视频会议：查询会议记录与会议产物(纪要/逐字稿/妙记)、妙记搜索/上传/下载/编辑；基于 meeting_id、meeting_no、event_id、note_id、minute_token、vc-node-id 或妙记 URL 查询相关信息。预约会议、忙闲和会议室管理走 lark-calendar。实时发言、会议字幕及事件、会中互动、文档共享、录制控制和主持管理走 lark-meeting-realtime。 |
+| lark-meeting-realtime | `doubao/skills/lark-meeting-realtime` | 协作/办公 | lark-meeting-realtime | 17 | 基于会议或关联录音的实时发言、聊天和共享内容回答问题；查询进行中的飞书会议，邀请参会人，发送会中文本/表情，管理会议聊天、倒计时、文档共享、录制、本人麦克风、主持操作及个人笔记。 |
+| lark-okr | `doubao/skills/lark-okr` | 协作/办公 | lark-okr | 27 | 飞书 OKR：管理目标与关键结果。查看和编辑 OKR 周期、目标、关键结果、对齐关系、量化指标和进展记录。当用户需要查看或创建 OKR、管理目标和关键结果、查看对齐关系时使用。不负责：待办任务管理（lark-task）、日程/会议安排（lark-calendar）、绩效评估 |
 | lark-openapi-explorer | `doubao/skills/lark-openapi-explorer` | 协作/办公 | lark-openapi-explorer | 1 | 飞书/Lark 原生 OpenAPI 探索：从官方文档库中挖掘未经 CLI 封装的原生 OpenAPI 接口。当用户的需求无法被现有 lark-* skill 或 lark-cli 已注册命令满足，需要查找并调用原生飞书 OpenAPI 时使用。 |
 | lark-shortdrama-studio | `doubao/skills/lark-shortdrama-studio` | 文档/表格/PPT | lark-shortdrama-studio | 7 | 基于飞书多维表格的短剧创作全流程工作流。从剧本到视频的完整闭环生产，支持项目看板、剧本库、分镜库、资产库四层数据模型，资产优先保证角色一致性，按15秒/段输出视频。使用场景：短剧创作、短视频制作、动画分镜、视频内容生产、AI视频批量生成、飞书多维表格项目管理。 |
 | lark-task | `doubao/skills/lark-task` | 协作/办公 | lark-task | 19 | 飞书任务：管理任务、清单和任务智能体。创建待办任务、查看和更新任务状态、拆分子任务、组织任务清单、分配协作成员、上传任务附件、注册或注销任务智能体、更新任务智能体的主页数据、写入智能体任务记录。当用户需要创建待办事项、查看任务列表、跟踪任务进度、管理项目清单或给他人分配任务、为任务上传附件文件、注册注销任务智能体、更新智能体主页数据、写入任务记录时使用。 |
@@ -722,7 +726,7 @@
 | photo-abstract-editorial | `doubao/skills/photo-abstract-editorial` | 其他 | photo-abstract-editorial | 18 | Create a clean, vertical editorial artwork that preserves an uploaded photograph as the original image and pairs it with a restrained, photo-derived abstract memory panel and poetic English title. Use when asked to tr... |
 | pipeline-outbound-account-growth | `doubao/skills/pipeline-outbound-account-growth` | 营销/内容运营 | pipeline-outbound-account-growth | 15 | 对CRM锚定或用户给定的账户/线索集合完成公司研究与字段补全、账户信号、可解释优先级、拓客草稿、管道健康、确定性forecast及扩建保有，输出管道拓客与账户增长经营包。CRM和Sales Intelligence连接器只负责真值读取、字段来源、映射与受控动作，不作为业务Skill。 |
 | plan-course-registration-cn | `doubao/skills/plan-course-registration-cn` | 教育/考试 | plan-course-registration-cn | 18 | 帮助中国大陆高校学生比较本校具体课程或教学班并制定可复核的选课、换课与退补选方案。用于核对培养方案、先修条件、时间冲突、学分归属或操作风险；单独做成绩统计、教师评价、课堂笔记或院校职业规划时不使用。 |
-| ppt | `doubao/skills/ppt` | 协作/办公 | ppt | 369 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
+| ppt | `doubao/skills/ppt` | 协作/办公 | ppt | 311 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
 | ppt-framework-planning | `doubao/skills/ppt-framework-planning` | 文档/表格/PPT | ppt-framework-planning | 1 | Use when the user needs to plan, review, restructure, or optimize a reporting PPT framework from meeting minutes, drafts, existing slides, 申报材料, 评分标准, 新增要求, or feedback; trigger keywords include “PPT框架”, “汇报逻辑”, “会议纪要... |
 | presentation-change-control | `doubao/skills/presentation-change-control` | 协作/办公 | presentation-change-control | 4 | 用于已有 PPT 或飞书幻灯片需要局部新增、删除、重排、替换或样式继承，且必须保护页序、关键数字和交付质量的场景。新建整份演示或简单读取不使用。 |
 | private-domain-marketing-operations | `doubao/skills/private-domain-marketing-operations` | 设计可视化 | private-domain-marketing-operations | 4 | 基于用户授权和生命周期信号设计私域分层、内容触达、社群服务、转化培育、留存召回和实验复盘。 |

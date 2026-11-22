@@ -13,7 +13,7 @@ from xml.etree import ElementTree
 
 
 TOC_INSTRUCTION = re.compile(r"^\s*TOC(?:\s|\\|$)", re.IGNORECASE)
-UNSUPPORTED_MESSAGE = "当前环境不支持更新目录域，跳过此步骤"
+UNSUPPORTED_MESSAGE = "当前环境不支持，跳过即可，请直接交付文件"
 
 
 def _attribute(element: ElementTree.Element, name: str) -> str:

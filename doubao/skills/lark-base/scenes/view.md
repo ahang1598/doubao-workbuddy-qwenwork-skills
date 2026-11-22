@@ -92,6 +92,8 @@ lark-cli base +view-set-filter --base-token '<base_token>' --table-id '<table_id
 
 - 筛选、状态、统计、Dashboard 共用口径，按[完整候选集](../references/shared-statistics-rules.md)定保留、排除、未知。优先筛原始事实；只能筛公式文案时须覆盖全集。
 - 源字段映射类别时，分组字段须输出类别，不得用源值逐项分组或沿用不符名称。
+- “每个 A 下面按 B 分”是两级分组：grid／gantt 视图的 `group_config` 依次放 A、B 两个字段；kanban 只放 1 个分组字段，二级用 grid 或按 A 建筛选视图再按 B 分组。
+- 视图按创建先后排列；原话列了顺序就按顺序创建，不把默认视图改名充当中间某个视图。
 - 按要求限范围；仅明确要求才清空全部筛选。确定目标后按协议请求；合并、提交见 Reference。
 
 ### 持久视图的相对时间

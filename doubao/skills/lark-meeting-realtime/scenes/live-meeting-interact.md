@@ -122,6 +122,34 @@ lark-cli vc +meeting-countdown --meeting-id <meeting_id> --action set --duration
 
 动作、提醒点和权限规则见 [`lark-vc-meeting-countdown`](../references/lark-vc-meeting-countdown.md)。
 
+## 控制文档共享
+
+只有用户明确要求查看、开始、停止或更新会中文档共享时执行。
+
+**查看当前投屏状态：**
+
+```bash
+lark-cli vc +meeting-share-status --meeting-id <meeting_id>
+```
+
+无共享时返回空状态；有共享时返回 `share_id`、文档 URL、标题、主讲人和最近持久化的正文位置。只查看状态时到此结束，不自动开始、停止或更新共享。
+
+**开始投屏：**先查询当前共享状态，确认不会替换他人的共享后再发起：
+
+```bash
+lark-cli vc +meeting-share-status --meeting-id <meeting_id>
+lark-cli vc +meeting-share \
+  --meeting-id <meeting_id> --action start --doc-url 'https://example.feishu.cn/docx/<doc_token>'
+```
+
+- `start` 成功后保存返回的 `share_id`；`stop` 和 `update_context` 必须使用该 ID。
+- `start` 支持 Doc、Docx、Sheet 及解析为这些类型的 Wiki URL；`update_context` 仅支持 Docx / Wiki-Docx。
+- `start` 返回 `121001` 或结果未知时，先查询状态，不要直接重试。
+- 不自动抢占他人共享，不自动重试写操作。
+- 正文位置、评论上下文和元素预览参数互斥。
+
+完整参数见 [`lark-vc-meeting-share`](../references/lark-vc-meeting-share.md)。
+
 ## 操作本人麦克风
 
 操作自己的在会麦克风时使用本人命令，不用下方管理其他参会人的命令。确认会议后先预览：

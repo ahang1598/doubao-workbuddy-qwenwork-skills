@@ -227,47 +227,6 @@ def path_segments(value: str):
     return segments
 
 
-def scale_local_path(value: str, factor: float) -> str:
-    """Scale SVG local distances; retain command case, arc angles and flags.
-
-    Translation and shape orientation belong to the frame, not to this path.
-    A unit scale validates the source but returns its original spelling.
-    """
-    if not isinstance(factor, (int, float)) or not math.isfinite(factor) or factor <= 0:
-        raise ValueError("Path scale must be a positive finite number")
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError("Missing local path attribute")
-    tokens = path_tokens(value)
-    if not tokens or tokens[0].upper() != "M":
-        raise ValueError("Local path must start with moveto")
-    # Validate complete argument groups and finite coordinates with the shared
-    # parser, without changing relative commands or flattening smooth curves.
-    for command, arguments in path_segments(value):
-        if command == "A" and (arguments[0] < 0 or arguments[1] < 0):
-            raise ValueError("Arc radii must be nonnegative")
-    if factor == 1:
-        return value
-    command = ""
-    argument = 0
-    result = []
-    for token in tokens:
-        if token.isalpha():
-            command, argument = token.upper(), 0
-            result.append(token)
-            continue
-        # A/a: rx ry x-axis-rotation large-arc-flag sweep-flag x y.
-        # Repeated argument groups keep the same command and semantic roles.
-        if command == "A" and argument % 7 in (2, 3, 4):
-            result.append(token)
-        else:
-            scaled = number(token) * factor
-            if not math.isfinite(scaled):
-                raise ValueError("Non-finite scaled path coordinate")
-            result.append(format(scaled, ".15g"))
-        argument += 1
-    return " ".join(result)
-
-
 def transform_element(element: ET.Element, matrix: Matrix) -> ET.Element:
     result = copy.deepcopy(element)
     name = result.tag.split("}")[-1]

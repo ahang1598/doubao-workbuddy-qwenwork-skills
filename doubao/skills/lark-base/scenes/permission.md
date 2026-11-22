@@ -1,5 +1,7 @@
 # 权限
 
+> 用户给出 `/app/` 链接或 `app_token`、目标是 BaseApp 的角色、成员、分享授权或权限申请时，本页不适用，改读 [BaseApp 高级权限](app-permission.md)；不要在 App 关联的 Base 上开启高级权限或创建 Base 角色代替 App 角色。
+
 ## 开工必读
 
 只配原话中的角色、表、能力：

@@ -731,7 +731,11 @@ def run_record(r, indexes, paragraph, rels, source_path):
 
 def table_properties(tbl):
     tbl_pr = child(tbl, "w:tblPr")
+    positioning = child(tbl_pr, "w:tblpPr")
     return {
+        "layout_type": "floating" if positioning is not None else "inline",
+        "positioning": attrs(positioning) if positioning is not None else None,
+        "overlap": attr(child(tbl_pr, "w:tblOverlap"), W + "val"),
         "table_style": attr(child(tbl_pr, "w:tblStyle"), W + "val") if tbl_pr is not None else None,
         "table_width": attrs(child(tbl_pr, "w:tblW")) if tbl_pr is not None and child(tbl_pr, "w:tblW") is not None else None,
         "borders": xml_bytes(child(tbl_pr, "w:tblBorders")) if tbl_pr is not None and child(tbl_pr, "w:tblBorders") is not None else None,
@@ -1770,7 +1774,7 @@ def tables_text_output(records):
                 item.update(cell.get("properties", {}))
                 cell_items.append(item)
 
-    table_structural = {"record_type", "location", "table_index"}
+    table_structural = {"record_type", "location", "table_index", "layout_type"}
     row_structural = {"row_index"}
     cell_structural = {"cell_index", "text"}
     table_defaults = majority_defaults(table_items, table_structural)
@@ -1810,6 +1814,13 @@ def tables_text_output(records):
         f"source: {manifest['source']}",
         f"location_base: {location_base}",
         "syntax: [T<n>] starts a table, [R<n>] a row, and [C<n>] a cell; listed defaults apply when omitted; null means unset/inherited.",
+        "layout: layout_type reports the direct OOXML declaration: floating "
+        "(w:tblpPr present), inline (absent), or unknown (not extracted). "
+        "Word may ignore this declaration when rendering. "
+        "positioning preserves the original w:tblpPr attribute values. "
+        "For tblpX, tblpY and *FromText, unitless integers are in twips. "
+        "Values with a unit suffix use that unit. "
+        "overlap is the literal w:tblOverlap/@w:val.",
         f"table_defaults: {defaults_text(table_defaults)}",
         f"row_defaults: {defaults_text(row_defaults)}",
         f"cell_defaults: {defaults_text(cell_defaults)}",
@@ -1835,6 +1846,7 @@ def tables_text_output(records):
         location = table["location"].removeprefix(location_base)
         match = re.fullmatch(r"\*\[(\d+)\]", location)
         header.append(f"loc={match.group(1) if match else location}")
+        header.append(f"layout_type={table.get('layout_type', 'unknown')}")
         for key, value in table_item.items():
             if key in table_structural or key in table_defaults and value == table_defaults[key]:
                 continue

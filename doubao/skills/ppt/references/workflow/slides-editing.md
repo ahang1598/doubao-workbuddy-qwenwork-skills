@@ -2,7 +2,7 @@
 
 用户已有一份原稿、要在其基础上修改时走这里。原稿可能是当前轮上传的 PPTX、上一轮生成结果或飞书 Slides 链接；是否属于编辑任务看有没有需要保留和修改的原稿。
 
-用户若提供 PPT（PPTX 或在线 Slides）先根据用户要求判断新增 PPT 的用途。用于组合、合并或整合两稿内容时，继续本编辑流程，同时要求统一风格也不改变这一判断。用户将附件指定为模板，或要求采用附件的版式制作时，转 [workflow.md](../template/workflow.md)；基于已有原稿套模板时，先阅读其中“L8 原稿迁移”一节。
+用户若提供 PPT（PPTX 或在线 Slides）先根据用户要求判断新增 PPT 的用途。用于组合、合并或整合两稿内容时，继续本编辑流程，同时要求统一风格也不改变这一判断。用户将附件指定为模板，或要求采用附件的版式制作时，转 [`template-editing-main.md`](template-editing-main.md)；基于已有原稿套模板时，先阅读其中“已有原稿套用模板”一节。
 
 **本地电脑模式背景补充**：按 `SKILL.md`「权威经验」中的运行环境规则判为本地电脑时，**阅读完本文档后必须完整 Read [`workflow/local-compat.md`](references/workflow/local-compat.md)，查看在本地电脑模式下执行命令所需要知道的背景，否则会出现大面积报错**
 
@@ -10,7 +10,7 @@
 
 - 实时读取目标页最新的 raw XML，确认哪些内容需要修改、哪些内容必须保持不变；不能只看摘要、凭记忆或重新制作页面。
 - 列出原稿中本轮没有要求修改的内容，并记录其原值、单位、表达的含义以及与其它内容的对应关系；编辑时不得删除、改写、重新计算或用新内容替换这些内容。
-- 用户要求扩展内容时，只能在用户指定的范围内新增；新增内容要与原稿内容区分清楚，不能冒充或覆盖原稿内容，也不能与原稿事实冲突。转到模板制作流程时，也必须保留这份原稿内容清单，模板只能改变视觉和版式。
+- 用户要求扩展内容时，只能在用户指定的范围内新增；新增内容要与原稿内容区分清楚，不能冒充或覆盖原稿内容，也不能与原稿事实冲突。转到 `template-editing-main.md` 流程时，也必须保留这份原稿内容清单，模板只能改变视觉和版式。
 
 
 ## 总体流程
@@ -30,7 +30,7 @@
 |---|---|
 | 当前轮 PPTX + 编辑要求 | PPTX 是主原稿，导入后原地编辑 |
 | 上一轮结果或 Slides 链接 | 重新实时读取该在线 Slides |
-| 已有原稿 + 用户指定的模板 / 要求采用附件版式 | 转 [模板制作流程](../template/workflow.md#l8-原稿迁移)，先读“L8 原稿迁移”一节 |
+| 已有原稿 + 用户指定的模板 / 要求采用附件版式 | 转 template-editing-main.md，先读“已有原稿套用模板”一节 |
 | 两份 PPT 组合合并，包括同时要求统一风格 | 继续本编辑流程。围绕主稿目标，按主题重新组织两稿内容，将相关观点、案例和数据安排到对应章节；统一视觉风格，保留原有内容、数据和结论 |
 | PPT + DOCX/PDF/XLSX/图片 | PPT 是主原稿，其余是事实、数据、素材或品牌规范（如 Logo、标准色和指定字体） |
 
@@ -39,7 +39,7 @@
 
 **主原稿 PPTX**：导入成在线 Slides，导入结果就是之后编辑和交付的对象，不再回头动本地文件。
 
-> 主原稿或参考模板是 PPTX 时，拿到文件后第一步必须通过 lark-cli drive +import 导入在线 Slides。禁止先使用 python-pptx、解压 PPTX、LibreOffice、本地渲染或其他方式解析内容。导入完成后，通过服务端 XML 和 xml_inspect.py 理解原稿。导入失败时先排查导入问题，不得静默切换为本地解析后继续编辑。
+> 主原稿或参考模板是 PPTX 时，拿到文件后第一步必须通过 lark-cli drive +import 导入在线 Slides。禁止先使用 python-pptx、解压 PPTX、LibreOffice、本地渲染或其他方式解析内容。导入完成后，通过服务端 XML 和 xml_inspect.py 理解原稿，需要查看原稿布局时再使用页面截图。导入失败时先排查导入问题，不得静默切换为本地解析后继续编辑。
 
 ```bash
 lark-cli drive +import --file "./<deck>.pptx" --type slides --json
@@ -123,7 +123,16 @@ python3 scripts/xml_inspect.py --input "./source.xml" --slide-id "$SID" --mode r
 
 ### 1.4 按需理解原稿布局
 
-XML 内容与结构摘要用于定位页面，content 模式读取页面文字和数据，raw XML 确认对象结构。
+XML 内容与结构摘要用于定位页面，content 模式读取页面文字和数据，raw XML 确认对象结构。需要理解原稿布局时，可按需使用[截图](../cli/lark-slides-screenshot.md)查看相关页面。
+
+```bash
+# 单页传一个 --slide-id；多页重复该参数，单次最多 8 页
+lark-cli slides +screenshot \
+  --presentation "$PRES" \
+  --slide-id "$SID_1" \
+  --slide-id "$SID_2" \
+  --output-dir ./screenshots/
+```
 
 记录页数/页序、章节、主要文本和数据、图片/图表分布、字体/配色/对齐。内容保护任务保存文本与数据快照；视觉任务保留 `<p>`、`<note>`、表格单元格和图表数据的完整字符串，内容任务另列保护项及允许新增/改写的字段。保护项必须带语义锚点并保留完整表达、来源和结论，不能只存摘要或无上下文的数字。“更多/更少”任务记录修改前数量或覆盖页面。
 
@@ -302,4 +311,4 @@ lark-cli slides +delete-slide --presentation "$PRES" --slide-id "$SID"
 - [lark-slides-media-upload.md](../cli/lark-slides-media-upload.md) — 上传图片拿 `file_token`
 - [xml-schema-quick-ref.md](../xml/xml-schema-quick-ref.md) — XML 元素与属性速查
 - [validation-xml.md](validation-xml.md) — 写入结果与按需读取
-- [workflow.md](../template/workflow.md) — 模板制作新内容，或保留原稿内容套用新模板
+- [template-editing-main.md](template-editing-main.md) — 模板制作新内容，或保留原稿内容套用新模板

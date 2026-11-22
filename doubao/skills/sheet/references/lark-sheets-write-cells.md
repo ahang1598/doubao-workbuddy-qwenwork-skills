@@ -1,4 +1,4 @@
-> ⚠️ **强制前置条件**：本文档共 641 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
+> ⚠️ **强制前置条件**：本文档共 679 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
 
 # Lark Sheet Write Cells
 
@@ -93,6 +93,23 @@ lark-cli sheets +range-copy --url "<表格URL>" --sheet-name "<真实表名>" \
 > 以下是用 `+cells-set`（及 `+cells-set-style`）做富写入时的常用模式与准则；选哪个 shortcut 见上方「使用场景」。
 
 `+cells-set` 为一块区域设置值 / 公式 / 批注 / 样式，也支持 `rich_text` 的 `type: "embed-image"` 嵌入单元格图片。**关键：搭配 `--range` 时，`--cells` 用二维数组（行 × 格），单格也是 `[[{"value":…}]]`；裸 `--range A1`（或 `--start-cell`）是左上角**锚点**，落区由 `--cells` 自身的行列数决定；写成矩形（`A1:B2`）则是**边界**——数组比它小会收窄，比它大会被拒绝，而不是写到范围之外**。
+
+**普通清空内容用 `+cells-clear`**（见 `references/lark-sheets-range-operations.md`），保留原格式时指定 `--scope content`：
+
+```bash
+lark-cli sheets +cells-clear --url "<表格URL>" --sheet-name "Sheet1" \
+  --range "A1" --scope content --yes
+```
+
+`+cells-set` 底层也接受显式 `value:null`，用于承接下方 typed 空值写入。在允许覆盖时，其内容字段有三种不同语义：
+
+| 单元格输入 | 内容变化 |
+| --- | --- |
+| `{"value":null}` | 清除旧值或公式，保留未指定的样式 |
+| `{"value":""}` | 写入空字符串，与真正的空单元格不同 |
+| `{}` 或只传 `cell_styles` 等非内容字段 | 保留原值或公式，只更新明示属性 |
+
+例如 `--cells '[[{"value":null},{"value":""},{}]]'` 从 A1 写入时，A1 清空、B1 保存空字符串、C1 内容保留；不要用空字符串或 null 给“跳过”占位。
 
 > **单元格图片 vs 浮动图片**：图若**属于某条记录、要随那行排序 / 筛选 / 增删**（凭证 / 证件照 / 每行配图，话里带「对应 / 每行 / 这列」等绑定词）→ **单元格图片**（本工具）：用 `+cells-set-image`（最短）或 `+cells-set` 的 `rich_text` + `type: "embed-image"`。只是自由摆放的装饰（logo / 水印 / 封面）→ 浮动图片，见 lark-sheets-float-image。别因「浮动图更好控制 / 更熟」默认选浮动图——它承载"对应某记录"的图会随增删行 / 排序错位。
 
@@ -308,6 +325,8 @@ _公共四件套 · 系统：`--dry-run`_
 | `--max-cells` | int | optional | 防爆，默认 50000（隐藏 flag：不在 `--help` 列出，但可正常传入） |
 | `--copy-to-range` | string | optional | 复制范围（A1 表示法）：把 --range 中 --cells 写入的内容（值/公式/样式，取决于实际传入字段）复制到该区域，公式引用自动平移（如 C2=B2 → C3=B3）。适合先写一行/一块模板再扩展填充整列/整区域（如 --range A1:G1 写模板、--copy-to-range A1:G100 填充 100 行）。支持整行 3:6、整列 C:E、到列尾 D3:D、到行尾 D3:3；支持英文逗号分隔多个目标区域，如 C1:D2,E5:F6 |
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ### `+cells-set-style`
 
 _公共四件套 · 系统：`--dry-run`_
@@ -327,8 +346,6 @@ _公共四件套 · 系统：`--dry-run`_
 | `--word-wrap` | string | optional | 换行策略（可选值：`overflow` / `auto-wrap` / `word-clip`） |
 | `--number-format` | string | optional | 数字格式（例：文本 `@`、数字 `0.00`、货币 `$#,##0.00`、日期 `mm/dd/yyyy`） |
 | `--border-styles` | string + File + Stdin（复合 JSON） | optional | 边框配置 JSON：`{ top: {style,weight,color}, bottom: ..., left: ..., right: ... }`；4 方向结构相同。style = 线型（solid\|dashed\|dotted\|double\|none）；weight = 粗细（thin\|medium\|thick —— 字符串，不是像素数字）；color = 十六进制如 #000000。`{ all: {...} }` 一次设置四边。用此 flag 选择边；--border-color / --border-weight 仅补充显式选择的边框属性 |
-
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ### `+cells-set-image`
 
@@ -385,7 +402,7 @@ _公共：URL/token（无 sheet 定位） · 系统：`--dry-run`_
 _【维度】行列数必须与 range 完全一致：'A1:C2'→[[_,_,_],[_,_,_]]（2行×3列），'B5:B7'→[[_],[_],[_]]（3行×1列），'A1'→[[_]]（1×1）_
 
 **二维数组项**（类型 object）：
-- `value` (oneOf?) — 静态单元格值（文本、数字、布尔）
+- `value` (oneOf?) — 单元格值（文本、数字、布尔）
 - `formula` (string?) — 以 '=' 开头的单元格公式（例如：'=SUM(A1:A10)'）
 - `note` (string?) — 单元格批注/备注
 - `cell_styles` (object?) — 单元格样式属性，包括字体、颜色、对齐方式和数字格式 { font_color?: string, font_family?: string, font_size?: number, font_weight?: enum, font_style?: enum, …共 11 项 }
@@ -432,7 +449,7 @@ _一个或多个子表的 typed 数据，每个数组元素写入一张子表；
 - `header` (boolean?) — 是否写一行列名表头
 - `allow_overwrite` (boolean?) — 为 false 时，若写入会落在非空单元格则拒写以保护原数据（返回 partial_success）
 - `columns` (array<string>) — 列名字符串数组，顺序与 `data` 中每行取值一一对应
-- `data` (array<array<string|number|boolean|null>>) — 数据行；每行是一个数组，长度必须等于 `columns` 数
+- `data` (array<array<string|number|boolean|null>>) — 数据行；每行数组可短于 `columns` 数，未提供的位置保留原内容
 - `dtypes` (object?) — 可选
 - `formats` (object?) — 可选
 
@@ -578,6 +595,27 @@ lark-cli sheets +table-put --url "<表URL>" --sheets - --styles @styles.json < s
 
 `+table-put` 的 typed 落点写在每项 `start_cell`。兼容已有调用的 `--range + --data` 或 `--values` 二维矩阵：必须同时给 `--sheet-id` / `--sheet-name`，且不能与 `--sheets` / `--styles` 混用；CLI 按 `+cells-set` 写入，矩形范围不外溢。裸字符串始终是值，公式格写 `{"formula":"=…"}`。需要表头、类型或 formats 时仍使用 typed `--sheets`，不要混合两种协议。
 
+#### typed 空值、空字符串与短行省略
+
+**typed null 在允许覆盖时清空**：`--sheets` 给出 `columns` 的列具有类型（未给 `dtypes` 时默认 string）。在 `mode:"overwrite"` 且 `allow_overwrite:true` 时（均为该模式默认值），`data` 中显式 `null` 映射成底层 `value:null`，清除旧值或公式；短行未提供的位置保留原内容。string/object 列的 `""` 保存为空字符串；不要把空字符串当作数值、日期或布尔列的空值。
+
+下面这份最小 typed payload 用 `lark-cli sheets +table-put --url "<表格URL>" --sheets @payload.json` 写入已有 Sheet1：A1 清空、B1 保存空字符串、C1 保留原内容；`header:false` 避免另写表头。
+
+```json
+{"sheets":[{
+  "name":"Sheet1",
+  "start_cell":"A1",
+  "mode":"overwrite",
+  "allow_overwrite":true,
+  "header":false,
+  "columns":["clear","empty","keep"],
+  "dtypes":{"clear":"object","empty":"object","keep":"object"},
+  "data":[[null,""]]
+}]}
+```
+
+`mode:"append"`、`allow_overwrite:false` 或未声明 `columns` 而推断出的无类型（type-less）列中，null 不作为清空操作；保护模式仍遵守遇非空拒写的约束。仅需清空既有内容时使用上方 `+cells-clear`，不要为此重写整张表。
+
 #### DataFrame → 协议（用 `df_to_sheet` helper）
 
 pandas 的 `df.to_json(orient="split", date_format="iso")` 一步完成所有清洗（NaN→null、Timestamp→ISO 字符串、numpy 标量→原生数字），把 dtypes 拼上即可。本 skill 把这段 5 行 helper 打包成可 import 的 [`scripts/lark_sheets_df.py`](../scripts/lark_sheets_df.py)（含 `df_to_sheet` 和 `sheet_to_df`，写入 / 读回成对）：
@@ -638,4 +676,4 @@ lark-cli sheets +table-put --url "<表URL>" \
 - `Validate`：XOR 公共四件套；`+cells-set` 的 `--cells` 必须能解析为各行等宽的 JSON 二维矩阵（落区按其行列数推断）；`+cells-set-style` 的样式 flag 至少一个非空（或带 `--border-styles`）；`+cells-set-image` 的 `--range` 必须是单 cell（起止 cell 相同）；`+csv-put` 的 `--csv` 必须能按 RFC 4180 解析；`+table-put` 给了 `--styles` 则按子表名 / 顺序 / 数量与 `--sheets.sheets` 对齐校验；防爆参数上限校验。
 - `DryRun`：输出目标 range + 推断尺寸 + 是否覆盖非空 cell 警告，零网络副作用。
 
-===== 全文完（共 641 行）=====
+===== 全文完（共 679 行）=====

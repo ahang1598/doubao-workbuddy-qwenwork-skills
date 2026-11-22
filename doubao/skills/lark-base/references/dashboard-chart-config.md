@@ -19,6 +19,7 @@
 | `statistics` | 指标卡 | `pivotTable` | 透视表 | `nps` | NPS 图 |
 | `slicer` | 单表单字段离散值切片器 | `countdown` | 固定时间或日期字段倒计时 | `progress` | 数值／日期；嵌套 `progress` 配置，见 [进度图](dashboard-progress.md) |
 | `view` | 筛选、分组、排序、可见字段 | `text` | Markdown 文本；见 [配置](dashboard-block-commands.md#text-类型特殊结构) | `button` | 按钮；见 [配置](dashboard-button-binding.md#按钮组件配置) |
+| `ai_chart` | AI Block，独立 `ai_config`，本文结构与更新规则都不适用，见 [AI Block](ai-block.md)；普通类型不因此增加 AI subtype | — | — | — | — |
 
 ## 普通图表 data_config 结构
 
@@ -37,6 +38,12 @@
 ### 字段所属表边界
 
 `series`、`group_by`、`filter.conditions` 的 `field_name` 必须逐字存在于 `table_name` 对应表。不得以 `关联字段.目标字段` 等点号路径跨表，也不得使用其他表的 field ID 或缓存旧 field ID。
+
+### 趋势图的系列划分
+
+- 趋势需分别展示不同类别时，若各类别共用一个数值字段，`group_by[0]` 用时间字段并按时间升序，`group_by[1]` 用区分类别的字段，使每个类别形成独立系列。若各类别已有独立的数值字段，逐项写入 `series`，共享同一时间分组。
+- 用户要求各类别合计时可汇总。净变化须按各类别的增减关系确定数值正负后聚合。只有一个类别的趋势无需增加类别分组。
+- 搭建时核对时间分组、类别分组和指标配置。用户要求读取或解释图表结果时，再按各系列的实际取数核对。总量一致不能替代系列划分核对。
 
 ### group_by 详细说明
 

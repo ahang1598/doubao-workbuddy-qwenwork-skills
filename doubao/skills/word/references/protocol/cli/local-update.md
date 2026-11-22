@@ -180,6 +180,6 @@ REPAIR_CHILD_WRAPPED: <td>
 ## 安全与能力边界
 
 - 局部修改可用精确的块 ID 或文本范围。
-- CLI 返回 `confirmation_required` 时，展示 action、risk 和关键参数；用户确认后才能追加 `--yes`（仅当该命令实际支持）。
+- CLI 返回 `confirmation_required` 时按 `lark-shared` 展示 action、risk 和关键参数；用户确认后才能追加 `--yes`（仅当该命令实际支持）。
 - 未知 command、非法 `--table-option` 已知字段、派发失败或客户端不可达时，不直调 `LocalDocxUpdate` 私有 API。参照[异常处理](../../workflows/canvas-doc-recovery.md)。
 - 不支持在线文档的 `overwrite`、`block_copy_insert_after`、`block_move_after`。XML 全局能力限制查询 `xml:common`；对象级限制按命中的 XML/CLI 专项关键词判断。
