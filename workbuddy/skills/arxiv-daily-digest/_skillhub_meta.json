@@ -1,0 +1,13 @@
+{
+  "name": "arXiv 每日精选",
+  "installedAt": 1795183619843,
+  "source": "marketplace",
+  "version": "1.0.0",
+  "skillId": "skill_2095962946639392768",
+  "pay_mode": 0,
+  "description_zh": "从 arXiv 抓取每日新公示论文，按用户主题筛选并质量排序，提取作者排名、单位与联系方式，生成中文 HTML 精选报告（发布到 Cloudflare Pages 为可选项）",
+  "description_en": "Fetch daily arXiv announcements, filter and rank by a user-supplied topic, extract author / affiliation / contact details, and generate a Chinese HTML digest report (Cloudflare Pages publishing is optional)",
+  "iconSource": "https://openplatform-cdn.codebuddy.cn/public/common/capability_cover/5d68f4de-f11d-493e-a9e1-aebdb94a4007/a6756bc7-6792-4b85-a417-4a6cec52455e.png",
+  "iconLocalPath": "C:\\Users\\15805\\.workbuddy\\skills\\arxiv-daily-digest\\_icon.png",
+  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.cn/public/common/capability_cover/5d68f4de-f11d-493e-a9e1-aebdb94a4007/a6756bc7-6792-4b85-a417-4a6cec52455e.png"
+}

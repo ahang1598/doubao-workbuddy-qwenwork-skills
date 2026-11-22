@@ -6,9 +6,9 @@
 
 - 目录：`workbuddy/skills/`
 - 来源：`/mnt/c/Users/15805/.workbuddy/skills`
-- 条目数：18
-- 文件数：247
-- 最近同步：2026-11-20 21:05:02 +0800
+- 条目数：19
+- 文件数：263
+- 最近同步：2026-11-22 20:32:09 +0800
 
 ## 场景导航（按用途）
 
@@ -24,6 +24,7 @@
 - **wedding-handcard-creator** — 根据婚礼主持稿生成可直接打印的主持人手卡。输出 A5 竖版拼版（每张 A5 纸上下各一张小卡，对半裁开即得 12 张手卡），支持 HTML 和 PDF 两种格式，正面为台词+动作提示+页号，背面为红金囍字封面。适用于：用户要求制作婚礼主持手卡、把主持稿转成可打印卡片、生成司仪手卡/提词卡、设计婚礼手卡封面、输出 PDF，或已有主持稿需要配套现场手持卡片的场景。
 
 ### 研究/调研
+- **arxiv-daily-digest** — arXiv 每日精选自动化流水线（可复用技能，不含任何本机/个人隐私信息）。从 arXiv 指定类别抓取最近一天公示的新提交，按用户给定的 topic 关键词筛选，质量代理混合排序取前 N，提取作者排名（一作/共一/通讯）、单位与联系方式，生成中文 HTML 报告。报告样式为可覆盖的默认浅色模板；是否发布到 Cloudflare Pages 由用户决定（可选）。当用户要求“抓取 arXiv 最新论文”、“arxiv 每日精选/日报...
 - **arxiv-reader** — 利用python，指定某个arxiv_id/url， 基于 LLM Agent 对这篇arxiv论文进行分类与深度阅读，直接print打印阅读笔记
 - **arxiv-watcher** — Search and summarize papers from ArXiv. Use when the user asks for the latest research, specific topics on ArXiv, or a daily summary of AI papers.
 - **deep-research** — Structured deep research workflow with human-in-the-loop control. Use /research to generate research outline, /research-deep for parallel web search across items, /research-report to compile markdown reports. Supports...
@@ -53,6 +54,7 @@
 | 名称 | 目录 | 类型 | 关键词 | 文件数 | 说明 |
 | --- | --- | --- | --- | ---: | --- |
 | aihot | `workbuddy/skills/aihot__skillhub` | 其他 | aihot | 3 | AI HOT (aihot.virxact.com) 中文 AI 资讯查询 Skill。当用户想知道"今天 AI 圈有什么"、"AI 日报"、"AI HOT"、"AI 资讯"、"AI 热点"、"最近 AI"、"OpenAI/Anthropic/Google 最近发布了什么"、"AI hot today"、"AI news today"、"看一下 AI 行业动态"、"今天有什么大模型发布"、"昨天 AI 圈"、"看下精选条目"、"A... |
+| arxiv-daily-digest | `workbuddy/skills/arxiv-daily-digest` | 研究/调研 | arxiv-daily-digest | 16 | arXiv 每日精选自动化流水线（可复用技能，不含任何本机/个人隐私信息）。从 arXiv 指定类别抓取最近一天公示的新提交，按用户给定的 topic 关键词筛选，质量代理混合排序取前 N，提取作者排名（一作/共一/通讯）、单位与联系方式，生成中文 HTML 报告。报告样式为可覆盖的默认浅色模板；是否发布到 Cloudflare Pages 由用户决定（可选）。当用户要求“抓取 arXiv 最新论文”、“arxiv 每日精选/日报... |
 | arxiv-reader | `workbuddy/skills/arxiv-reader` | 研究/调研 | arxiv-reader | 42 | 利用python，指定某个arxiv_id/url， 基于 LLM Agent 对这篇arxiv论文进行分类与深度阅读，直接print打印阅读笔记 |
 | arxiv-watcher | `workbuddy/skills/arxiv-watcher` | 研究/调研 | arxiv-watcher | 4 | Search and summarize papers from ArXiv. Use when the user asks for the latest research, specific topics on ArXiv, or a daily summary of AI papers. |
 | ctrip-wendao | `workbuddy/skills/ctrip-wendao` | 其他 | ctrip-wendao | 5 | 当用户发起任意旅行相关问询时，包含但不限于：预订酒店、机票查询、火车票查询、景点推荐、寻找当地特色玩乐、目的地查询、行程规划、美食住宿攻略、签证、查询旅游攻略、获取旅行建议等场景，自动触发此技能。当用户需要操作携程时使用此skill。 |

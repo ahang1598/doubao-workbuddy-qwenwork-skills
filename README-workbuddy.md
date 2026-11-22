@@ -6,9 +6,9 @@
 
 - 平台目录：`workbuddy/`
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：647
-- 当前索引文件数：17922
-- 最近变更：[2026-11-20-210502](workbuddy/change-logs/2026-11-20-210502.md) - WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。
+- 当前索引条目数：649
+- 当前索引文件数：18024
+- 最近变更：[2026-11-22-203209](workbuddy/change-logs/2026-11-22-203209.md) - WorkBuddy 本次同步新增 102 个文件、修改 1 个文件、删除 0 个文件。 新增条目：experts/remotion-video-generator, skills/arxiv-daily-digest。 受影响范围：experts/remotion-video-generator, skills/arxiv-daily-digest,...
 
 ## 数据来源
 
@@ -107,6 +107,7 @@
 | 青橙小博士·文献综述科研助手 | `workbuddy/experts/qingcheng-research-literature` | 15-Education | 45 | 青橙科教旗下科研文献综述专家。多库并行高效检索、自动化文献筛选、主题综合与专业报告输出，帮你系统解决学术研究中的信息过载问题，支撑综述写作与研究立项。 |
 | 闪造造 | `workbuddy/experts/rapid-prototyping-engineer` | 02-Engineering | 82 | 以极快速度将创意转化为可工作的原型，让团队快速验证想法 |
 | 小红书增长专家团 | `workbuddy/experts/redfox-xiaohongshu-ops-team` | 06-ContentCreative | 118 | 一支专注小红书增长的多角色团队：从爆款灵感到笔记创作、账号诊断、素材下载，覆盖运营全链路。 |
+| 视频匠 | `workbuddy/experts/remotion-video-generator` | 05-MarketingGrowth | 86 | 使用 Remotion 自动生成高质量视频，从分镜脚本到渲染 MP4，覆盖解说视频、产品演示、社交媒体内容与演示文稿。 |
 | 学术研究 资料检索 综述整理 | `workbuddy/experts/research-ops-expert` | 04-DataAI | 20 | 端到端完成学术研究 资料检索 综述整理任务，内置3项专业能力，覆盖资料检索、文献综述与研究成果整理全流程。 |
 | Rightly 合规辅助专业版 | `workbuddy/experts/rightly-compliance-assistant-pro` | 11-SecurityCompliance | 44 | 隐私合规专家团，解读政策与通报条目，分析违规详情，结合专业版 Rightly 数据输出整改方案。 |
 | 资本市场路演研究团 | `workbuddy/experts/roadshow-research-team` | 08-FinanceInvestment | 32 | 多专家协作标的研报：多源解析、行业对比、财报三表（上市+未上市）、路演研报、股价关联，模板出报告。 |
@@ -390,6 +391,7 @@
 | Name | Directory | Category | Files | Description |
 | --- | --- | --- | ---: | --- |
 | aihot | `workbuddy/skills/aihot__skillhub` | skill | 3 | AI HOT (aihot.virxact.com) 中文 AI 资讯查询 Skill。当用户想知道"今天 AI 圈有什么"、"AI 日报"、"AI HOT"、"AI 资讯"、"AI 热点"、"最近 AI"、"OpenAI/Anthropic/Google 最近发布了什么"、"AI hot today"、"AI news today"、"看一下 AI 行业动态"、"今天有什么大模型发布"、"昨天 AI 圈"、"看下精选条目"、"A... |
+| arxiv-daily-digest | `workbuddy/skills/arxiv-daily-digest` | skill | 16 | arXiv 每日精选自动化流水线（可复用技能，不含任何本机/个人隐私信息）。从 arXiv 指定类别抓取最近一天公示的新提交，按用户给定的 topic 关键词筛选，质量代理混合排序取前 N，提取作者排名（一作/共一/通讯）、单位与联系方式，生成中文 HTML 报告。报告样式为可覆盖的默认浅色模板；是否发布到 Cloudflare Pages 由用户决定（可选）。当用户要求“抓取 arXiv 最新论文”、“arxiv 每日精选/日报... |
 | arxiv-reader | `workbuddy/skills/arxiv-reader` | skill | 42 | 利用python，指定某个arxiv_id/url， 基于 LLM Agent 对这篇arxiv论文进行分类与深度阅读，直接print打印阅读笔记 |
 | arxiv-watcher | `workbuddy/skills/arxiv-watcher` | skill | 4 | Search and summarize papers from ArXiv. Use when the user asks for the latest research, specific topics on ArXiv, or a daily summary of AI papers. |
 | ctrip-wendao | `workbuddy/skills/ctrip-wendao` | skill | 5 | 当用户发起任意旅行相关问询时，包含但不限于：预订酒店、机票查询、火车票查询、景点推荐、寻找当地特色玩乐、目的地查询、行程规划、美食住宿攻略、签证、查询旅游攻略、获取旅行建议等场景，自动触发此技能。当用户需要操作携程时使用此skill。 |
@@ -715,6 +717,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-11-22-203209 | [2026-11-22-203209](workbuddy/change-logs/2026-11-22-203209.md) | WorkBuddy 本次同步新增 102 个文件、修改 1 个文件、删除 0 个文件。 新增条目：experts/remotion-video-generator, skills/arxiv-daily-digest。 受影响范围：experts/remotion-video-generator, skills/arxiv-daily-digest,... |
 | 2026-11-20-210502 | [2026-11-20-210502](workbuddy/change-logs/2026-11-20-210502.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。 |
 | 2026-11-19-180005 | [2026-11-19-180005](workbuddy/change-logs/2026-11-19-180005.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。 |
 | 2026-11-18-180008 | [2026-11-18-180008](workbuddy/change-logs/2026-11-18-180008.md) | WorkBuddy 本次同步新增 1 个文件、修改 3 个文件、删除 0 个文件。 受影响范围：skills/ctrip-wendao, skills/vibe-knowledge-film。 |
@@ -734,4 +737,3 @@
 | 2026-09-28-180010 | [2026-09-28-180010](workbuddy/change-logs/2026-09-28-180010.md) | WorkBuddy 本次同步新增 35 个文件、修改 1 个文件、删除 0 个文件。 新增条目：experts/expert-tax-advisory-practice, experts/senior-accessible-travel。 受影响范围：experts/expert-tax-advisory-practice, experts/senio... |
 | 2026-09-26-180002 | [2026-09-26-180002](workbuddy/change-logs/2026-09-26-180002.md) | WorkBuddy 本次同步新增 5 个文件、修改 54 个文件、删除 0 个文件。 受影响范围：connectors/marketplace/.codebuddy-connector, connectors/marketplace/connectors/cloudbase, connectors/marketplace/connectors/cnb-... |
 | 2026-09-25-085343 | [2026-09-25-085343](workbuddy/change-logs/2026-09-25-085343.md) | WorkBuddy 本次同步新增 593 个文件、修改 108 个文件、删除 9 个文件。 新增条目：connectors/marketplace/connectors/chainlon-geo-mcp, connectors/marketplace/connectors/duoguan-course, connectors/marketplace/c... |
-| 2026-09-23-180002 | [2026-09-23-180002](workbuddy/change-logs/2026-09-23-180002.md) | WorkBuddy 本次同步新增 540 个文件、修改 9 个文件、删除 196 个文件。 新增条目：connectors/marketplace/connectors/beatapi-beatdesign, connectors/marketplace/connectors/cloudhub, connectors/marketplace/conne... |

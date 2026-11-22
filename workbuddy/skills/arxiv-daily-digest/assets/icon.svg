@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#faf8f6"/>
+      <stop offset="1" stop-color="#eceae7"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f6f5f3"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.65">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#2b2320" flood-opacity="0.18"/>
+    </filter>
+    <filter id="chiShadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#7a1212" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- background -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#glow)"/>
+
+  <!-- calendar accent (top-left, behind card) -->
+  <g>
+    <rect x="86" y="70" width="118" height="104" rx="16" fill="#ffffff" stroke="#d8d4cf" stroke-width="3"/>
+    <rect x="86" y="70" width="118" height="34" rx="16" fill="#b31b1b"/>
+    <rect x="86" y="88" width="118" height="16" fill="#b31b1b"/>
+    <circle cx="116" cy="60" r="7" fill="#8f1414"/>
+    <circle cx="174" cy="60" r="7" fill="#8f1414"/>
+    <g fill="#c9c5c0">
+      <rect x="102" y="118" width="22" height="18" rx="4"/>
+      <rect x="134" y="118" width="22" height="18" rx="4"/>
+      <rect x="166" y="118" width="22" height="18" rx="4"/>
+      <rect x="102" y="146" width="22" height="18" rx="4"/>
+      <rect x="134" y="146" width="22" height="18" rx="4"/>
+      <rect x="166" y="146" width="22" height="18" rx="4" fill="#b31b1b"/>
+    </g>
+  </g>
+
+  <!-- main report card -->
+  <g filter="url(#shadow)">
+    <rect x="150" y="118" width="278" height="316" rx="24" fill="url(#card)" stroke="#e2ded9" stroke-width="2.5"/>
+  </g>
+
+  <!-- card header bar (title line) -->
+  <rect x="182" y="152" width="150" height="16" rx="8" fill="#3d3833"/>
+
+  <!-- ranked list rows -->
+  <g>
+    <!-- row 1 : rank badge 1 -->
+    <circle cx="200" cy="204" r="15" fill="#b31b1b"/>
+    <rect x="196" y="200" width="8" height="3" rx="1.5" fill="#ffffff" opacity="0.95"/>
+    <rect x="196" y="206" width="8" height="3" rx="1.5" fill="#ffffff" opacity="0.95"/>
+    <rect x="228" y="194" width="176" height="9" rx="4.5" fill="#4a443e"/>
+    <rect x="228" y="210" width="120" height="7" rx="3.5" fill="#cfcbc5"/>
+
+    <!-- row 2 : rank badge 2 -->
+    <circle cx="200" cy="258" r="15" fill="#c9574b"/>
+    <rect x="196" y="254" width="8" height="3" rx="1.5" fill="#ffffff" opacity="0.95"/>
+    <rect x="196" y="260" width="8" height="3" rx="1.5" fill="#ffffff" opacity="0.95"/>
+    <rect x="228" y="248" width="140" height="9" rx="4.5" fill="#4a443e"/>
+    <rect x="228" y="264" width="96" height="7" rx="3.5" fill="#cfcbc5"/>
+
+    <!-- row 3 : rank badge 3 -->
+    <circle cx="200" cy="312" r="15" fill="#d99a91"/>
+    <rect x="196" y="308" width="8" height="3" rx="1.5" fill="#ffffff" opacity="0.95"/>
+    <rect x="196" y="314" width="8" height="3" rx="1.5" fill="#ffffff" opacity="0.95"/>
+    <rect x="228" y="302" width="104" height="9" rx="4.5" fill="#4a443e"/>
+    <rect x="228" y="318" width="72" height="7" rx="3.5" fill="#cfcbc5"/>
+  </g>
+
+  <!-- divider -->
+  <rect x="182" y="352" width="214" height="3" rx="1.5" fill="#e5e1dc"/>
+
+  <!-- footer stats dots on card -->
+  <g>
+    <circle cx="196" cy="386" r="7" fill="#b31b1b"/>
+    <circle cx="218" cy="386" r="7" fill="#e0dcd7"/>
+    <circle cx="240" cy="386" r="7" fill="#e0dcd7"/>
+    <rect x="258" y="379" width="66" height="7" rx="3.5" fill="#d5d1cc"/>
+    <rect x="182" y="404" width="118" height="7" rx="3.5" fill="#ddd9d4"/>
+  </g>
+
+  <!-- arXiv chi glyph badge (top-right, overlapping card) -->
+  <g filter="url(#chiShadow)">
+    <circle cx="388" cy="128" r="64" fill="#b31b1b"/>
+    <circle cx="388" cy="128" r="64" fill="none" stroke="#8f1414" stroke-width="4"/>
+  </g>
+  <!-- Χ : two crossing strokes, calligraphic -->
+  <g stroke="#ffffff" stroke-width="13" stroke-linecap="round" fill="none">
+    <path d="M 362 100 C 376 112, 392 126, 402 138 C 408 145, 412 150, 414 156"/>
+    <path d="M 414 100 C 404 110, 392 122, 382 132 C 374 140, 368 148, 362 156"/>
+  </g>
+
+  <!-- small sparkle accent bottom-right of card -->
+  <g fill="#b31b1b" opacity="0.85">
+    <path d="M 404 352 l 4.2 10.8 l 10.8 4.2 l -10.8 4.2 l -4.2 10.8 l -4.2 -10.8 l -10.8 -4.2 l 10.8 -4.2 Z"/>
+  </g>
+</svg>

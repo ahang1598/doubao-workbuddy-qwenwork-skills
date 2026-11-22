@@ -1,0 +1,39 @@
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+       background:#f4f5f7;color:#1f2328;margin:0;padding:24px;line-height:1.65;}
+  .wrap{max-width:920px;margin:0 auto;}
+  .hero{background:linear-gradient(135deg,#0d1117,#1f6feb);color:#fff;border-radius:14px;padding:26px 28px;margin-bottom:20px;}
+  .hero h1{margin:0 0 6px;font-size:22px;}
+  .hero p{margin:2px 0;opacity:.9;font-size:13.5px;}
+  .note{background:#fff8e5;border:1px solid #f0d58c;color:#6b5300;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:18px;}
+  .card{display:flex;gap:14px;background:#fff;border:1px solid #e3e6ea;border-radius:12px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .rank{flex:0 0 42px;height:42px;width:42px;border-radius:50%;background:#1f6feb;color:#fff;font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;}
+  .body{flex:1;min-width:0;}
+  .head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:flex-start;}
+  .title{font-size:16.5px;font-weight:700;color:#0d1117;text-decoration:none;}
+  .title:hover{text-decoration:underline;}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;}
+  .tag{color:#fff;font-size:11.5px;padding:2px 8px;border-radius:20px;white-space:nowrap;}
+  .meta{margin:6px 0 10px;font-size:12.5px;color:#57606a;}
+  .venue{display:inline-block;background:#ddf4e4;color:#1a7f37;border:1px solid #aadfb9;border-radius:6px;padding:1px 8px;margin-right:8px;font-weight:600;}
+  .sec{margin:9px 0;}
+  .lbl{display:inline-block;font-weight:700;font-size:12.5px;color:#1f6feb;background:#eaf2ff;border-radius:5px;padding:1px 7px;margin-bottom:3px;}
+  .sec p{margin:3px 0 0;font-size:13.6px;}
+  .sec ul{margin:4px 0 0;padding-left:20px;font-size:13.4px;}
+  .sec ul li{margin:3px 0;}
+  .abs{font-size:12.8px;color:#3a4149;background:#f6f8fa;border-left:3px solid #d0d7de;padding:8px 12px;border-radius:0 6px 6px 0;}
+  .links{margin-top:10px;font-size:12.5px;}
+  .links a{color:#1f6feb;text-decoration:none;margin-right:16px;font-weight:600;}
+  .links a:hover{text-decoration:underline;}
+  .foot{text-align:center;color:#8b949e;font-size:12px;margin:20px 0 6px;}
+  .au-list{margin:4px 0 0;}
+  .au{margin:2px 0;font-size:13px;line-height:1.5;}
+  .au-name{font-weight:600;color:#0d1117;}
+  .badge{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:5px;vertical-align:middle;white-space:nowrap;}
+  .badge-first{background:#1f6feb;color:#fff;}
+  .badge-eq{background:#8957e5;color:#fff;}
+  .badge-corr{background:#1a7f37;color:#fff;}
+  .au-aff{color:#57606a;font-size:12px;margin-left:6px;}
+  .au-warn{color:#9a6700;font-size:11px;margin-left:6px;}
+  .inst-list{margin:6px 0 0;font-size:12px;color:#3a4149;}
+  .inst-list .lbl{margin-right:6px;}
+  .inst{margin:1px 0;}
