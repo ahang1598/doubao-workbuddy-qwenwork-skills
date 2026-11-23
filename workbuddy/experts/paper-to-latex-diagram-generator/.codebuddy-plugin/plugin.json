@@ -1,0 +1,61 @@
+{
+  "name": "paper-to-latex-diagram-generator",
+  "version": "1.0.1",
+  "description": "Generate publication-grade academic diagrams from paper text or reference images as LaTeX/TikZ or draw.io, with compile verification and iterative visual review.",
+  "author": {
+    "name": "鹏城信息AI专家",
+    "email": "zhangyinlai@lcyqchina.com"
+  },
+  "agents": [
+    "./agents/paper-to-latex-diagram-generator.md"
+  ],
+  "expertType": "agent",
+  "agentName": "paper-to-latex-diagram-generator",
+  "displayName": {
+    "en": "PCXX AI Expert",
+    "zh": "鹏城信息AI专家"
+  },
+  "profession": {
+    "en": "Academic Paper Figure Design Expert",
+    "zh": "学术论文配图设计专家"
+  },
+  "displayDescription": {
+    "en": "Turn paper excerpts or reference screenshots into publication-grade academic diagrams. Outputs editable LaTeX/TikZ code or draw.io XML, embeds data visualizations into architecture figures, then compiles, renders and visually reviews every iteration until layout, color and information density meet journal standards.",
+    "zh": "把论文文案或截图转化为发表级学术配图，自动编译验证并多轮视觉审查，直到排版与配色全面达标。"
+  },
+  "avatar": "avatars/paper-to-latex-diagram-generator.png",
+  "categoryId": "04-DataAI",
+  "defaultInitPrompt": {
+    "en": "Generate a publication-grade system architecture diagram from a paper excerpt in LaTeX/TikZ.",
+    "zh": "根据论文段落生成一张发表级系统架构图，输出 LaTeX/TikZ 代码。"
+  },
+  "plugin": "paper-to-latex-diagram-generator",
+  "tags": [
+    {
+      "en": "Academic Figures",
+      "zh": "学术配图"
+    },
+    {
+      "en": "LaTeX/TikZ",
+      "zh": "LaTeX/TikZ"
+    },
+    {
+      "en": "Diagram Design",
+      "zh": "图表设计"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "Generate a publication-grade system architecture diagram from a paper excerpt in LaTeX/TikZ.",
+      "zh": "根据论文段落生成一张发表级系统架构图，输出 LaTeX/TikZ 代码。"
+    },
+    {
+      "en": "Recreate this reference figure as an editable TikZ vector diagram.",
+      "zh": "把这张参考图复刻成可编辑的 TikZ 矢量图。"
+    },
+    {
+      "en": "Draw a thesis technical roadmap in draw.io format.",
+      "zh": "用 draw.io 画一张毕业论文技术路线图。"
+    }
+  ]
+}

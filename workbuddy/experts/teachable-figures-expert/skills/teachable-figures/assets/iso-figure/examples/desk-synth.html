@@ -1,0 +1,268 @@
+<!doctype html>
+<!--
+Upstream example adapted for offline fonts, scoped shortcuts, native controls, and audio lifecycle.
+MIT License
+
+Copyright (c) 2026 Tolga Cohce
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desk Synth</title>
+<style>
+  /* Layout: one plate. Caption row, the instrument, caption row; key map underneath. */
+  :root {
+    color-scheme: dark;
+    --bg:#0c0d0e; --panel:#141516; --edge:#222426;
+    --line:#3d4144; --detail:#2b2e30; --body:#17181a; --deck:#1b1d1f;
+    --ink:#868b8f; --ink-hi:#e6e8e9; --live:#f4f5f5;
+    --kw:#d9dcde; --kw-line:#5a5f63; --kb:#101112; --kb-line:#7d8286; --glass:#0b0c0c;
+    --mono:"DM Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg:#e9eaea; --panel:#f6f6f5; --edge:#d6d8d8;
+    --line:#8e9397; --detail:#c3c6c8; --body:#ececeb; --deck:#f3f3f2;
+    --ink:#6a6f73; --ink-hi:#16181a; --live:#0c0d0e;
+    --kw:#ffffff; --kw-line:#7b8084; --kb:#2a2c2e; --kb-line:#0c0d0e; --glass:#e2e4e4;
+  } }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg:#e9eaea; --panel:#f6f6f5; --edge:#d6d8d8;
+    --line:#8e9397; --detail:#c3c6c8; --body:#ececeb; --deck:#f3f3f2;
+    --ink:#6a6f73; --ink-hi:#16181a; --live:#0c0d0e;
+    --kw:#ffffff; --kw-line:#7b8084; --kb:#2a2c2e; --kb-line:#0c0d0e; --glass:#e2e4e4;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--mono); font-size:13px; padding-inline:16px; padding-block:20px; }
+  main { max-width:880px; margin-inline:auto; display:grid; gap:14px; }
+  figure { margin:0; background:var(--panel); border:1px solid var(--edge); border-radius:22px; padding:22px 26px; display:grid; gap:6px; }
+  .cap { display:flex; flex-wrap:wrap; justify-content:space-between; gap:4px 18px; text-transform:uppercase; letter-spacing:.14em; }
+  .cap .hi { color:var(--ink-hi); text-transform:none; letter-spacing:.05em; }
+  svg { width:100%; height:auto; display:block; touch-action:pan-y; user-select:none; -webkit-user-select:none; }
+  .key { touch-action:none; }
+  svg:focus-visible { outline:2px solid var(--live); outline-offset:4px; border-radius:8px; }
+  .face { fill:var(--body); stroke:var(--line); stroke-width:1; vector-effect:non-scaling-stroke; stroke-linejoin:round; }
+  .face.top { fill:var(--deck); }
+  .detail { fill:none; stroke:var(--detail); stroke-width:1; vector-effect:non-scaling-stroke; }
+  .glass { fill:var(--glass); }
+  .scope { fill:none; stroke:var(--live); stroke-width:1.4; vector-effect:non-scaling-stroke; stroke-linejoin:round; }
+  .lcd { fill:var(--live); font-family:var(--mono); }
+  .lbl { fill:var(--ink); font-family:var(--mono); font-size:7px; text-anchor:middle; pointer-events:none; }
+  .press { cursor:pointer; transition:transform 60ms ease-out; }
+  .press .face { transition:stroke 100ms; }
+  .press.down { transform:translateY(4px); }
+  .btn.down { transform:translateY(2.5px); }
+  .press.down .face, .btn.sel .face { stroke:var(--live); }
+  .btn.sel .lbl { fill:var(--live); }
+  .wk .face { fill:var(--kw); stroke:var(--kw-line); }
+  .bk .face { fill:var(--kb); stroke:var(--kb-line); }
+  .press:hover .face.top { stroke:var(--live); }
+  .controls, .notes { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  button, select, input { min-width:44px; min-height:44px; border:1px solid var(--line); border-radius:6px; background:var(--deck); color:var(--ink-hi); font:inherit; padding:8px; }
+  input { width:70px; }
+  button { cursor:pointer; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline:2px solid var(--live); outline-offset:2px; }
+  p { margin:0; max-width:65ch; line-height:1.6; }
+  kbd { font:inherit; color:var(--ink-hi); border:1px solid var(--edge); border-radius:4px; padding:0 4px; }
+  @media (prefers-reduced-motion:reduce){ .press{transition:none} }
+</style>
+</head>
+<body>
+<main>
+  <figure>
+    <div class="cap"><span class="hi">Fig 4</span><span>Desk synth</span></div>
+    <svg id="stage" viewBox="0 0 620 450" tabindex="0" role="img" aria-label="Isometric synthesizer. Press its keys with the mouse, touch, or your keyboard to play notes."></svg>
+    <div class="cap"><span>Press the keys · it plays</span><span class="hi" id="readout" aria-live="polite" aria-atomic="true">saw · oct 4 · silent</span></div>
+  </figure>
+  <div class="controls" role="group" aria-label="Synth settings">
+    <label>Waveform <select id="wave"><option value="sine">Sine</option><option value="square">Square</option><option value="sawtooth" selected>Sawtooth</option><option value="triangle">Triangle</option></select></label>
+    <label>Octave <input id="octave" type="number" min="1" max="7" value="4"></label>
+    <button id="mute" type="button" aria-pressed="false">Mute</button>
+    <button id="reset" type="button">Reset</button>
+  </div>
+  <div id="notes" class="notes" role="group" aria-label="Play a short note"></div>
+  <p>Note buttons play a short note. Focus the figure to hold notes with shortcuts. Notes: <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> <kbd>;</kbd> for the white keys, <kbd>W</kbd> <kbd>E</kbd> <kbd>T</kbd> <kbd>Y</kbd> <kbd>U</kbd> <kbd>O</kbd> <kbd>P</kbd> for the black. Waveform: <kbd>1</kbd>–<kbd>4</kbd>. Octave: <kbd>Z</kbd> down, <kbd>X</kbd> up. Hold several keys for a chord, or drag across the keys.</p>
+</main>
+
+<script>
+// ---- iso kernel ----
+const C = Math.cos(Math.PI/6), S = Math.sin(Math.PI/6), OX = 211, OY = 122;
+const P = (x,y,z) => [(x-y)*C + OX, (x+y)*S - z + OY];
+const D = (x,y,z) => [(x-y)*C, (x+y)*S - z];
+const plane = (O,U,V) => { const o=P(...O), u=D(...U), v=D(...V); return `matrix(${u[0]} ${u[1]} ${v[0]} ${v[1]} ${o[0]} ${o[1]})`; };
+const TOP = (x,y,z) => plane([x,y,z],[1,0,0],[0,1,0]);
+const FRONT = (x,y,z) => plane([x,y,z],[1,0,0],[0,0,-1]);
+const SIDE = (x,y,z) => plane([x,y,z],[0,-1,0],[0,0,-1]);
+const rect = (t,w,h,r=0,cls='face') => `<g transform="${t}"><rect class="${cls}" width="${w}" height="${h}" rx="${r}"/></g>`;
+const box = (x,y,z,w,d,h,r=0) => rect(SIDE(x+w,y+d,z+h),d,h,Math.min(r,h/4)) + rect(FRONT(x,y+d,z+h),w,h,Math.min(r,h/4)) + rect(TOP(x,y,z+h),w,d,r,'face top');
+
+// ---- scene, back to front ----
+const W = 420, DECK = 26, SW = 200, SH = 48;
+let svg = box(0,0,0, W,192,DECK, 6);                                   // body
+svg += box(0,0,DECK, W,60,70, 5);                                      // riser
+svg += `<g transform="${FRONT(0,60,DECK+70)}">
+  <rect class="face glass" x="18" y="11" width="${SW}" height="${SH}" rx="5"/>
+  <path class="detail" d="M18 ${11+SH/2}h${SW}"/>
+  <polyline id="scope" class="scope" points="18,${11+SH/2} ${18+SW},${11+SH/2}"/>
+  <text id="note" class="lcd" x="236" y="38" font-size="22">--</text>
+  <text id="hz" class="lcd" x="237" y="53" font-size="8.5" opacity=".7">press a key</text>
+  ${Array.from({length:9},(_,i)=>`<path class="detail" d="M${340+i*7} 14v42"/>`).join('')}
+</g>`;
+const BTNS = [['sine','1'],['square','2'],['sawtooth','3'],['triangle','4'],['oct-','z'],['oct+','x']];
+const LABEL = {sine:'SIN',square:'SQR',sawtooth:'SAW',triangle:'TRI','oct-':'OCT−','oct+':'OCT+'};
+BTNS.forEach(([id],i) => { const x = 20 + i*46 + (i>3 ? 104 : 0);
+  svg += `<g class="press btn" data-btn="${id}">${box(x,67,DECK, 38,16,5, 3)}<g transform="${TOP(x,67,DECK+5)}"><text class="lbl" x="19" y="10.5">${LABEL[id]}</text></g></g>`; });
+const WHITE = [0,2,4,5,7,9,11,12,14,16], BLACK = {0:1,1:3,3:6,4:8,5:10,7:13,8:15};
+WHITE.forEach((semi,i) => svg += `<g class="press key wk" data-semi="${semi}">${box(20+i*38,92,DECK, 34,90,8, 2)}</g>`);
+for (const i in BLACK) svg += `<g class="press key bk" data-semi="${BLACK[i]}">${box(20+(+i+1)*38-12,92,DECK+2, 20,54,13, 2)}</g>`;
+const stage = document.getElementById('stage'); stage.innerHTML = svg;
+
+// ---- sound ----
+const NAMES = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+const state = { wave:'sawtooth', oct:4, muted:false, held:new Map() };            // semi -> {osc, gain, midi}
+let ctx, master, analyser, buf;
+function audio() {
+  if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return true; }
+  try {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    master = ctx.createGain(); master.gain.value = state.muted ? 0 : 0.16;
+    analyser = ctx.createAnalyser(); analyser.fftSize = 2048; buf = new Float32Array(analyser.fftSize);
+    master.connect(analyser); analyser.connect(ctx.destination); return true;
+  } catch { ctx = null; return false; }
+}
+const freq = midi => 440 * 2 ** ((midi - 69) / 12);
+function noteOn(semi, source) {
+  if (state.held.has(semi)) { state.held.get(semi).owners.add(source); return; }
+  const midi = 12 * (state.oct + 1) + semi, v = { midi, owners:new Set([source]) };
+  if (audio()) {
+    v.osc = ctx.createOscillator(); v.gain = ctx.createGain();
+    v.osc.type = state.wave; v.osc.frequency.value = freq(midi);
+    v.gain.gain.setValueAtTime(0, ctx.currentTime); v.gain.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.012);
+    v.osc.connect(v.gain).connect(master); v.osc.start();
+  }
+  state.held.set(semi, v); state.last = midi; render();
+}
+function noteOff(semi, source) {
+  const v = state.held.get(semi); if (!v) return;
+  if (source !== undefined) { v.owners.delete(source); if (v.owners.size) return; }
+  if (v.osc) { const t = ctx.currentTime; v.gain.gain.cancelScheduledValues(t); v.gain.gain.setValueAtTime(v.gain.gain.value, t);
+    v.gain.gain.linearRampToValueAtTime(0, t + 0.12); v.osc.stop(t + 0.14); }
+  state.held.delete(semi); render();
+}
+function stopAll() { pointers.clear(); [...state.held.keys()].forEach(semi => noteOff(semi)); }
+function button(id) {
+  const el = stage.querySelector(`[data-btn="${id}"]`); el.classList.add('down'); setTimeout(() => el.classList.remove('down'), 120);
+  if (id === 'oct-' || id === 'oct+') { stopAll(); state.oct = Math.max(1, Math.min(7, state.oct + (id === 'oct+' ? 1 : -1))); }
+  else { state.wave = id; for (const v of state.held.values()) if (v.osc) v.osc.type = id; }
+  audio(); render();
+}
+
+// ---- view ----
+const $ = id => document.getElementById(id), keyEls = new Map([...stage.querySelectorAll('.key')].map(k => [+k.dataset.semi, k]));
+const label = midi => NAMES[midi % 12] + (Math.floor(midi / 12) - 1);
+function render() {
+  keyEls.forEach((el, semi) => el.classList.toggle('down', state.held.has(semi)));
+  stage.querySelectorAll('.btn').forEach(b => b.classList.toggle('sel', b.dataset.btn === state.wave));
+  const mids = [...state.held.values()].map(v => v.midi).sort((a,b) => a-b), top = mids[mids.length-1];
+  $('note').textContent = mids.length ? label(top) : '--';
+  $('hz').textContent = mids.length ? `${freq(top).toFixed(1)} Hz` + (mids.length > 1 ? ` · ${mids.length} notes` : '') : (ctx ? 'ready' : 'press a key');
+  $('wave').value = state.wave; $('octave').value = state.oct;
+  $('mute').textContent = state.muted ? 'Unmute' : 'Mute';
+  $('mute').setAttribute('aria-pressed', String(state.muted));
+  draw();
+  $('readout').textContent = `${LABEL[state.wave].toLowerCase()} · oct ${state.oct} · ` + (mids.length ? mids.map(label).join(' ') : 'silent');
+}
+const scope = $('scope'), N = 120, MID = 11 + SH/2;
+let scopeFrame = 0, onScreen = true;
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+function draw() {
+  cancelAnimationFrame(scopeFrame); scopeFrame = 0;
+  if (!analyser || !state.held.size || document.hidden || !onScreen || reduced.matches) {
+    scope.setAttribute('points', `18,${MID} ${18+SW},${MID}`);
+    return;
+  }
+  analyser.getFloatTimeDomainData(buf);
+  let s = 0; for (let i = 1; i < 900; i++) if (buf[i-1] < 0 && buf[i] >= 0) { s = i; break; }
+  let pts = '';
+  for (let i = 0; i <= N; i++) { const y = Math.max(-21, Math.min(21, buf[s + i*5] * -90)); pts += `${18 + i*SW/N},${(MID + y).toFixed(1)} `; }
+  scope.setAttribute('points', pts);
+  scopeFrame = requestAnimationFrame(draw);
+}
+reduced.addEventListener('change', draw);
+new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; if (!onScreen) stopAll(); draw(); }).observe(stage);
+
+// ---- input: pointer (click, drag, touch) and keyboard go through the same functions ----
+const pointers = new Map();                                            // pointerId -> semi
+const keyAt = e => { const el = document.elementFromPoint(e.clientX, e.clientY)?.closest?.('.key'); return el ? +el.dataset.semi : null; };
+stage.addEventListener('pointerdown', e => {
+  stage.focus();
+  const b = e.target.closest('.btn'); if (b) { button(b.dataset.btn); return; }
+  const semi = keyAt(e); if (semi === null) return;
+  e.preventDefault(); stage.setPointerCapture?.(e.pointerId); pointers.set(e.pointerId, semi); noteOn(semi, `pointer:${e.pointerId}`);
+});
+stage.addEventListener('pointermove', e => {
+  if (!pointers.has(e.pointerId)) return;
+  const was = pointers.get(e.pointerId), now = keyAt(e);
+  if (now === was) return;
+  if (was !== null) noteOff(was, `pointer:${e.pointerId}`);
+  pointers.set(e.pointerId, now); if (now !== null) noteOn(now, `pointer:${e.pointerId}`);
+});
+const lift = e => { if (!pointers.has(e.pointerId)) return; const s = pointers.get(e.pointerId); pointers.delete(e.pointerId); if (s !== null) noteOff(s, `pointer:${e.pointerId}`); };
+stage.addEventListener('pointerup', lift); stage.addEventListener('pointercancel', lift); stage.addEventListener('lostpointercapture', lift);
+const KEYMAP = {}; [...'asdfghjkl;'].forEach((c,i) => KEYMAP[c] = WHITE[i]); [...'wetyuop'].forEach((c,i) => KEYMAP[c] = Object.values(BLACK)[i]);
+const BTNMAP = Object.fromEntries(BTNS.map(([id,k]) => [k,id]));
+stage.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+  const k = e.key.toLowerCase();
+  if (k in KEYMAP) { noteOn(KEYMAP[k], `key:${k}`); e.preventDefault(); } else if (k in BTNMAP) { button(BTNMAP[k]); e.preventDefault(); }
+});
+window.addEventListener('keyup', e => { const k = e.key.toLowerCase(); if (k in KEYMAP) noteOff(KEYMAP[k], `key:${k}`); });
+window.addEventListener('blur', stopAll);
+stage.addEventListener('blur', stopAll);
+document.addEventListener('visibilitychange', () => { if (document.hidden) stopAll(); draw(); });
+$('wave').addEventListener('change', e => button(e.target.value));
+$('octave').addEventListener('change', e => {
+  stopAll(); state.oct = Math.max(1, Math.min(7, Math.round(Number(e.target.value) || 4))); render();
+});
+$('mute').addEventListener('click', () => {
+  state.muted = !state.muted;
+  if (master) master.gain.value = state.muted ? 0 : 0.16;
+  render();
+});
+$('reset').addEventListener('click', () => {
+  stopAll(); Object.assign(state, { wave:'sawtooth', oct:4, muted:false });
+  if (master) master.gain.value = 0.16;
+  render();
+});
+$('notes').innerHTML = Array.from({length:17}, (_,semi) => `<button type="button" data-semi="${semi}">${NAMES[semi % 12]}${semi >= 12 ? '+' : ''}</button>`).join('');
+let audition = 0;
+$('notes').addEventListener('click', e => {
+  const key = e.target.closest('button'); if (!key) return;
+  const semi = +key.dataset.semi, source = `audition:${++audition}`;
+  noteOn(semi, source); setTimeout(() => noteOff(semi, source), 350);
+});
+render();
+</script>
+</body>
+</html>

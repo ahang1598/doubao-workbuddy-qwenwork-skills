@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n data-zh="一个 token 能读到谁？" data-en="Who can a token read?">Who can a token read?</title>
+<style>
+/* lesson-shell v2: shared by every example page; keep identical across files */
+:root{color-scheme:light dark;--bar:56px;--bg:#f7f6f2;--surface:#fff;--stage:#eeece6;--ink:#141618;--text:#2a2e31;--muted:#61676c;--faint:#8b9196;--line:#e4e1d9;--line-strong:#cbc7bd;--accent:#d9480f;--accent-soft:#fcebe2;--focus:#d9480f;--ok:#1d7a4c;--sans:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif;--mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace}
+@media(prefers-color-scheme:dark){:root{--bg:#111315;--surface:#181b1e;--stage:#0b0d0f;--ink:#f3f4f2;--text:#dadedc;--muted:#a1a7ab;--faint:#7a8085;--line:#272b2f;--line-strong:#3b4045;--accent:#ff7a45;--accent-soft:#2b1a11;--focus:#ff7a45;--ok:#4cc38a}}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;background:var(--bg);color:var(--text);font:15.5px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}html[data-lang=zh] [lang=en],html[data-lang=en] [lang=zh]{display:none!important}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.skip{position:absolute;left:12px;top:-80px;z-index:30;background:var(--surface);color:var(--ink);padding:8px 12px;border-radius:8px}.skip:focus{top:10px}
+.bar{position:sticky;top:0;z-index:20;height:var(--bar);display:flex;align-items:center;gap:14px;padding:0 16px 0 20px;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar .back{display:inline-flex;align-items:center;gap:6px;min-height:40px;color:var(--muted);text-decoration:none;font-size:14px;white-space:nowrap}.bar .back:hover{color:var(--ink)}
+.bar .crumb{min-width:0;font:500 12px/1.2 var(--mono);color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lang-switch{margin-left:auto;flex:none;display:inline-flex;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.lang-switch button{appearance:none;border:0;background:none;cursor:pointer;font:600 12px/1 var(--sans);min-height:30px;min-width:40px;padding:0 11px;border-radius:999px;color:var(--muted)}
+.lang-switch button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.lesson{display:flex;flex-direction:column}.panel{display:contents}
+.intro{order:0;padding:28px 20px 6px}
+.figure-pane{order:1;margin:14px 12px 4px;padding:12px;background:var(--stage);border-radius:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.steps{order:2;padding:0 20px 40px}
+.stage{position:relative;min-height:0;display:grid;place-items:center}.stage>svg,.stage>canvas{display:block;width:100%;height:auto}
+.fig-caption{margin:0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.readout{background:var(--surface);padding:9px 13px;min-width:0}
+.readout .k{display:block;font:500 12px/1.35 var(--sans);color:var(--muted)}
+.readout strong{display:block;font:650 21px/1.3 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink);letter-spacing:-.01em;overflow-wrap:anywhere}
+.readout .u{display:block;font-size:12px;line-height:1.35;color:var(--faint)}
+.meta{display:flex;flex-wrap:wrap;gap:4px 10px;margin:0 0 14px;padding:0;list-style:none;font:500 12.5px/1.4 var(--sans);color:var(--muted)}.meta li+li::before{content:"/";margin-right:10px;color:var(--line-strong)}
+h1{margin:0 0 12px;font-size:clamp(25px,2.5vw,33px);line-height:1.18;letter-spacing:-.025em;font-weight:700;color:var(--ink);text-wrap:balance}
+.lead{margin:0;color:var(--muted)}
+.step{padding:26px 0 22px;border-top:1px solid var(--line)}.intro+.steps .step:first-child,.steps>.step:first-child{border-top:0}
+.step>h2{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:17px;line-height:1.3;letter-spacing:-.01em;color:var(--ink)}
+.step>h2 .n{flex:none;font:600 11px/1 var(--mono);color:var(--accent);border:1px solid currentColor;border-radius:6px;padding:4px 6px}
+h3{margin:20px 0 6px;font-size:14.5px;color:var(--ink)}p{margin:0 0 12px}strong{color:var(--ink)}
+.small{font-size:13.5px;color:var(--muted)}
+fieldset{border:0;padding:0;margin:0;min-width:0}legend{padding:0;margin:0 0 12px;font-weight:600;color:var(--ink)}
+label.choice{display:flex;gap:10px;align-items:flex-start;padding:10px 13px;margin-bottom:8px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;transition:border-color .12s,box-shadow .12s}
+label.choice:hover{border-color:var(--line-strong)}label.choice:has(input:checked){border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}label.choice:has(input:disabled){cursor:default}
+label.choice input{flex:none;margin:4px 0 0}input{accent-color:var(--ink)}input[type=radio],input[type=checkbox]{width:17px;height:17px}
+button,select{font:500 14px/1.2 var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);border-radius:10px;padding:0 16px;min-height:42px;cursor:pointer}
+button:hover:not(:disabled),select:hover:not(:disabled){border-color:var(--ink)}button.primary{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+button:disabled,select:disabled{opacity:.45;cursor:not-allowed}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0}
+.toggle{display:flex;align-items:center;gap:10px;min-height:42px;font-weight:500;color:var(--ink);cursor:pointer}
+.range{margin:16px 0 8px}.range label{display:flex;justify-content:space-between;gap:12px;font-weight:500;color:var(--ink)}.range output{font:500 13px/1.6 var(--mono);color:var(--muted)}
+input[type=range]{width:100%;min-height:32px;margin:4px 0}
+.status{min-height:1.6em;margin:12px 0;padding:10px 12px;border-radius:10px;background:var(--bg);font-size:14px}
+.callout{margin:14px 0;padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
+textarea{display:block;width:100%;min-height:90px;margin-top:8px;padding:10px 12px;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line-strong);border-radius:10px;resize:vertical}
+table{border-collapse:collapse;width:100%;margin-top:14px;font-size:14px}th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line);vertical-align:top}th:first-child,td:first-child{padding-left:0}caption{text-align:left;font-weight:600;color:var(--ink);margin-bottom:4px}
+.limits{color:var(--muted);font-size:14px}
+.pane-more{display:none}
+.foot{margin-top:8px;padding-top:16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--faint)}
+/* attention: figure parts [data-part], step focus [data-focus], ordered highlights ol.look, dual-coding terms [data-ref] */
+#experiment [data-part]{transition:opacity .28s ease,filter .28s ease,box-shadow .2s ease}
+#experiment.tf-ring [data-part].tf-hot:not(svg *){box-shadow:0 0 0 2px var(--accent),0 0 0 7px color-mix(in srgb,var(--accent) 18%,transparent);border-radius:10px}
+#experiment.tf-ring svg [data-part].tf-hot{filter:drop-shadow(0 0 1px var(--accent)) drop-shadow(0 0 5px color-mix(in srgb,var(--accent) 40%,transparent))}
+.focus-bar{display:flex;align-items:center;gap:12px;min-height:30px;margin:-4px 0 -2px}
+.focus-caption{flex:1;min-width:0;margin:0;font-size:13px;line-height:1.4;color:var(--ink)}.focus-caption:empty{visibility:hidden}
+.focus-caption .look-n{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-right:8px;padding:0 5px;border-radius:999px;background:var(--accent);color:#fff;font:700 11px/1 var(--sans);vertical-align:1px}
+.focus-toggle{flex:none;display:inline-flex;align-items:center;gap:7px;min-height:30px;font-size:12.5px;color:var(--muted);cursor:pointer;white-space:nowrap}.focus-toggle input{width:15px;height:15px;margin:0}
+ol.look{margin:12px 0 8px;padding:0;list-style:none;counter-reset:look}
+ol.look>li{counter-increment:look;position:relative;margin:0 0 6px;padding:8px 10px 8px 38px;border:1px solid var(--line);border-radius:10px;cursor:pointer;color:var(--muted);transition:border-color .15s,background .15s}
+ol.look>li::before{content:counter(look);position:absolute;left:10px;top:9px;display:grid;place-items:center;width:20px;height:20px;border-radius:999px;border:1px solid var(--line-strong);font:650 11px/1 var(--sans);color:var(--muted)}
+ol.look>li:hover{border-color:var(--line-strong)}ol.look>li[aria-current=step]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}ol.look>li[aria-current=step]::before{background:var(--accent);border-color:var(--accent);color:#fff}
+.look-nav{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 14px}.look-nav button{min-height:34px;padding:0 11px;font-size:13px}.look-nav .look-num{min-width:34px;padding:0}.look-nav .look-num[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+[data-ref]:not(a,button,input,select,label){text-decoration:underline dotted color-mix(in srgb,var(--accent) 70%,transparent);text-decoration-thickness:1.5px;text-underline-offset:3px;cursor:help;border-radius:4px}
+[data-ref].tf-ref-on{background:var(--accent-soft);box-shadow:0 0 0 2px var(--accent-soft);color:var(--ink)}[data-ref][aria-pressed=true]{background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent)}
+.part-tip{position:fixed;z-index:40;pointer-events:none;max-width:240px;padding:5px 9px;border-radius:8px;background:var(--ink);color:var(--bg);font:500 12.5px/1.35 var(--sans);box-shadow:0 4px 14px rgb(0 0 0/.18)}
+@media(min-width:960px) and (min-height:560px){
+.lesson{display:grid;grid-template-columns:minmax(0,1fr) clamp(380px,35vw,500px);height:calc(100dvh - var(--bar))}
+.panel{display:block;grid-column:2;grid-row:1;overflow-y:auto;overscroll-behavior:contain;background:var(--surface);border-left:1px solid var(--line)}
+.figure-pane{grid-column:1;grid-row:1;margin:0;border-radius:0;padding:24px 28px;min-height:0}
+.figure-pane{overflow-y:auto;overscroll-behavior:contain}.figure-pane>*{flex-shrink:0}
+.figure-pane .stage{flex:1}.figure-pane .stage>svg,.figure-pane .stage>canvas{height:100%;max-height:100%}
+.pane-more{display:flex;grid-column:1;grid-row:1;align-self:end;position:relative;z-index:2;justify-content:center;align-items:flex-end;height:76px;padding-bottom:14px;pointer-events:none;background:linear-gradient(color-mix(in srgb,var(--stage) 0%,transparent),var(--stage) 72%)}
+.pane-more button{pointer-events:auto;min-height:32px;padding:0 14px;border-radius:999px;font-size:12.5px;box-shadow:0 2px 10px rgb(0 0 0/.12)}
+.intro{padding:32px 32px 6px}.steps{padding:0 32px 48px}
+.bar{padding:0 20px 0 24px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+/* /lesson-shell */
+:root{--flow:#2f6fed;--flow-ink:#fff}
+@media(prefers-color-scheme:dark){:root{--flow:#7aa5ff;--flow-ink:#0b0d0f}}
+.pane-label{margin:0 0 6px;font:500 12px/1.3 var(--sans);color:var(--muted)}
+.tokens{display:flex;gap:8px}
+.tokens button{flex:1;min-height:52px;text-align:left;padding:6px 14px;font:650 17px/1.2 var(--sans)}
+.tokens button small{display:block;font:500 11.5px/1.3 var(--mono);color:var(--muted)}
+.tokens button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}.tokens button[aria-pressed=true] small{color:inherit;opacity:.75}
+.attn{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:14px;width:100%;align-items:center}
+.attn figure{margin:0;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 10px 6px}
+.attn figcaption{font:500 12px/1.3 var(--sans);color:var(--muted);padding:0 4px 4px}
+.attn svg{display:block;width:100%;height:auto}
+.chip{fill:var(--surface);stroke:var(--line-strong)}.chip.q{fill:var(--ink);stroke:var(--ink)}
+.t-tok{font:650 15px var(--sans);fill:var(--ink)}.t-sub{font:500 10.5px var(--mono);fill:var(--muted)}.q .t-tok,.q .t-sub,text.on-ink{fill:var(--bg)}
+.t-w{font:650 12.5px var(--mono);fill:var(--ink);paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round}.t-w.blocked{fill:var(--muted)}
+.t-cell{font:600 12px var(--mono)}.t-axis{font:500 11.5px var(--sans);fill:var(--muted)}
+.flow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none;counter-reset:s}
+.flow li{position:relative;min-width:0}
+.flow li+li::before{content:"";position:absolute;left:-6px;top:50%;width:6px;height:1px;background:var(--line-strong)}
+.flow button{width:100%;min-height:54px;padding:6px 8px;text-align:left;border-radius:9px;font-size:12.5px;line-height:1.25}
+.flow button b{display:block;font:600 10.5px/1.3 var(--mono);color:var(--muted)}
+.flow button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}.flow button[aria-pressed=true] b{color:inherit;opacity:.7}
+.stage-nav{display:flex;align-items:center;gap:8px;margin-top:8px}.stage-nav button{min-height:36px;font-size:13px;padding:0 12px}
+.detail{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.detail h3{margin:0 0 2px;font-size:14px}.detail p{margin:0 0 8px;font-size:13.5px;color:var(--muted)}
+.math{font:12.5px/1.65 var(--mono);color:var(--text);white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.readout strong.vec{font:600 14px/1.5 var(--mono)}
+.table-wrap{overflow-x:auto}table td,table th{white-space:nowrap;font-size:12.5px}
+details summary{cursor:pointer;min-height:40px;display:flex;align-items:center;font-weight:600;color:var(--ink)}
+.params{font:12px/1.65 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;color:var(--muted);margin:10px 0 0}
+a{color:var(--ink)}
+@media(min-width:960px) and (min-height:560px){#experiment{overflow-y:auto}#experiment>*{flex:none}}
+@media(max-width:700px){.attn{grid-template-columns:1fr}.flow{grid-template-columns:repeat(4,minmax(0,1fr))}.flow li::before{display:none}.tokens button{padding:6px 10px}}
+</style>
+</head>
+<body>
+<a class="skip" href="#experiment"><span lang="zh">跳到实验</span><span lang="en">Skip to experiment</span></a>
+<header class="bar">
+<a class="back" href="index.html" data-keep-lang>← <span lang="zh">全部示例</span><span lang="en">All examples</span></a>
+<span class="crumb">transformer-flow.html</span>
+<div class="lang-switch" role="group" aria-label="语言 / Language"><button type="button" data-set-lang="zh" aria-pressed="false">中文</button><button type="button" data-set-lang="en" aria-pressed="true">EN</button></div>
+</header>
+<main class="lesson">
+<div class="panel">
+<div class="intro">
+<ul class="meta"><li><span lang="zh">AI</span><span lang="en">AI</span></li><li><span lang="zh">2D 数据流</span><span lang="en">2D data flow</span></li><li><span lang="zh">约 3 分钟</span><span lang="en">~3 min</span></li></ul>
+<h1><span lang="zh">一个 token 能读到谁？</span><span lang="en">Who can a token read?</span></h1>
+<p class="lead" lang="zh">因果遮罩（causal mask）决定哪些位置能进入注意力输出。在一个每个数都算出来的小模块里追踪一个 query，再关掉遮罩做对比。</p>
+<p class="lead" lang="en">A causal mask changes which positions contribute to an attention output. Trace one query through a tiny, fully calculated block. Then remove the mask and compare.</p>
+</div>
+<div class="steps">
+<section class="step" aria-labelledby="predict-title" data-focus="tokens mask">
+<h2 id="predict-title"><span class="n">01</span><span lang="zh">预测</span><span lang="en">Predict</span></h2>
+<form id="prediction-form">
+<fieldset>
+<legend><span lang="zh">选中的 <span data-ref="tokens">query 是位置 2 的 “see”</span>。开着<span data-ref="mask">因果遮罩</span>时，后面的 token “stars” 能影响它的注意力输出吗？</span><span lang="en">The selected <span data-ref="tokens">query is “see”, at position 2</span>. With a <span data-ref="mask">causal mask</span>, can the later token “stars” contribute to its attention output?</span></legend>
+<label class="choice"><input type="radio" name="prediction" value="yes" required><span lang="zh">能。相似度分数够高，就能盖过遮罩。</span><span lang="en">Yes. A strong similarity score can overcome the mask.</span></label>
+<label class="choice"><input type="radio" name="prediction" value="no"><span lang="zh">不能。它的注意力权重会正好是 0。</span><span lang="en">No. Its attention weight will be exactly zero.</span></label>
+</fieldset>
+<div class="controls"><button type="submit" class="primary"><span lang="zh">记下预测</span><span lang="en">Save prediction</span></button></div>
+<p id="prediction-status" class="small" role="status"></p>
+</form>
+</section>
+<section class="step" aria-labelledby="try-title" data-focus="tokens weights matrix mask future">
+<h2 id="try-title"><span class="n">02</span><span lang="zh">动手试</span><span lang="en">Try a data flow</span></h2>
+<p lang="zh">在左侧选择 <span data-ref="tokens">query token</span>，然后开、关<span data-ref="mask">遮罩</span>，比较它收到的注意力权重。<span data-ref="weights">线条粗细</span>和<span data-ref="matrix">矩阵颜色</span>都是注意力权重，不是词的概率，也不代表模型“理解”了语言。</p>
+<p lang="en">Select a <span data-ref="tokens">query token</span> on the left. Turn the <span data-ref="mask">mask</span> on and off and compare the weights it receives. <span data-ref="weights">Line width</span> and <span data-ref="matrix">matrix shading</span> are attention weights, not word probabilities or explanations of language understanding.</p>
+<div class="controls"><label class="toggle"><input id="causal" type="checkbox" checked><span lang="zh">因果遮罩</span><span lang="en">Causal mask</span></label><button type="button" id="reset"><span lang="zh">重置</span><span lang="en">Reset lesson</span></button></div>
+<p id="run-status" class="status" role="status"></p>
+<p class="small"><span lang="zh">用左侧的 <span data-ref="stages">7 个阶段按钮</span>（或“上一步 / 下一步”）逐步查看计算过程。</span><span lang="en">Step through the calculation with the <span data-ref="stages">seven stage buttons</span> on the left, or with Previous and Next.</span></p>
+<details><summary><span lang="zh">查看所有输入和玩具参数</span><span lang="en">Inspect every input and toy parameter</span></summary>
+<div class="table-wrap"><table><caption><span lang="zh">三个 token 向量。各坐标没有指定的语义。</span><span lang="en">Three token vectors. Coordinates have no assigned semantic meaning.</span></caption><thead><tr><th>Token</th><th><span lang="zh">嵌入 E</span><span lang="en">Embedding E</span></th><th><span lang="zh">位置 P</span><span lang="en">Position P</span></th><th>X = E + P</th></tr></thead><tbody id="inputs"></tbody></table></div>
+<p class="params">d_model = 4; one head; d_k = d_v = 2.
+W_Q = W_K = [[1,0],[0,1],[0,0],[0,0]]
+W_V = [[0,0],[0,0],[1,0],[0,1]]
+W_O = [[1,0,0,0],[0,0,1,0]]
+FFN(y) = 0.5 × ReLU(y).
+W₁ = I₄, W₂ = 0.5 I₄, b₁ = b₂ = 0.
+LayerNorm uses population variance, ε = 0.00001, γ = 1, β = 0.</p>
+</details>
+</section>
+<section class="step" aria-labelledby="explain-title">
+<h2 id="explain-title"><span class="n">03</span><span lang="zh">解释</span><span lang="en">Explain</span></h2>
+<p id="feedback" class="callout"></p>
+<details id="explanation"><summary><span lang="zh">为什么贡献变了？</span><span lang="en">Why did the contribution change?</span></summary>
+<div lang="zh"><p>遮罩在 softmax 之前把被禁止的分数换成负无穷。它们的指数是 0，允许的权重重新归一化，总和仍为 1。换一个 query 会改变分数，但绕不过遮罩。</p><p>每个权重乘以一个 value 向量。加权后的 value 相加，再投影回四个坐标。残差路径把输入绕过注意力直接加回来，随后是归一化和逐位置的前馈计算。</p></div>
+<div lang="en"><p>The mask replaces forbidden scores with negative infinity before softmax. Their exponentials are zero. Allowed weights renormalize to sum to one. Changing the query changes scores, but it cannot bypass the mask.</p><p>Each weight multiplies a value vector. These weighted values are added, then projected back to four coordinates. The residual path carries the input around attention. Normalization and a position-wise feed-forward calculation follow.</p></div>
+</details>
+<ol class="look">
+<li data-focus="mask"><span lang="zh">先看遮罩：在 softmax 之前，被禁止的分数换成负无穷。</span><span lang="en">Start with the mask: before softmax, forbidden scores become negative infinity.</span></li>
+<li data-focus="matrix"><span lang="zh">再看矩阵：对角线右上方全是 0，没有哪个 query 能读到后面的 key。</span><span lang="en">Then the matrix: everything above the diagonal is 0, so no query reads a later key.</span></li>
+<li data-focus="weights future"><span lang="zh">看流向 query 的线：剩下的权重重新归一化，加起来仍是 1；未来位置的权重正好是 0。</span><span lang="en">Now the lines into the query: the remaining weights renormalize to sum to 1, and the weight on later positions is exactly 0.</span></li>
+<li data-focus="mixed"><span lang="zh">看 z：每个权重乘以一个 value，加起来就是 z。</span><span lang="en">Look at z: each weight multiplies a value, and the sum is z.</span></li>
+<li data-focus="stages"><span lang="zh">最后看计算阶段：残差、归一化和前馈都在注意力之后，不改变谁能读到谁。</span><span lang="en">Finally the stages: residual, normalization and feed-forward come after attention and never change who can read whom.</span></li>
+</ol>
+<label for="writing"><strong><span lang="zh">用你的观察来解释。</span><span lang="en">Use your observation.</span></strong></label>
+<p class="small"><span lang="zh">“遮罩 ___ 时，___ 的权重是 ___，因为 ___。”</span><span lang="en">“With the mask ___, the weight of ___ was ___ because ___.”</span></p>
+<textarea id="writing" data-i18n data-zh-placeholder="写下你的解释。它只留在这个页面。" data-en-placeholder="Write an explanation. It stays on this page."></textarea>
+<h3><span lang="zh">迁移：换一个新情形</span><span lang="en">Transfer</span></h3>
+<form id="transfer-form">
+<fieldset><legend><span lang="zh">如果 query 换成最后一个 token “stars”，开着因果遮罩时它能读到三个位置中的几个？</span><span lang="en">If the query moves to the final token “stars”, how many of the three positions can it read with the causal mask on?</span></legend>
+<label class="choice"><input type="radio" name="transfer" value="one" required><span lang="zh">只能读到它自己。</span><span lang="en">Only itself.</span></label>
+<label class="choice"><input type="radio" name="transfer" value="three"><span lang="zh">三个都能，包括它自己。</span><span lang="en">All three, including itself.</span></label>
+</fieldset>
+<div class="controls"><button type="submit"><span lang="zh">核对答案</span><span lang="en">Check answer</span></button></div>
+<p id="transfer-feedback" class="status" role="status"></p>
+</form>
+</section>
+<section class="step limits" aria-labelledby="limits-title">
+<h2 id="limits-title"><span lang="zh">这个例子模拟了什么</span><span lang="en">What this example models</span></h2>
+<div lang="zh">
+<p>这是一个解码器式、后归一化（post-norm）的模块，只有一个注意力头。页面上的每个数都由上面的玩具参数算出。嵌入、位置向量和矩阵都是手选的：没有训练，也不预测下一个 token。关掉遮罩会让未来信息进入，破坏因果解码。</p>
+<p>完整架构是：token 嵌入加位置信息 → 重复的注意力与前馈模块 → 词表投影和 softmax。本页只计算其中一个模块，省略了多头并行、dropout、交叉注意力和词表输出。这里简单的位置向量也不是论文中的正弦位置编码。</p>
+<p class="small">注意力、遮罩、残差归一化和 FFN 结构的来源：<a href="https://arxiv.org/html/1706.03762v7#S3">Vaswani et al., Attention Is All You Need, §3</a>。原论文是带交叉注意力的编码器—解码器架构；这里是简化的解码器式教学模型，不是对整个模型的复现。</p>
+</div>
+<div lang="en">
+<p>This is one decoder-style, post-normalization block with a single attention head. Every displayed number comes from the toy parameters above. Embeddings, position vectors and matrices are hand chosen. Nothing is trained, and no next token is predicted. Turning off the mask permits future information and breaks causal decoding.</p>
+<p>The architecture context is token embeddings plus position information → repeated attention and feed-forward blocks → a vocabulary projection and softmax. This page calculates only one block. It omits multi-head parallelism, dropout, cross-attention and vocabulary output. Its simple position vectors are not the paper's sinusoidal encoding.</p>
+<p class="small">Source for attention, masking, residual normalization and FFN structure. <a href="https://arxiv.org/html/1706.03762v7#S3">Vaswani et al., Attention Is All You Need, §3</a>. The original paper uses an encoder-decoder architecture with cross-attention. This toy is a reduced decoder-style teaching model, not a reproduction of that whole model.</p>
+</div>
+<p class="foot"><span lang="zh">离线可用。原生按钮和复选框支持键盘与触控。阶段切换是即时的，没有动画或后台计算。重置会清空你的写作和两道题的答案。</span><span lang="en">Offline. Native buttons and checkbox support keyboard and touch. Stages change instantly; no animation or background work runs. Reset clears your writing and both answers.</span></p>
+</section>
+</div>
+</div>
+<section id="experiment" class="figure-pane" aria-labelledby="figure-title">
+<h2 id="figure-title" class="pane-label"><span lang="zh">选择 query token</span><span lang="en">Choose the query token</span></h2>
+<div class="tokens" data-part="tokens" data-zh-label="三个 token；选中的是 query" data-en-label="Three tokens; the pressed one is the query" role="group" aria-label="Choose query position" data-i18n data-zh-aria-label="选择 query 位置" data-en-aria-label="Choose query position">
+<button type="button" data-query="0" aria-pressed="false">I<small><span lang="zh">位置 1</span><span lang="en">position 1</span></small></button>
+<button type="button" data-query="1" aria-pressed="true">see<small><span lang="zh">位置 2</span><span lang="en">position 2</span></small></button>
+<button type="button" data-query="2" aria-pressed="false">stars<small><span lang="zh">位置 3</span><span lang="en">position 3</span></small></button>
+</div>
+<div class="stage">
+<div class="attn">
+<figure data-part="weights" data-zh-label="流向 query 的注意力权重：线越粗权重越大" data-en-label="Attention weights into the query: thicker line, larger weight"><figcaption><span lang="zh">谁流向所选 query：线越粗，权重越大</span><span lang="en">What flows into the selected query: thicker line, larger weight</span></figcaption><div id="weights"></div></figure>
+<figure data-part="matrix" data-zh-label="注意力矩阵：行是 query，列是 key" data-en-label="Attention matrix: rows are queries, columns are keys"><figcaption><span lang="zh">注意力矩阵（行 = query，列 = key）</span><span lang="en">Attention matrix (rows = query, columns = key)</span></figcaption><div id="matrix"></div></figure>
+</div>
+</div>
+<div class="readouts">
+<div class="readout" data-part="tokens"><span class="k" data-ref="tokens">Query</span><strong id="ro-query"></strong></div>
+<div class="readout" data-part="mask" data-zh-label="因果遮罩：开着时 query 只能读自己和之前的位置" data-en-label="Causal mask: when on, a query reads only itself and earlier positions"><span class="k" data-ref="mask"><span lang="zh">遮罩</span><span lang="en">Mask</span></span><strong id="ro-mask"></strong></div>
+<div class="readout" data-part="future" data-zh-label="落在后面位置上的权重总和" data-en-label="Total weight on later positions"><span class="k" data-ref="future"><span lang="zh">未来位置的权重</span><span lang="en">Weight on future positions</span></span><strong id="ro-future"></strong></div>
+<div class="readout" data-part="mixed" data-zh-label="加权后的 value 相加得到 z" data-en-label="z: the weighted values added up"><span class="k" data-ref="mixed"><span lang="zh">混合后的 value z</span><span lang="en">Mixed value z</span></span><strong id="ro-mixed" class="vec"></strong></div>
+</div>
+<div data-part="stages" data-zh-label="逐步查看的七个计算阶段" data-en-label="Seven calculation stages to step through">
+<p class="pane-label"><span lang="zh">计算阶段</span><span lang="en">Calculation stages</span></p>
+<ol class="flow" id="flow" aria-label="Inspect calculation stages" data-i18n data-zh-aria-label="查看计算阶段" data-en-aria-label="Inspect calculation stages"></ol>
+<div class="stage-nav"><button type="button" id="previous"><span lang="zh">← 上一步</span><span lang="en">← Previous stage</span></button><button type="button" id="next"><span lang="zh">下一步 →</span><span lang="en">Next stage →</span></button></div>
+</div>
+<div class="detail" data-part="stages"><h3 id="stage-title"></h3><p id="stage-copy"></p><div class="math" id="stage-values"></div></div>
+<p id="result" class="fig-caption"></p>
+</section>
+</main>
+<script>
+'use strict';
+/* lesson-shell i18n v2: shared by every example page; keep identical across files.
+   Static copy: paired elements <span lang="zh">…</span><span lang="en">…</span> (CSS hides the other language).
+   Text-only nodes and attributes: data-i18n plus data-zh / data-en (textContent) or data-zh-<attr> / data-en-<attr>.
+   Dynamic copy: tr('中文', 'English'); say(el, () => tr(…)) re-renders the message when the language changes. */
+const I18N = (() => {
+  const KEY = 'tf-lang', LANGS = ['zh', 'en'];
+  const stored = (() => { try { return localStorage.getItem(KEY); } catch { return null; } })();
+  const param = new URLSearchParams(location.search).get('lang');
+  let lang = LANGS.includes(param) ? param : LANGS.includes(stored) ? stored : /^zh\b/i.test(navigator.language || '') ? 'zh' : 'en';
+  const listeners = [];
+  function apply() {
+    const root = document.documentElement;
+    root.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    root.dataset.lang = lang;
+    for (const el of document.querySelectorAll('[data-i18n]')) {
+      for (const { name, value } of [...el.attributes]) {
+        if (name === 'data-' + lang) el.textContent = value;
+        else if (name.startsWith('data-' + lang + '-')) el.setAttribute(name.slice(lang.length + 6), value);
+      }
+    }
+    for (const button of document.querySelectorAll('[data-set-lang]')) button.setAttribute('aria-pressed', String(button.dataset.setLang === lang));
+    for (const link of document.querySelectorAll('a[data-keep-lang]')) {
+      const target = new URL(link.getAttribute('href').split('?')[0], location.href);
+      target.searchParams.set('lang', lang);
+      link.href = target.href;
+    }
+    listeners.forEach(fn => fn(lang));
+  }
+  document.addEventListener('click', event => {
+    const button = event.target.closest('[data-set-lang]');
+    if (!button || button.dataset.setLang === lang) return;
+    lang = button.dataset.setLang;
+    try { localStorage.setItem(KEY, lang); } catch {}
+    try { const here = new URL(location.href); here.searchParams.set('lang', lang); history.replaceState(history.state, '', here); } catch {}
+    apply();
+  });
+  return { get lang() { return lang; }, on(fn) { listeners.push(fn); }, apply };
+})();
+const tr = (zh, en) => I18N.lang === 'zh' ? zh : en;
+const spoken = new Map();
+function say(target, message) {
+  const el = typeof target === 'string' ? document.getElementById(target) : target;
+  spoken.set(el, message);
+  el.textContent = message ? message() : '';
+}
+I18N.on(() => spoken.forEach((message, el) => { el.textContent = message ? message() : ''; }));
+// On short screens the figure pane scrolls on its own; while more of it is below the fold, show a cue that scrolls it.
+(() => {
+  const pane = document.querySelector('.lesson > .figure-pane');
+  if (!pane) return;
+  const cue = document.createElement('div');
+  cue.className = 'pane-more';
+  cue.hidden = true;
+  cue.innerHTML = '<button type="button" tabindex="-1" aria-hidden="true"></button>';
+  const button = cue.firstChild;
+  const label = () => { button.textContent = tr('下方还有内容 ↓', 'More below ↓'); };
+  label();
+  I18N.on(label);
+  button.addEventListener('click', () => pane.scrollBy({ top: pane.clientHeight * 0.75, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
+  pane.after(cue);
+  function update() {
+    const scrolls = getComputedStyle(pane).overflowY !== 'visible' && pane.scrollHeight > pane.clientHeight + 1;
+    cue.hidden = !(scrolls && pane.scrollHeight - pane.clientHeight - pane.scrollTop > 4);
+    if (scrolls) pane.tabIndex = 0; else pane.removeAttribute('tabindex');
+  }
+  const sizes = new ResizeObserver(update);
+  const watch = () => { sizes.disconnect(); sizes.observe(pane); for (const child of pane.children) sizes.observe(child); };
+  new MutationObserver(() => { watch(); update(); }).observe(pane, { childList: true });
+  pane.addEventListener('scroll', update, { passive: true });
+  addEventListener('resize', update);
+  watch();
+  update();
+})();
+/* Attention guide. Figure parts: [data-part="id"] inside #experiment (labels: data-zh-label / data-en-label).
+   Step focus: a panel .step or element with data-focus="id …" dims the other parts while it is the active step
+   (focused element first, else the first visible step crossing the reading line). Ordered highlights: ol.look > li[data-focus].
+   Dual coding: [data-ref="id …"] terms and legend items link to parts both ways. Nothing moves until the learner scrolls, hovers or clicks. */
+(() => {
+  const figure = document.getElementById('experiment');
+  if (!figure || !figure.querySelector('[data-part]')) return;
+  const panel = document.querySelector('.lesson > .panel');
+  const KEY = 'tf-focus-guide', ids = value => (value || '').split(/\s+/).filter(Boolean);
+  let guide = (() => { try { return localStorage.getItem(KEY) !== 'off'; } catch { return true; } })();
+  let stepIds = [], look = null, peek = null, pinned = null, activeStep = null;
+  const style = document.createElement('style');
+  document.head.append(style);
+  const bar = document.createElement('div');
+  bar.className = 'focus-bar';
+  bar.innerHTML = '<p class="focus-caption" aria-live="polite"></p><label class="focus-toggle"><input type="checkbox"><span></span></label>';
+  const caption = bar.firstChild, toggle = bar.querySelector('input'), toggleText = bar.querySelector('.focus-toggle span');
+  toggle.checked = guide;
+  figure.prepend(bar);
+  const tip = document.createElement('div');
+  tip.className = 'part-tip';
+  tip.hidden = true;
+  document.body.append(tip);
+  const fine = matchMedia('(hover: hover) and (pointer: fine)');
+  const sel = list => list.map(id => `[data-part~="${CSS.escape(id)}"]`).join(',');
+  function render() {
+    const hot = pinned || peek || (look && look.ids) || (guide ? stepIds : []);
+    const ring = !!(pinned || peek || look);
+    figure.classList.toggle('tf-ring', ring && hot.length > 0);
+    figure.toggleAttribute('data-focusing', hot.length > 0);
+    style.textContent = hot.length ? `#experiment [data-part]:not(${sel(hot)}){opacity:.24;filter:saturate(.35)}` : '';
+    for (const part of figure.querySelectorAll('[data-part]')) part.classList.toggle('tf-hot', ring && ids(part.dataset.part).some(id => hot.includes(id)));
+  }
+  // Re-rendered figures replace their children; keep the hot class on new parts.
+  new MutationObserver(() => { if (figure.classList.contains('tf-ring')) render(); }).observe(figure, { childList: true, subtree: true });
+  const visible = el => el.offsetParent !== null || el.getClientRects().length > 0;
+  const steps = () => [...document.querySelectorAll('.panel .step, .panel [data-focus]:not(ol.look *)')].filter(visible);
+  function pickStep() {
+    const scroller = panel && getComputedStyle(panel).overflowY !== 'visible' ? panel : null;
+    const box = scroller ? scroller.getBoundingClientRect() : { top: 0, bottom: innerHeight, height: innerHeight };
+    const line = box.top + box.height * 0.3, list = steps();
+    const inView = el => { const r = el.getBoundingClientRect(); return r.bottom > box.top && r.top < box.bottom; };
+    const focused = document.activeElement && list.filter(el => el.contains(document.activeElement)).pop();
+    if (focused && inView(focused)) return focused;
+    let found = null;
+    for (const el of list) { const r = el.getBoundingClientRect(); if (r.bottom > line && r.top < box.bottom && (!found || found.contains(el))) found = el; else if (found && !found.contains(el)) break; }
+    return found;
+  }
+  function update() {
+    const step = pickStep();
+    if (step !== activeStep) {
+      activeStep = step;
+      if (look && !(step && step.contains(look.list))) setLook(null);
+    }
+    const target = step && (step.matches('[data-focus]') ? step : null);
+    stepIds = target ? ids(target.dataset.focus) : [];
+    render();
+  }
+  let queued = false;
+  const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; update(); }); } };
+  (panel || document).addEventListener('scroll', schedule, { passive: true });
+  addEventListener('scroll', schedule, { passive: true });
+  addEventListener('resize', schedule);
+  document.addEventListener('focusin', schedule);
+  new MutationObserver(schedule).observe(document.querySelector('.panel') || document.body, { attributes: true, attributeFilter: ['hidden'], subtree: true });
+  toggle.addEventListener('change', () => { guide = toggle.checked; try { localStorage.setItem(KEY, guide ? 'on' : 'off'); } catch {} render(); });
+  // Ordered highlights.
+  const lists = [...document.querySelectorAll('ol.look')];
+  function setLook(next) {
+    look = next;
+    for (const list of lists) {
+      const items = [...list.children];
+      items.forEach((li, i) => { if (next && next.list === list && next.index === i) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current'); });
+      for (const button of list.previousElementSibling.querySelectorAll('.look-num')) button.setAttribute('aria-pressed', String(!!next && next.list === list && Number(button.dataset.index) === next.index));
+    }
+    caption.textContent = '';
+    if (next) {
+      const n = document.createElement('span');
+      n.className = 'look-n';
+      n.textContent = `${next.index + 1}/${next.list.children.length}`;
+      const text = document.createElement('span');
+      text.append(...[...next.list.children[next.index].childNodes].map(node => node.cloneNode(true)));
+      caption.append(n, text);
+    }
+    render();
+  }
+  const go = (list, index) => setLook({ list, index, ids: ids(list.children[index].dataset.focus) });
+  for (const list of lists) {
+    const nav = document.createElement('div');
+    nav.className = 'look-nav';
+    const items = [...list.children];
+    items.forEach((li, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'look-num'; b.dataset.index = i; b.textContent = i + 1; b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => go(list, i));
+      nav.append(b);
+      li.addEventListener('click', event => { if (!event.target.closest('a,button,input,[data-ref]')) go(list, i); });
+    });
+    const make = (cls, zh, en, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = cls; const label = () => { b.textContent = tr(zh, en); }; label(); I18N.on(label); b.addEventListener('click', fn); nav.append(b); };
+    const at = () => (look && look.list === list ? look.index : -1);
+    make('look-prev', '‹ 上一步', '‹ Prev', () => go(list, Math.max(0, at() - 1)));
+    make('look-next', '下一步 ›', 'Next ›', () => go(list, Math.min(items.length - 1, at() + 1)));
+    make('look-clear', '清除', 'Clear', () => setLook(null));
+    list.before(nav);
+  }
+  // Dual coding: terms ↔ parts.
+  const refs = () => document.querySelectorAll('[data-ref]');
+  for (const term of refs()) if (!term.matches('a,button,input,select,textarea,label,[tabindex]')) { term.tabIndex = 0; term.setAttribute('role', 'button'); term.setAttribute('aria-pressed', 'false'); }
+  const termOf = event => event.target.closest && event.target.closest('[data-ref]');
+  let pointer = 'mouse';
+  document.addEventListener('pointerdown', event => { pointer = event.pointerType; }, true);
+  document.addEventListener('pointerover', event => { const term = termOf(event); if (term && event.pointerType === 'mouse') { peek = ids(term.dataset.ref); render(); } });
+  document.addEventListener('pointerout', event => { const term = termOf(event); if (term && !term.contains(event.relatedTarget)) { peek = null; render(); } });
+  document.addEventListener('focusin', event => { const term = termOf(event); if (term) { peek = ids(term.dataset.ref); render(); } });
+  document.addEventListener('focusout', event => { if (termOf(event)) { peek = null; render(); } });
+  function pin(term) {
+    const next = ids(term.dataset.ref).join(' ');
+    pinned = pinned && pinned.join(' ') === next ? null : ids(next);
+    for (const other of refs()) if (other.getAttribute('role') === 'button') other.setAttribute('aria-pressed', String(!!pinned && other.dataset.ref === term.dataset.ref));
+    render();
+  }
+  document.addEventListener('click', event => { const term = termOf(event); if (term && term.getAttribute('role') === 'button' && pointer !== 'mouse') pin(term); });
+  document.addEventListener('keydown', event => {
+    const term = termOf(event);
+    if (term && term.getAttribute('role') === 'button' && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); pin(term); }
+    if (event.key === 'Escape' && (look || pinned)) { pinned = null; for (const other of refs()) if (other.getAttribute('role') === 'button') other.setAttribute('aria-pressed', 'false'); setLook(null); }
+  });
+  function partLabel(part) { return part.getAttribute(`data-${I18N.lang}-label`); }
+  figure.addEventListener('pointermove', event => {
+    const part = event.target.closest && event.target.closest('[data-part]');
+    const label = part && partLabel(part);
+    for (const term of refs()) term.classList.toggle('tf-ref-on', !!part && ids(term.dataset.ref).some(id => ids(part.dataset.part).includes(id)));
+    if (!label || !fine.matches || event.pointerType !== 'mouse') { tip.hidden = true; return; }
+    tip.textContent = label;
+    tip.hidden = false;
+    const x = Math.min(event.clientX + 14, innerWidth - tip.offsetWidth - 8), y = event.clientY + 18 + tip.offsetHeight > innerHeight ? event.clientY - tip.offsetHeight - 12 : event.clientY + 18;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  });
+  figure.addEventListener('pointerleave', () => { tip.hidden = true; for (const term of refs()) term.classList.remove('tf-ref-on'); });
+  const labels = () => { toggleText.textContent = tr('焦点引导', 'Focus guide'); };
+  labels();
+  I18N.on(() => { labels(); if (look) setLook(look); });
+  update();
+})();
+/* /lesson-shell */
+const $=id=>document.getElementById(id);
+const tokens=['I','see','stars'];
+const embeddings=[[1,0,.2,.8],[0,1,.8,.2],[1,1,1,-.5]];
+const positions=[[0,0,0,0],[.1,0,0,.1],[.2,0,0,.2]];
+const state={query:1,causal:true,stage:0,prediction:null,observed:new Set()};
+const stages=[
+ {zh:['输入','E + P','把 token 嵌入向量与位置向量相加。'],en:['Input','E + P','Add the token embedding and the position vector.']},
+ {zh:['Q、K、V','XW 投影','Query 负责提问；key 被打分；value 提供要混合的内容。'],en:['Q, K, V','XW projections','Queries ask; keys receive scores; values supply the mixed content.']},
+ {zh:['打分','q · k / √2','把所选 query 与每个 key 比较：点积再除以 √2。'],en:['Scores','q · k / √2','Compare the selected query with each key. Divide the dot product by √2.']},
+ {zh:['遮罩 + softmax','权重和为 1','在 softmax 之前屏蔽未来位置，再把允许的分数归一化。'],en:['Mask + softmax','weights sum to 1','Block future positions before softmax, then normalize the allowed scores.']},
+ {zh:['混合 + 投影','Σ 权重 × V；W_O','按权重混合 value 向量，再把二维结果投影回四维。'],en:['Mix + project','Σ weight × V; W_O','Mix value vectors and project the two-dimensional result back to four dimensions.']},
+ {zh:['残差 + 归一化','LN(X + attention)','经残差路径加回原输入，再做归一化。'],en:['Add + norm','LN(X + attention)','Add the original input through the residual path, then normalize.']},
+ {zh:['FFN + 残差 + 归一化','LN(y + FFN(y))','对每个位置应用同一个前馈规则，加回残差，再归一化一次。'],en:['FFN + add + norm','LN(y + FFN(y))','Apply the same feed-forward rule at each position, add the residual and normalize again.']}];
+const stageText=i=>stages[i][I18N.lang];
+const vector=v=>'['+v.map(n=>Math.abs(n)<.00005?'0.000':n.toFixed(3)).join(', ')+']';
+function normalize(v){const mean=v.reduce((a,b)=>a+b,0)/v.length;const variance=v.reduce((a,b)=>a+(b-mean)**2,0)/v.length;return v.map(n=>(n-mean)/Math.sqrt(variance+.00001));}
+function model(query,causal){
+ const x=embeddings.map((e,i)=>e.map((v,d)=>v+positions[i][d]));
+ const q=x[query].slice(0,2),keys=x.map(v=>v.slice(0,2)),values=x.map(v=>v.slice(2));
+ const scores=keys.map(k=>(q[0]*k[0]+q[1]*k[1])/Math.sqrt(2));
+ const masked=scores.map((v,i)=>causal&&i>query?-Infinity:v);
+ const max=Math.max(...masked),exp=masked.map(v=>Math.exp(v-max)),sum=exp.reduce((a,b)=>a+b,0),weights=exp.map(v=>v/sum);
+ const mixed=[0,1].map(d=>weights.reduce((a,w,i)=>a+w*values[i][d],0));
+ const projected=[mixed[0],0,mixed[1],0],residual=x[query].map((v,d)=>v+projected[d]),y=normalize(residual),ffn=y.map(v=>.5*Math.max(0,v)),output=normalize(y.map((v,d)=>v+ffn[d]));
+ return {x,q,keys,values,scores,masked,weights,mixed,projected,residual,y,ffn,output};
+}
+function buildFlow(){
+ $('flow').innerHTML=stages.map((s,i)=>`<li><button type="button" data-stage="${i}" aria-pressed="${i===state.stage}" title="${stageText(i)[1]}"><b>${String(i+1).padStart(2,'0')}</b>${stageText(i)[0]}</button></li>`).join('');
+ document.querySelectorAll('[data-stage]').forEach(b=>b.addEventListener('click',()=>{state.stage=Number(b.dataset.stage);render();}));
+}
+const blocked=(i,query)=>state.causal&&i>query;
+function flowSvg(m){
+ const xs=[75,210,345],q=state.query,qx=xs[q];
+ const paths=tokens.map((t,i)=>{
+  const x=xs[i],w=m.weights[i],d=`M${x} 66 C${x} 122 ${qx} 122 ${qx} 176`;
+  const lx=i===q?x+10:x+(qx-x)*.16+(qx>x?8:-8),anchor=i===q?'start':qx>x?'start':qx<x?'end':'start';
+  if(blocked(i,q))return `<path d="${d}" fill="none" stroke="var(--faint)" stroke-width="1.5" stroke-dasharray="4 5"/><g transform="translate(${(x+qx)/2} 121)"><circle r="11" fill="var(--surface)" stroke="var(--faint)"/><path d="M-4-4L4 4M4-4L-4 4" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"/></g><text class="t-w blocked" x="${(x+qx)/2+17}" y="125">−∞ → 0</text>`;
+  return `<path d="${d}" fill="none" stroke="var(--flow)" stroke-opacity=".9" stroke-width="${(1.5+16*w).toFixed(2)}" stroke-linecap="round"/><text class="t-w" x="${lx}" y="96" text-anchor="${anchor}">${(w*100).toFixed(1)}%</text>`;
+ }).join('');
+ const chips=tokens.map((t,i)=>`<g transform="translate(${xs[i]} 0)"><rect class="chip" x="-52" y="18" width="104" height="48" rx="10"/><text class="t-tok" y="41" text-anchor="middle">${t}</text><text class="t-sub" y="57" text-anchor="middle">key · ${tr('位置','pos')} ${i+1}</text></g>`).join('');
+ const query=`<g class="q" transform="translate(${qx} 0)"><rect class="chip q" x="-52" y="176" width="104" height="48" rx="10"/><text class="t-tok" y="199" text-anchor="middle">${tokens[q]}</text><text class="t-sub" y="215" text-anchor="middle">query · ${tr('位置','pos')} ${q+1}</text></g>`;
+ const desc=tr(`query “${tokens[q]}” 收到的权重：`,`Weights received by query “${tokens[q]}”: `)+tokens.map((t,i)=>`${t} ${(m.weights[i]*100).toFixed(1)}%${blocked(i,q)?tr('（被遮罩）',' (masked)'):''}`).join(', ');
+ return `<svg viewBox="0 0 420 236" role="img" aria-label="${desc}">${paths}${chips}${query}</svg>`;
+}
+function matrixSvg(){
+ const size=50,ox=62,oy=40;
+ let cells='';
+ for(let r=0;r<3;r++){const w=model(r,state.causal).weights;for(let c=0;c<3;c++){const x=ox+c*size,y=oy+r*size;
+  if(state.causal&&c>r)cells+=`<rect x="${x+2}" y="${y+2}" width="${size-4}" height="${size-4}" rx="6" fill="url(#hatch)" stroke="var(--line-strong)"/><text class="t-cell" x="${x+size/2}" y="${y+size/2+4}" text-anchor="middle" fill="var(--muted)">−∞</text>`;
+  else cells+=`<rect x="${x+2}" y="${y+2}" width="${size-4}" height="${size-4}" rx="6" fill="var(--flow)" fill-opacity="${(.1+.9*w[c]).toFixed(3)}"/><text class="t-cell" x="${x+size/2}" y="${y+size/2+4}" text-anchor="middle" fill="${w[c]>.45?'var(--flow-ink)':'var(--ink)'}">${w[c].toFixed(2)}</text>`;}}
+ const labels=tokens.map((t,i)=>`<text class="t-axis" x="${ox+i*size+size/2}" y="${oy-10}" text-anchor="middle">${t}</text><text class="t-axis" x="${ox-10}" y="${oy+i*size+size/2+4}" text-anchor="end"${i===state.query?' style="fill:var(--ink);font-weight:700"':''}>${t}</text>`).join('');
+ const sel=`<rect x="${ox-1}" y="${oy+state.query*size}" width="${size*3+2}" height="${size}" rx="8" fill="none" stroke="var(--ink)" stroke-width="2"/>`;
+ return `<svg viewBox="0 0 230 200" role="img" aria-label="${tr('三行三列的注意力矩阵；当前 query 所在行被框出。','Three-by-three attention matrix; the selected query row is outlined.')}"><defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" style="fill:var(--surface)"/><line x1="0" y1="0" x2="0" y2="6" style="stroke:var(--line-strong)" stroke-width="2"/></pattern></defs>${labels}${cells}${sel}</svg>`;
+}
+function render(){
+ const m=model(state.query,state.causal),q=tokens[state.query],s=stageText(state.stage);
+ document.querySelectorAll('[data-query]').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.query)===state.query));
+ document.querySelectorAll('[data-stage]').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.stage)===state.stage));
+ $('previous').disabled=state.stage===0;$('next').disabled=state.stage===stages.length-1;
+ $('stage-title').textContent=`${state.stage+1}. ${s[0]} · ${s[1]}`;$('stage-copy').textContent=s[2];
+ const blockedText=tr('−∞（被屏蔽）','−∞ (blocked)');
+ const lines=[tr(`所选 query “${q}”\nX = ${vector(m.x[state.query])}`,`Selected query “${q}”\nX = ${vector(m.x[state.query])}`),
+ `q = ${vector(m.q)}\n`+tokens.map((t,i)=>`${t}: k = ${vector(m.keys[i])}; v = ${vector(m.values[i])}`).join('\n'),
+ tokens.map((t,i)=>`${t}: ${m.scores[i].toFixed(4)}`).join('\n'),
+ tokens.map((t,i)=>tr(`${t}：分数 ${Number.isFinite(m.masked[i])?m.masked[i].toFixed(4):blockedText} → 权重 ${m.weights[i].toFixed(4)}`,`${t}: score ${Number.isFinite(m.masked[i])?m.masked[i].toFixed(4):blockedText} → weight ${m.weights[i].toFixed(4)}`)).join('\n'),
+ tr(`加权 value z = ${vector(m.mixed)}\n投影 zW_O = ${vector(m.projected)}`,`Weighted value z = ${vector(m.mixed)}\nProjected zW_O = ${vector(m.projected)}`),
+ tr(`残差 X + zW_O = ${vector(m.residual)}\ny = LayerNorm(残差) = ${vector(m.y)}`,`Residual X + zW_O = ${vector(m.residual)}\ny = LayerNorm(residual) = ${vector(m.y)}`),
+ tr(`FFN(y) = ${vector(m.ffn)}\n模块输出 = ${vector(m.output)}`,`FFN(y) = ${vector(m.ffn)}\nBlock output = ${vector(m.output)}`)];
+ $('stage-values').textContent=lines[state.stage];
+ $('weights').innerHTML=flowSvg(m);$('matrix').innerHTML=matrixSvg();
+ const future=m.weights.slice(state.query+1);
+ $('ro-query').textContent=`“${q}” · ${state.query+1}`;
+ $('ro-mask').textContent=state.causal?tr('开','On'):tr('关','Off');
+ $('ro-future').textContent=future.length?future.reduce((a,b)=>a+b,0).toFixed(2):tr('无未来位置','None after it');
+ $('ro-mixed').textContent=vector(m.mixed);
+ $('result').textContent=tr(`Query “${q}” · ${state.causal?'因果遮罩开':'遮罩关'} · 混合 value ${vector(m.mixed)}`,`Query “${q}” · ${state.causal?'causal mask on':'mask off'} · mixed value ${vector(m.mixed)}`);
+ $('inputs').innerHTML=tokens.map((t,i)=>`<tr><th scope="row">${t}</th><td>${vector(embeddings[i])}</td><td>${vector(positions[i])}</td><td>${vector(m.x[i])}</td></tr>`).join('');
+ $('run-status').textContent=tr(`正在显示位置 ${state.query+1} 的“${s[0]}”。${state.causal?'只允许读到当前 query 及之前的位置。':'所有位置都允许读取。'}`,`Showing ${s[0]} for position ${state.query+1}. ${state.causal?'Only positions up to this query are allowed.':'All positions are allowed.'}`);
+ $('feedback').textContent=state.observed.size<2?tr('先对 “see” 分别开、关遮罩比较，再打开解释。','Compare “see” with the mask on and off before opening the explanation.'):state.prediction==='yes'?tr('两次运行挑战了你的预测：开着遮罩时，“stars” 的权重是 0，尽管它的原始分数是正的。','The two runs challenge your prediction. “stars” has zero weight with the mask on, even though its raw score is positive.'):state.prediction==='no'?tr('你的预测与对比一致：开着遮罩时，未来位置的权重是 0。解释是哪一步让它变成 0 的。','Your prediction matches the comparison. The future weight is zero with the mask on. Explain the operation that makes it zero.'):tr('你已经比较了 “see” 在两种遮罩下的结果。解释为什么未来 token 的权重会从 0 变成正数。','You compared both masks for “see”. Explain why the future token changes from zero to a positive weight.');
+}
+document.querySelectorAll('[data-query]').forEach(b=>b.addEventListener('click',()=>{state.query=Number(b.dataset.query);render();}));
+$('previous').addEventListener('click',()=>{state.stage=Math.max(0,state.stage-1);render();});$('next').addEventListener('click',()=>{state.stage=Math.min(stages.length-1,state.stage+1);render();});
+$('causal').addEventListener('change',e=>{state.causal=e.target.checked;if(state.query===1)state.observed.add(state.causal);render();});
+$('prediction-form').addEventListener('submit',e=>{e.preventDefault();state.prediction=new FormData(e.currentTarget).get('prediction');render();say('prediction-status',()=>tr('预测已记下。比较 “see” 在两种遮罩设置下的结果。','Prediction saved. Compare the two mask settings for “see”.'));});
+$('transfer-form').addEventListener('submit',e=>{e.preventDefault();const answer=new FormData(e.currentTarget).get('transfer');say('transfer-feedback',()=>answer==='three'?tr('对。在最后一个位置，三个位置都允许读取：后面没有需要屏蔽的未来位置。','Yes. At the last position, all three positions are allowed. There are no future positions to block.'):tr('比较一下位置编号。在最后一个位置，三个位置都允许读取：后面没有需要屏蔽的未来位置。','Compare position numbers. At the last position, all three positions are allowed. There are no future positions to block.'));});
+function resetLesson(){Object.assign(state,{query:1,causal:true,stage:0,prediction:null,observed:new Set()});$('causal').checked=true;['prediction-form','transfer-form'].forEach(id=>$(id).reset());$('writing').value='';$('explanation').open=false;say('transfer-feedback',null);say('prediction-status',()=>tr('先做预测，再查看开、关遮罩两次运行。不保存预测也可以探索。','Make a prediction, then inspect the masked and unmasked runs. You can explore without saving.'));render();}
+$('reset').addEventListener('click',resetLesson);
+function selfCheck(){const assert=(ok,message)=>{if(!ok)throw Error(message);};for(let q=0;q<3;q++)for(const causal of [false,true]){const m=model(q,causal);assert(Math.abs(m.weights.reduce((a,b)=>a+b,0)-1)<1e-12,'Weights normalize');assert(m.output.every(Number.isFinite),'Finite block output');assert(!causal||m.weights.slice(q+1).every(w=>w===0),'Causal future weights are zero');}const first=model(0,true);assert(first.weights[0]===1,'First causal query reads itself');assert(first.residual.every((v,i)=>Math.abs(v-[1.2,0,1,.8][i])<1e-12),'Value mix, projection and residual match hand calculation');assert(Math.abs(first.y[0]-.45/Math.sqrt(.20751))<1e-12,'LayerNorm uses the hand-calculated population variance');assert(first.ffn[1]===0&&first.ffn[0]===.5*first.y[0],'FFN applies ReLU then the stated linear map');assert(model(1,false).weights[2]>.3,'Unmasked future contributes');assert(model(2,true).weights.every((w,i)=>Math.abs(w-model(2,false).weights[i])<1e-12),'Last query unchanged by mask');return 'Passed attention, masking, normalization, residual/FFN finiteness and final-position invariance.';}
+selfCheck();
+I18N.on(()=>{buildFlow();render();});
+I18N.apply();
+resetLesson();
+</script>
+</body>
+</html>

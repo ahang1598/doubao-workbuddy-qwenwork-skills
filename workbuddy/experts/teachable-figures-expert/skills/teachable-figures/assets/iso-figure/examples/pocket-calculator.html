@@ -1,0 +1,174 @@
+<!doctype html>
+<!--
+Upstream example adapted for offline fonts, scoped shortcuts, and native controls.
+MIT License
+
+Copyright (c) 2026 Tolga Cohce
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pocket Calculator</title>
+<style>
+  /* Layout: one plate. Caption row, the calculator, caption row; key map underneath. */
+  :root {
+    color-scheme: dark;
+    --bg:#0c0d0e; --panel:#141516; --edge:#222426;
+    --line:#3d4144; --detail:#2b2e30; --body:#17181a; --deck:#1b1d1f;
+    --ink:#868b8f; --ink-hi:#e6e8e9; --live:#f4f5f5;
+    --kn:#24272a; --kn-line:#565b5f; --ko:#d9dcde; --ko-line:#5a5f63; --ko-ink:#16181a; --glass:#0b0c0c;
+    --mono:"DM Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg:#e9eaea; --panel:#f6f6f5; --edge:#d6d8d8;
+    --line:#8e9397; --detail:#c3c6c8; --body:#ececeb; --deck:#f3f3f2;
+    --ink:#6a6f73; --ink-hi:#16181a; --live:#0c0d0e;
+    --kn:#ffffff; --kn-line:#7b8084; --ko:#2a2c2e; --ko-line:#0c0d0e; --ko-ink:#f4f5f5; --glass:#e2e4e4;
+  } }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg:#e9eaea; --panel:#f6f6f5; --edge:#d6d8d8;
+    --line:#8e9397; --detail:#c3c6c8; --body:#ececeb; --deck:#f3f3f2;
+    --ink:#6a6f73; --ink-hi:#16181a; --live:#0c0d0e;
+    --kn:#ffffff; --kn-line:#7b8084; --ko:#2a2c2e; --ko-line:#0c0d0e; --ko-ink:#f4f5f5; --glass:#e2e4e4;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--mono); font-size:13px; padding-inline:16px; padding-block:20px; }
+  main { max-width:760px; margin-inline:auto; display:grid; gap:14px; }
+  figure { margin:0; background:var(--panel); border:1px solid var(--edge); border-radius:22px; padding:22px 26px; display:grid; gap:6px; }
+  .cap { display:flex; flex-wrap:wrap; justify-content:space-between; gap:4px 18px; text-transform:uppercase; letter-spacing:.14em; }
+  .cap .hi { color:var(--ink-hi); text-transform:none; letter-spacing:.05em; }
+  svg { width:100%; height:auto; display:block; touch-action:manipulation; user-select:none; -webkit-user-select:none; }
+  svg:focus-visible { outline:2px solid var(--live); outline-offset:4px; border-radius:8px; }
+  .face { fill:var(--body); stroke:var(--line); stroke-width:1; vector-effect:non-scaling-stroke; stroke-linejoin:round; }
+  .face.top { fill:var(--deck); }
+  .glass { fill:var(--glass); }
+  .lcd { fill:var(--live); font-family:var(--mono); text-anchor:end; }
+  .ind { fill:var(--live); font-family:var(--mono); font-size:11px; opacity:.75; }
+  .press { cursor:pointer; transition:transform 60ms ease-out; }
+  .press .face { fill:var(--kn); stroke:var(--kn-line); transition:stroke 100ms; }
+  .press.op .face { fill:var(--ko); stroke:var(--ko-line); }
+  .press text { fill:var(--ink-hi); font-family:var(--mono); font-size:17px; text-anchor:middle; pointer-events:none; }
+  .press.op text { fill:var(--ko-ink); }
+  .press.down { transform:translateY(4px); }
+  .press.down .face, .press:hover .face.top, .press.armed .face.top { stroke:var(--live); }
+  .keypad { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+  button { min-height:44px; border:1px solid var(--line); border-radius:6px; background:var(--deck); color:var(--ink-hi); font:inherit; cursor:pointer; }
+  button:focus-visible { outline:2px solid var(--live); outline-offset:2px; }
+  p { margin:0; max-width:65ch; line-height:1.6; }
+  kbd { font:inherit; color:var(--ink-hi); border:1px solid var(--edge); border-radius:4px; padding:0 4px; }
+  @media (prefers-reduced-motion:reduce){ .press{transition:none} }
+</style>
+</head>
+<body>
+<main>
+  <figure>
+    <div class="cap"><span class="hi">Fig 5</span><span>Pocket calculator</span></div>
+    <svg id="stage" viewBox="0 0 575 372" tabindex="0" role="img" aria-label="Isometric pocket calculator. Press its keys with the mouse, touch, or your keyboard to calculate."></svg>
+    <div class="cap"><span>Press the keys · it calculates</span><span class="hi" id="readout" aria-live="polite" aria-atomic="true">ready</span></div>
+  </figure>
+  <div id="keypad" class="keypad" role="group" aria-label="Calculator keys"></div>
+  <p>Focus the figure to use shortcuts. From your keyboard: digits and <kbd>.</kbd>, then <kbd>+</kbd> <kbd>-</kbd> <kbd>*</kbd> <kbd>/</kbd>, <kbd>Enter</kbd> for equals, <kbd>%</kbd> for percent, <kbd>Backspace</kbd> to delete a digit, <kbd>Esc</kbd> to clear.</p>
+</main>
+
+<script>
+// ---- iso kernel ----
+const C = Math.cos(Math.PI/6), S = Math.sin(Math.PI/6), OX = 334, OY = 46;
+const P = (x,y,z) => [(x-y)*C + OX, (x+y)*S - z + OY];
+const D = (x,y,z) => [(x-y)*C, (x+y)*S - z];
+const plane = (O,U,V) => { const o=P(...O), u=D(...U), v=D(...V); return `matrix(${u[0]} ${u[1]} ${v[0]} ${v[1]} ${o[0]} ${o[1]})`; };
+const TOP = (x,y,z) => plane([x,y,z],[1,0,0],[0,1,0]);
+const FRONT = (x,y,z) => plane([x,y,z],[1,0,0],[0,0,-1]);
+const SIDE = (x,y,z) => plane([x,y,z],[0,-1,0],[0,0,-1]);
+const rect = (t,w,h,r=0,cls='face') => `<g transform="${t}"><rect class="${cls}" width="${w}" height="${h}" rx="${r}"/></g>`;
+const box = (x,y,z,w,d,h,r=0) => rect(SIDE(x+w,y+d,z+h),d,h,Math.min(r,h/4)) + rect(FRONT(x,y+d,z+h),w,h,Math.min(r,h/4)) + rect(TOP(x,y,z+h),w,d,r,'face top');
+
+// ---- scene ----
+const H = 18, KH = 7;
+let svg = box(0,0,0, 232,338,H, 12);
+svg += `<g transform="${TOP(16,16,H)}">
+  <rect class="face glass" width="200" height="64" rx="6"/>
+  <text id="ind" class="ind" x="10" y="17"></text>
+  <text id="lcd" class="lcd" x="190" y="50" font-size="32">0</text>
+</g>`;
+const ROWS = [['C','±','%','÷'],['7','8','9','×'],['4','5','6','−'],['1','2','3','+'],['0','0','.','=']];
+ROWS.forEach((row,r) => row.forEach((k,c) => {
+  if (k === '0' && c === 1) return;                                   // zero is double width
+  const w = k === '0' ? 92 : 42, x = 16 + c*50 + (c === 3 ? 8 : 0), y = 96 + r*46;
+  const op = '÷×−+='.includes(k);
+  svg += `<g class="press${op ? ' op' : ''}" data-k="${k}">${box(x,y,H, w,38,KH, 5)}<g transform="${TOP(x,y,H+KH)}"><text x="${w/2}" y="25">${k}</text></g></g>`;
+}));
+const stage = document.getElementById('stage'); stage.innerHTML = svg;
+
+// ---- calculator ----
+const st = { disp:'0', acc:null, op:null, fresh:true, tape:'' };
+const fmt = n => { if (!isFinite(n)) return 'Error';
+  let s = String(parseFloat(n.toPrecision(10))); if (s.replace(/[-.]/g,'').length > 10 || s.includes('e')) s = n.toExponential(4); return s; };
+const calc = (a,b,o) => o === '+' ? a+b : o === '−' ? a-b : o === '×' ? a*b : b === 0 ? NaN : a/b;
+function input(k) {
+  const err = st.disp === 'Error';
+  if (k === 'C') Object.assign(st, { disp:'0', acc:null, op:null, fresh:true, tape:'' });
+  else if (/^[0-9.]$/.test(k)) {
+    if (st.fresh) { st.disp = k === '.' ? '0.' : k; st.fresh = false; if (!st.op) st.tape = ''; }
+    else if (k === '.' ? !st.disp.includes('.') : st.disp.replace(/[-.]/g,'').length < 10) st.disp = st.disp === '0' && k !== '.' ? k : st.disp + k;
+  }
+  else if (err) return;
+  else if (k === '⌫') { if (!st.fresh) st.disp = st.disp.slice(0,-1).replace(/^-?$/,'0'); }
+  else if (k === '±') { if (+st.disp) st.disp = fmt(-st.disp); }
+  else if (k === '%') { st.disp = fmt(+st.disp / 100); st.fresh = true; }
+  else if (k === '=') {
+    if (!st.op) return;
+    const b = +st.disp, r = fmt(calc(st.acc, b, st.op));
+    st.tape = `${fmt(st.acc)} ${st.op} ${fmt(b)} = ${r.toLowerCase()}`;
+    Object.assign(st, { disp:r, acc:null, op:null, fresh:true });
+  }
+  else {                                                              // + − × ÷
+    if (st.op && !st.fresh) { st.acc = calc(st.acc, +st.disp, st.op); st.disp = fmt(st.acc); }
+    else st.acc = +st.disp;
+    if (st.disp === 'Error') Object.assign(st, { acc:null, op:null, fresh:true, tape:'error' });
+    else { st.op = k; st.fresh = true; st.tape = ''; }
+  }
+  render();
+}
+const $ = id => document.getElementById(id), keys = new Map([...stage.querySelectorAll('.press')].map(k => [k.dataset.k, k]));
+function render() {
+  const lcd = $('lcd'); lcd.textContent = st.disp; lcd.setAttribute('font-size', st.disp.length > 9 ? 23 : 32);
+  $('ind').textContent = st.op || '';
+  keys.forEach((el,k) => el.classList.toggle('armed', k === st.op && st.fresh));
+  $('readout').textContent = st.tape || (st.op ? `${fmt(st.acc)} ${st.op}` + (st.fresh ? '' : ` ${st.disp}`) : st.disp === '0' ? 'ready' : st.disp);
+}
+function press(k) { const el = keys.get(k); if (el) { el.classList.add('down'); setTimeout(() => el.classList.remove('down'), 110); } input(k); }
+document.getElementById('keypad').innerHTML = [...keys.keys()].map(k => `<button type="button" data-k="${k}">${k}</button>`).join('');
+document.getElementById('keypad').addEventListener('click', e => { const key = e.target.closest('button'); if (key) press(key.dataset.k); });
+stage.addEventListener('pointerdown', e => { stage.focus(); const el = e.target.closest('.press'); if (el) { e.preventDefault(); press(el.dataset.k); } });
+const KEYMAP = { '*':'×', 'x':'×', '/':'÷', '-':'−', '+':'+', 'Enter':'=', '=':'=', 'Escape':'C', 'c':'C', '%':'%', ',':'.', 'Backspace':'⌫' };
+stage.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = /^[0-9.]$/.test(e.key) ? e.key : KEYMAP[e.key];
+  if (k) { press(k); e.preventDefault(); }
+});
+render();
+</script>
+</body>
+</html>

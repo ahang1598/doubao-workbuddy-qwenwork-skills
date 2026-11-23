@@ -1,0 +1,46 @@
+{
+  "retrieved_local_date": "2026-10-12",
+  "sources": [
+    {
+      "name": "anatomy",
+      "repository": "https://github.com/wheresryan22/anatomy",
+      "commit": "454a0ef801b6d9b905f08309d094491c7085b3dd",
+      "license": "MIT",
+      "bundled": "assets/anatomy",
+      "notes": "Kit, eight example source directories, eight technical references, local build and verification scripts. Generated HTML, publishing tools, tests and stress scene omitted.",
+      "local_modifications": [
+        "Turning-dial green terminal and finger junction placement adjusted; real socket cover solids added. Kit and audit thresholds/exclusions unchanged."
+      ]
+    },
+    {
+      "name": "iso-figure",
+      "repository": "https://github.com/MrBongoC/ai-iso-skill",
+      "commit": "44b4da7714148eef547cc1b102e433472dfe3531",
+      "license": "MIT",
+      "bundled": "assets/iso-figure",
+      "notes": "Two self-contained examples; workflow and projection kernel adapted in references/simple-iso.md. Bundled example font CDN links removed; full MIT notice embedded for offline copying. Reviewed copies additionally add stage-scoped shortcuts, native controls and live readouts; synth adds reset, mute, input ownership and motion/visibility gating."
+    }
+  ],
+  "base": "Existing project teachable-figures and its AI English Shift references preserved and extended.",
+  "reviewed_local_date": "2026-10-27",
+  "local_revision": "0.3.0",
+  "examples": [
+    "examples/gear-ratio.html",
+    "examples/geometry-slices.html",
+    "examples/human-anatomy.html",
+    "examples/rocket-launch.html",
+    "examples/transformer-flow.html",
+    "examples/chinese-clothing.html"
+  ],
+  "data_sources": [
+    {
+      "name": "Human Reference Atlas / HuBMAP Visible Human male reference meshes",
+      "repository": "https://github.com/hubmapconsortium/ccf-releases",
+      "commit": "b036a91aaf7234f462b1249d4a5f4fb0e982f412",
+      "license": "CC BY 4.0",
+      "bundled": "assets/hra",
+      "provenance": "assets/hra/provenance.json",
+      "notes": "Cropped and packed skin, lung, airway and heart geometry in shared source coordinates; teaching recoloring and inspection window. Diaphragm is separately authored schematic geometry. Data source, not another fused rendering skill."
+    }
+  ]
+}

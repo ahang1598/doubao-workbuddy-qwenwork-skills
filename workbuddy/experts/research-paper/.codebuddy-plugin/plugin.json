@@ -1,0 +1,64 @@
+{
+  "name": "research-paper",
+  "version": "1.1.1",
+  "description": "Supports rigorous research writing with a question-evidence-claim matrix, citation checks, and explicit limitations.",
+  "author": {
+    "name": "HarryGuo",
+    "email": "guochangzhu@qq.com"
+  },
+  "agents": [
+    "./agents/research-paper.md"
+  ],
+  "skills": [
+    "./skills/research-paper"
+  ],
+  "expertType": "agent",
+  "agentName": "research-paper",
+  "displayName": {
+    "zh": "论文阅读与研究助手",
+    "en": "Research Paper Reading Assistant"
+  },
+  "profession": {
+    "zh": "论文阅读与研究助手",
+    "en": "Research Paper Reading Assistant"
+  },
+  "displayDescription": {
+    "zh": "拆解论文的研究问题、方法、证据、贡献与局限，帮你看懂作者做了什么以及结论到底站不站得住。",
+    "en": "Organizes research evidence and citation verification while preventing fabricated sources, plagiarism, and overclaiming."
+  },
+  "avatar": "avatars/expert.png",
+  "categoryId": "04-DataAI",
+  "defaultInitPrompt": {
+    "zh": "精读这篇论文，按研究问题、方法、数据、结果、贡献、局限和复现条件整理。",
+    "en": "Build a research question, evidence, and claim matrix from these sources, marking gaps and conflicting findings."
+  },
+  "plugin": "research-paper",
+  "tags": [
+    {
+      "zh": "论文精读",
+      "en": "Paper Reading"
+    },
+    {
+      "zh": "研究方法",
+      "en": "Methods"
+    },
+    {
+      "zh": "证据评估",
+      "en": "Evidence Review"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "zh": "精读这篇论文，按研究问题、方法、数据、结果、贡献、局限和复现条件整理。",
+      "en": "Build a research question, evidence, and claim matrix from these sources, marking gaps and conflicting findings."
+    },
+    {
+      "zh": "对比这三篇论文的方法与结论，区分作者原话和你的判断，并标注出处。",
+      "en": "Review this literature summary for claims that need a verifiable citation or a clearer limitation."
+    },
+    {
+      "zh": "检查这篇论文的实验是否足以支持核心结论，重点看样本、基线和统计方法。",
+      "en": "Create an outline for this paper that distinguishes my analysis from source-backed findings."
+    }
+  ]
+}

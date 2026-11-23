@@ -1,0 +1,83 @@
+{
+  "name": "teachable-figures-expert",
+  "version": "1.0.0",
+  "description": "Interactive teachable-figures expert: turn one claim into a predict→try→explain offline HTML figure (gears, cutaways, data-flow, seasons). Based on ywEdAi/teachable-figures (MIT + CC BY 4.0).",
+  "author": {
+    "name": "Laurent Zhou",
+    "email": "laurentzhou@workbuddy.cn"
+  },
+  "homepage": "https://github.com/ywEdAi/teachable-figures",
+  "license": "MIT",
+  "keywords": [
+    "teachable figures",
+    "interactive teaching",
+    "explorable explanation",
+    "predict-try-explain",
+    "gear ratio",
+    "cutaway",
+    "3D section",
+    "科普演示",
+    "互动教学",
+    "可操作图示",
+    "3D剖切",
+    "教学交互图",
+    "齿轮传动",
+    "offline HTML"
+  ],
+  "agents": ["./agents/teachable-figures-expert.md"],
+  "skills": ["./skills/teachable-figures"],
+
+  "expertType": "agent",
+  "agentName": "teachable-figures-expert",
+
+  "displayName": {
+    "en": "Teachable Figures Expert",
+    "zh": "互动教学图专家"
+  },
+  "profession": {
+    "en": "Teachable Figures Expert",
+    "zh": "互动教学图专家"
+  },
+  "displayDescription": {
+    "en": "Turns one concept into a predict→try→explain interactive teaching figure—gears, cutaways, and data-flow—as offline HTML.",
+    "zh": "把知识点做成可预测、可操作、可解释的互动教学图，覆盖齿轮传动、剖切与数据流演示。"
+  },
+  "avatar": "avatars/expert.png",
+  "categoryId": "06-ContentCreative",
+  "defaultInitPrompt": {
+    "zh": "直接生成。给初中生做一个齿轮传动互动教学图：加入惰轮不改变传动比大小，只改变转向；含预测、转数计数、原生控件与解释题，输出可离线打开的单文件 HTML",
+    "en": "Just build it. Middle-school gear-ratio teachable figure: an idler does not change speed-ratio magnitude, only direction; include predict, turn counters, native controls, explain prompt; one offline HTML file"
+  },
+  "plugin": "teachable-figures-expert",
+  "tags": [
+    { "en": "Interactive Teaching", "zh": "互动教学" },
+    { "en": "Explorable Figures", "zh": "可操作图示" },
+    { "en": "Predict-Try-Explain", "zh": "predict-try-explain" }
+  ],
+  "quickPrompts": [
+    {
+      "zh": "直接生成。给初中生做一个齿轮传动互动教学图：加入惰轮不改变传动比大小，只改变转向；含预测、转数计数、原生控件与解释题，输出可离线打开的单文件 HTML",
+      "en": "Just build it. Middle-school gear-ratio teachable figure: an idler does not change speed-ratio magnitude, only direction; include predict, turn counters, native controls, explain prompt; one offline HTML file"
+    },
+    {
+      "zh": "直接生成。做一个 Transformer 数据流互动图：用玩具向量走完 Q/K/V、遮罩、注意力、残差归一化与 FFN，可逐步查看，单文件 HTML",
+      "en": "Just build it. Transformer data-flow figure: toy vectors through Q/K/V, masking, attention, residual norm, and FFN; step-through; one offline HTML"
+    },
+    {
+      "zh": "直接生成。圆锥截面 3D 互动图：旋转立体、调截面高度，比较半径线性变化与面积平方变化，predict→try→explain，单文件 HTML",
+      "en": "Just build it. Cone-section 3D figure: rotate solid, adjust slice height; compare linear radius vs squared area; predict→try→explain; one offline HTML"
+    },
+    {
+      "zh": "直接生成。火箭剖面互动图：可检查剖面与组件拆解，比较推力、起飞、燃尽与滑行；标明是一维理想教学模型，单文件 HTML",
+      "en": "Just build it. Rocket cutaway figure: inspect section and assemblies; compare thrust, liftoff, burnout, coast; label as 1D ideal teaching model; one offline HTML"
+    },
+    {
+      "zh": "直接生成。贝叶斯基础比率互动图：1000 人点阵里数阳性中的真患病；再测一次看先验更新；含预测与解释题，单文件 HTML",
+      "en": "Just build it. Bayes base-rate figure: in a 1000-person grid count true sick among positives; retest and watch prior update; predict + explain; one offline HTML"
+    },
+    {
+      "zh": "直接生成。四季成因互动图：拖日期与纬度比正午太阳高度与日照；可转 3D 轨道看地轴方向；倾角调 0 季节消失；单文件 HTML",
+      "en": "Just build it. Seasons figure: drag date/latitude for noon Sun height and day length; rotate 3D orbit (axis fixed); tilt=0 seasons vanish; one offline HTML"
+    }
+  ]
+}

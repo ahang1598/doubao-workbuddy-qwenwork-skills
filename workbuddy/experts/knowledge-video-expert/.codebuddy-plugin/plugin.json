@@ -1,0 +1,80 @@
+{
+  "name": "knowledge-video-expert",
+  "version": "1.0.0",
+  "description": "Turns complex knowledge into engaging explainer scripts with storyboards and analogy design.",
+  "author": {
+    "name": "KLING AI Pte Ltd",
+    "email": "support@kling.ai"
+  },
+  "homepage": "https://klingai.com/app",
+  "agents": [
+    "./agents/knowledge-video-expert.md"
+  ],
+  "skills": [
+    "./skills/knowledge-video-expert-simplify-analogy",
+    "./skills/knowledge-video-expert-explainer-script",
+    "./skills/knowledge-video-expert-visual-accuracy"
+  ],
+  "expertType": "agent",
+  "agentName": "knowledge-video-expert",
+  "displayName": {
+    "en": "Knowledge Video Script Expert",
+    "zh": "知识科普视频专家"
+  },
+  "profession": {
+    "en": "Knowledge Video Script Expert",
+    "zh": "知识科普视频专家"
+  },
+  "displayDescription": {
+    "en": "Turns complex knowledge into engaging explainer scripts with storyboards and analogy design.",
+    "zh": "把专业知识翻译成普通人听得懂的科普视频脚本，设计类比、案例与分镜画面，兼顾严谨性与传播性。"
+  },
+  "avatar": "avatars/expert.png",
+  "categoryId": "06-ContentCreative",
+  "defaultInitPrompt": {
+    "zh": "帮我把「大语言模型的原理」做成一条 5 分钟的科普视频脚本，观众是没有技术背景的上班族。",
+    "en": "Write a 5-minute explainer script about LLMs for non-technical viewers."
+  },
+  "plugin": "knowledge-video-expert",
+  "tags": [
+    {
+      "en": "Explainer Script",
+      "zh": "科普脚本"
+    },
+    {
+      "en": "Analogy Design",
+      "zh": "类比设计"
+    },
+    {
+      "en": "Storyboard",
+      "zh": "分镜设计"
+    }
+  ],
+  "keywords": [
+    "科普",
+    "知识视频",
+    "解说",
+    "类比",
+    "分镜",
+    "知识区"
+  ],
+  "quickPrompts": [
+    {
+      "zh": "帮我把「大语言模型的原理」做成一条 5 分钟的科普视频脚本，观众是没有技术背景的上班族。",
+      "en": "Write a 5-minute explainer script about LLMs for non-technical viewers."
+    },
+    {
+      "zh": "这是我的论文摘要，帮我改成一条 3 分钟的科普脚本，配画面建议。",
+      "en": "Turn my paper abstract into a 3-minute popular-science script with visuals."
+    },
+    {
+      "zh": "我这条科普视频评论都说听不懂，帮我诊断类比和节奏的问题并改写。",
+      "en": "Diagnose why viewers find my explainer confusing and rewrite it."
+    }
+  ],
+  "dependencies": {
+    "connectors": [
+      "kling-ai-plugin"
+    ]
+  }
+}

@@ -21,10 +21,10 @@
 
 ### Windows / 无 venv 环境（2026-11-20 实测）
 
-- 该机器上 **PyMuPDF 装不上**：pymupdf wheel 约 63MB，从 PyPI 下载会 `IncompleteRead` 断流
-  （清华镜像则直接 `No matching distribution found`）。**pypdf 是小包，可以装成功**（实测 7.1.1），
-  所以 `enrich_authors.py` 在装了 pypdf 后可用，但 `extract_dates.py`（硬依赖 `fitz`）仍不可用。
-  系统内也没有 `pdftotext` / `mutool` / `qpdf` 可替代。
+- 该机器上 **PyMuPDF 下载极慢但最终能装上**：pymupdf wheel 约 63MB，从 PyPI 下载会 `IncompleteRead`
+  断流，需 `--timeout 60 --retries 3` 重试；实测耗时 3h20m 才成功，**建议一律放后台跑，不要占前台**。
+  清华镜像对该包返回 `No matching distribution`。`pypdf` 是小包，秒装（实测 7.1.1）。
+  系统内没有 `pdftotext` / `mutool` / `qpdf` 可替代。
 - 此时 `enrich_authors.py` 会**长时间无输出并挂死**（它对 arXiv 的 e-print / LaTeX 回退没有超时，
   而 `proxy.cors.sh` 在该网络下返回 000），单篇也会卡住；`extract_dates.py` 因缺 `fitz` 直接不可用。
   **不要反复重试**，改用下面的直连路线。
@@ -49,6 +49,14 @@
 3. 仍缺失/错标 → 写一次性 patch 脚本直接改 `authors_meta.json`（历史先例 patch_authors_09xx.py）。
 
 ### 解析与标记易错点（多批次实测）
+
+- **PDF 下载截断是最坑的假故障**（2026-11-20 实测 2611.21885）：curl 返回 200 但只拿到 1.75MB
+  （实际 3.6MB），表现为 pypdf `EOF marker not found` / `Stream has ended unexpectedly`、
+  PyMuPDF 刷 `format error: object is not a stream`、**首页抽不出任何文本**、只能读到附录流。
+  这些症状极易被误判成「论文没写单位」。**判定前先重下一次**，并用页数做合理性检查
+  （62 页的论文抽出 0 字首页就是不正常）。判据：`pymupdf.open(pdf).page_count` 正常 + 首页有字。
+- 同一批次里 arXiv 侧偶尔没有 `arXiv:<id>v1 [...]` 侧边戳（4/10 篇如此），此时一律从
+  `https://arxiv.org/abs/<id>` 的 `Submitted on D Mon YYYY` 行补齐，别再在 PDF 里翻。
 
 - RA-L/ICLR 风格 `*†‡` 常是**单位脚注标记**而非共一/通讯（如某篇 *=Pisa、†=ETH、‡=NVIDIA），
   augment 会误标 `equal`/`corr`，须对照 thanks 脚注原文修正。BMVC/ECCV(LNCS) 中两位作者带同一 `⋆` 才通常是共一。
