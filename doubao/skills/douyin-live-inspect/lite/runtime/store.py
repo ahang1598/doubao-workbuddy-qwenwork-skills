@@ -1,11 +1,12 @@
 """Task-local SQLite contract, adapted from skills_live_inspect_lite/runtime/store.py.
 
 Retains durable evidence, evidence revisions, without shared
-rooms, audience data or comment queues. Semantic decisions are supplied by Agent.
+room-wide queues. Audience and comments are task-local supplements; semantic decisions are supplied by Agent.
 """
 # Store 是 Lite 的持久化边界：任务、片段、复核批次和交付状态都必须先落库再对外报告。
 from __future__ import annotations
 import contextlib
+import copy
 import hashlib
 import json
 import os
@@ -16,6 +17,7 @@ import sqlite3
 import time
 import uuid
 from datetime import datetime, timezone
+from runtime.rules import SCENARIOS, task_scenarios
 
 SCENE_WINDOW_MS = 30 * 1000
 
@@ -29,6 +31,36 @@ FRAME_DONE = {'success', 'failed', 'not_required', 'not_scheduled', 'unavailable
 DECISIONS = {'hit', 'no_hit', 'not_applicable', 'insufficient'}
 
 
+def check_event_gate(rule, event, evidence):
+    gate = rule.get('evidence_gate', 'direct')
+    refs = event['evidence_ids']
+    counterparts = event.get('counterpart_evidence_ids', [])
+    if gate == 'claim_specific':
+        basis = event.get('claim_basis')
+        quote = event.get('claim_quote')
+        def normalize(text):
+            return re.sub(r'[\s，。；、：！？“”「」,;:!?]+', '', str(text or ''))
+        def quoted(text, ids):
+            # ASR can span consecutive subtitle IDs. Image text comes from the viewed-frame description.
+            speech = ''.join(evidence[r].get('text','') for r in ids if evidence[r]['kind']=='asr')
+            return bool(normalize(text)) and (normalize(text) in normalize(speech) or
+                    any(evidence[r]['kind']=='image' for r in ids) and normalize(text) in normalize(event.get('description')))
+        if basis not in ('direct','contradiction') or not isinstance(quote,str) or not quoted(quote, refs):
+            raise ValueError('absolute claim basis required')
+        if basis == 'contradiction':
+            if not counterparts or set(counterparts).intersection(refs):
+                raise ValueError('counterpart evidence required')
+            other = event.get('counterpart_quote')
+            if not isinstance(other,str) or not quoted(other,counterparts):
+                raise ValueError('counterpart quote required')
+        gate = 'counterpart' if basis=='contradiction' else 'direct'
+    if gate=='counterpart':
+        if not counterparts or set(counterparts).intersection(refs):
+            raise ValueError('counterpart evidence required')
+    elif counterparts:
+        raise ValueError('counterpart evidence not allowed')
+
+
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
 
@@ -37,11 +69,104 @@ def encode(value):
     return json.dumps(value, ensure_ascii=False, allow_nan=False, separators=(',', ':'))
 
 
-def safe_message(value):
+def safe_message(value, limit=600):
     text = re.sub(r'https?://\S+', '[来源地址]', str(value))
     for key in ('DOUBAO_OFFICE_USER_ACCESS_TOKEN', 'DOUBAO_OFFICE_CLI_TOKEN'):
         if os.environ.get(key): text = text.replace(os.environ[key], '[凭据]')
-    return text[:600]
+    return text[:limit]
+
+
+def skill_version():
+    try:
+        text=(Path(__file__).resolve().parents[2]/'SKILL.md').read_text(encoding='utf-8')
+        match=re.search(r'^\s*version:\s*["\']?([^"\'\s]+)',text,re.M)
+        return match.group(1) if match else None
+    except OSError:
+        return None
+
+
+def initialize_decision_traces(c):
+    c.execute('CREATE TABLE IF NOT EXISTS decision_traces '
+              '(id TEXT PRIMARY KEY,session_id TEXT NOT NULL,segment_id INTEGER NOT NULL,created_at TEXT NOT NULL,data TEXT NOT NULL)')
+
+
+def save_decision_trace(c, store, segment, digest, task, rules, evidence, decisions, payload):
+    initialize_decision_traces(c)
+    audit=[{'rule_id':d['rule_id'],'status':d['status'],
+            'evidence_gate':rules[d['rule_id']].get('evidence_gate','direct'),
+            'event_count':len(d['events']),
+            'evidence_ids':[ref for e in d['events'] for ref in e['evidence_ids']],
+            'counterpart_evidence_ids':[ref for e in d['events'] for ref in e['counterpart_evidence_ids']]}
+           for d in decisions]
+    context_id=payload.get('_source_context') or payload.get('context_id')
+    context=None
+    if context_id:
+        row=c.execute('SELECT data FROM review_contexts WHERE id=? AND session_id=?',(context_id,store.session_id)).fetchone()
+        context=json.loads(row[0]) if row else None
+    submitted=payload.get('_audit_submission',payload)
+    submitted={key:copy.deepcopy(value) for key,value in submitted.items()
+               if key in {'task_id','context_id','host_task_id','segment_id','evidence_revision','summary','images_viewed','content_route','sales_observation','clarification_observations','clarification_checks','qa_observations','qa_checks','rules','reviewed'}}
+    trace={
+        'schema':'review_decision_trace/v2','trace_id':digest,'recorded_at':now_iso(),
+        'task_id':store.task_id,'session_id':store.session_id,'segment_id':segment['id'],
+        'skill_version':skill_version(),
+        'evidence_revision':segment.get('evidence_revision'),'review_protocol':task.get('review_protocol'),
+        'rules_version':task['rules_snapshot'].get('version'),'context_id':context_id,
+        # These three blocks are the reproducible input/output boundary.
+        'frozen_rules':copy.deepcopy(list(rules.values())),
+        'frozen_policies':copy.deepcopy(task['rules_snapshot'].get('policies',{})),
+        'review_contract':copy.deepcopy((context or {}).get('audit_contract')),
+        'evidence':{'subtitles':[copy.deepcopy(item) for item in segment.get('subtitles',[])],
+                    'frames':[{key:value for key,value in frame.items() if key != 'path'} for frame in segment.get('frames',[])],
+                    'asr_status':segment.get('asr_status'),'frame_status':segment.get('frame_status'),
+                    **({'viewer_context':copy.deepcopy(segment['viewer_context'])} if 'viewer_context' in segment else {})},
+        'submitted_decision':submitted,'normalized_decisions':copy.deepcopy(decisions),
+        **({'clarification_context':copy.deepcopy(payload.get('_clarification_context', [])),
+            'normalized_clarification_observations':copy.deepcopy(payload['_normalized_clarifications'])} if '_normalized_clarifications' in payload else {}),
+        **({'normalized_clarification_checks':copy.deepcopy(payload['_normalized_clarification_checks'])} if '_normalized_clarification_checks' in payload else {}),
+        **({'sales_base':copy.deepcopy(payload.get('_sales_base')),
+            'sales_products':copy.deepcopy(payload.get('_sales_products', [])),
+            'normalized_sales_observation':copy.deepcopy(payload['_normalized_sales'])} if '_normalized_sales' in payload else {}),
+        **({'qa_context':copy.deepcopy(payload.get('_qa_context', [])), 'normalized_qa_observations':copy.deepcopy(payload['_normalized_qa'])} if '_normalized_qa' in payload else {}),
+        **({'normalized_qa_checks':copy.deepcopy(payload['_normalized_qa_checks'])} if '_normalized_qa_checks' in payload else {}),
+        'validation':{'status':'accepted','evidence_gate_checks':audit},
+    }
+    if '_normalized_qa' in payload and str(segment['id']) not in (context or {}).get('supplements', {}):
+        from runtime.interactions import review_diagnostic
+        trace['qa_review'] = review_diagnostic(payload.get('_qa_context', []), segment,
+            payload['_normalized_qa'], payload.get('_normalized_qa_checks', []),
+            (context or {}).get('qa_focus', {}).get(str(segment['id']), []), version=(context or {}).get('qa_focus_version',1))
+    c.execute('INSERT OR IGNORE INTO decision_traces VALUES(?,?,?,?,?)',
+              (digest,store.session_id,segment['id'],trace['recorded_at'],encode(trace)))
+    for decision in decisions:
+        rule = rules[decision['rule_id']]
+        if (decision['status'] != 'hit' or rule.get('kind') == 'visual_router'
+                or not rule.get('count_as_risk', True)):
+            continue
+        events = decision['events']
+        facts = {'task_id':store.task_id, 'segment_id':segment['id'], 'rule_id':decision['rule_id'],
+                 'start_ms':min(e['start_ms'] for e in events), 'event_count':len(events)}
+        # Each segment belongs to one task. A supplemental review may retain the same hit.
+        c.execute("""CREATE UNIQUE INDEX IF NOT EXISTS first_risk_hit ON operation_logs
+                     (segment_id,json_extract(message,'$.rule_id')) WHERE kind='risk.hit'""")
+        saved = c.execute("INSERT OR IGNORE INTO operation_logs(created_at,kind,message,segment_id) VALUES(?,?,?,?)",
+                          (trace['recorded_at'],'risk.hit',encode({**facts,'trace_id':digest}),segment['id']))
+        if saved.rowcount and c.telemetry is not None:
+            from runtime.rules import RULE_DEFINITIONS
+            builtin = rule.get('origin') != 'custom' and any(
+                row[0] == facts['rule_id'] for group in RULE_DEFINITIONS.values() for row in group)
+            c.telemetry.risk_hits.append({**facts,'rule_id':facts['rule_id'] if builtin else 'custom'})
+    if trace.get('qa_review', {}).get('questions'):
+        questions = trace['qa_review']['questions']
+        counts = {name:sum(q['outcome'] == name for q in questions)
+                  for name in ('answered','reply_detected','question_extracted','candidate_unanswered','no_candidate','not_checked')}
+        c.execute('INSERT INTO operation_logs(created_at,kind,message,segment_id) VALUES(?,?,?,?)',
+                  (trace['recorded_at'],'qa_review',encode({'trace_id':digest,
+                   'matcher':trace['qa_review']['matcher'], 'question_count':len(questions),
+                   'provided_count':sum(q['provided_to_model'] for q in questions), 'outcomes':counts}),segment['id']))
+    c.execute('INSERT INTO operation_logs(created_at,kind,message,segment_id) VALUES(?,?,?,?)',
+              (now_iso(),'review_decision_trace',safe_message(encode({
+                  'trace_id':digest,'rules_version':task['rules_snapshot'].get('version'),'decisions':audit})),segment['id']))
 
 
 def atomic_json(path, value):
@@ -136,7 +261,7 @@ class Store:
         if config.get('inspection_policy') == VIDEO_FULL_POLICY:
             config['sampling_parameters'] = {'period_ms': int(config.get('segment_seconds',30)*1000),
                 'window_ms': int(config.get('segment_seconds',30)*1000), 'max_frames':2,
-                'pending_seconds':None, 'review_seconds':None, 'finish_seconds':None}
+                'pending_seconds':PARAMETERS['pending_seconds'], 'review_seconds':PARAMETERS['review_seconds'], 'finish_seconds':None}
         if config.get('image_inspection') is False and 'sampling_parameters' in config:config['sampling_parameters']['max_frames']=0
         if kind == 'live':
             from runtime.remediation import VERSION
@@ -172,6 +297,7 @@ class Store:
               UNIQUE(session_id,idx),UNIQUE(session_id,id));
             CREATE TABLE submissions(id TEXT PRIMARY KEY,segment_id INTEGER NOT NULL,digest TEXT NOT NULL);
             CREATE TABLE operation_logs(id INTEGER PRIMARY KEY,created_at TEXT,kind TEXT,message TEXT,segment_id INTEGER);''')
+            initialize_decision_traces(c)
             if task.get('inspection_policy') in {POLICY, VIDEO_FULL_POLICY}:
                 c.execute('CREATE TABLE inspection_windows(session_id TEXT,idx INTEGER,data TEXT NOT NULL,PRIMARY KEY(session_id,idx))')
             c.execute('INSERT INTO live_sessions VALUES(?,?)',(sid,encode(task)))
@@ -283,7 +409,9 @@ class Store:
             task=self._task(c)
             for k in ('asr_fallback_runtime','asr_fallback_runtime_root'):
                 if k in fields and fields[k]!=task.get(k):raise ValueError('immutable fallback model identity')
-            for k in ('id','task_id','session_id','remediation_version','kind','source','rules_snapshot','scenario','delivery_mode','asr_backend','asr_policy','frames_policy','asr_primary_backend','asr_selection_reason','model_preparation_id','artifact_specs','node_bin','ffmpeg_bin','ffprobe_bin','asr_runtime_root','asr_runtime','source_duration_ms','source_fingerprint','inspection_policy','review_protocol','segmentation','sampling_parameters','frame_required','frame_sampling_origin_ms','image_inspection'):
+            if 'rule_routing_version' in fields and fields['rule_routing_version']!=task.get('rule_routing_version'):
+                raise ValueError('immutable task identity')
+            for k in ('id','task_id','session_id','remediation_version','kind','source','rules_snapshot','scenario','delivery_mode','asr_provider','asr_backend','asr_policy','frames_policy','asr_primary_backend','asr_selection_reason','model_preparation_id','artifact_specs','node_bin','ffmpeg_bin','ffprobe_bin','asr_runtime_root','asr_runtime','source_duration_ms','source_fingerprint','inspection_policy','review_protocol','segmentation','sampling_parameters','frame_required','frame_sampling_origin_ms','image_inspection'):
                 if k in fields and fields[k]!=task.get(k):raise ValueError('immutable task identity')
             if task.get('media_frozen'):
                 frozen = {'capture_start_ms','capture_end_ms','capture_observed_ms','capture_spans','capture_active_span',
@@ -558,7 +686,142 @@ class Store:
     def update_segment(self,sid,**fields):
         with self.connection(True) as c:return self._update_segment(c,sid,**fields)
     def log(self,kind,message,segment_id=None):
-        with self.connection(True) as c:c.execute('INSERT INTO operation_logs(created_at,kind,message,segment_id) VALUES(?,?,?,?)',(now_iso(),kind,safe_message(message),segment_id))
+        limit = 8192 if kind == 'mediakit_cli_diagnostic' else 600
+        with self.connection(True) as c:c.execute('INSERT INTO operation_logs(created_at,kind,message,segment_id) VALUES(?,?,?,?)',(now_iso(),kind,safe_message(message, limit),segment_id))
+
+    def set_review_disposition(self, value):
+        """Persist a reviewer downgrade without changing the original model decision."""
+        required = {'task_id', 'segment_id', 'evidence_revision', 'rule_id', 'disposition', 'reason'}
+        if not isinstance(value, dict) or set(value) != required:
+            raise ValueError('review disposition requires task, segment, evidence, rule, disposition and reason')
+        if value['task_id'] != self.task_id or type(value['segment_id']) is not int or type(value['evidence_revision']) is not int:
+            raise ValueError('review disposition binding mismatch')
+        if not isinstance(value['rule_id'], str) or not value['rule_id'] or value['disposition'] not in ('warning', 'insufficient'):
+            raise ValueError('unsupported review disposition')
+        if not isinstance(value['reason'], str) or not value['reason'].strip():
+            raise ValueError('review disposition reason required')
+        with self.connection(True) as c:
+            task = self._task(c)
+            row = c.execute('SELECT data FROM segments WHERE session_id=? AND id=?',
+                            (self.session_id, value['segment_id'])).fetchone()
+            if not row:
+                raise ValueError('unknown segment')
+            segment = json.loads(row[0])
+            if segment.get('evidence_revision') != value['evidence_revision']:
+                raise ValueError('evidence changed')
+            decision = next((item for item in (segment.get('review_result') or {}).get('decisions',
+                                                (segment.get('review_result') or {}).get('rules', []))
+                             if item.get('rule_id') == value['rule_id'] and item.get('status', item.get('result')) == 'hit'), None)
+            if decision is None:
+                raise ValueError('review disposition requires a saved hit')
+            key = ':'.join((str(value['segment_id']), str(value['evidence_revision']), value['rule_id']))
+            disposition = {'disposition': value['disposition'], 'reason': value['reason'].strip(), 'reviewed_at': now_iso()}
+            task.setdefault('review_dispositions', {})[key] = disposition
+            self._set_task(c, task)
+            c.execute('INSERT INTO operation_logs(created_at,kind,message,segment_id) VALUES(?,?,?,?)',
+                      (now_iso(), 'review_disposition', safe_message(encode({
+                          'rule_id': value['rule_id'], 'evidence_revision': value['evidence_revision'],
+                          'disposition': value['disposition'], 'reason': disposition['reason']})), value['segment_id']))
+        return {'status': 'saved', 'task_id': self.task_id, 'segment_id': value['segment_id'],
+                'rule_id': value['rule_id'], 'disposition': value['disposition']}
+
+    def decision_trace(self, *, segment_id=None, rule_id=None):
+        """Return the persisted, evidence-grounded path for saved decisions.
+
+        This is an audit projection, not a reconstruction of model reasoning.  It
+        deliberately puts the submitted reason next to the exact evidence the
+        runtime accepted, so an unsupported word in the reason is observable.
+        """
+        if segment_id is not None and type(segment_id) is not int:
+            raise ValueError('segment_id requires integer')
+        if rule_id is not None and (not isinstance(rule_id,str) or not rule_id):
+            raise ValueError('rule_id requires nonempty string')
+        def read(c):
+            task=self._task(c)
+            rules={r['id']:r for r in task['rules_snapshot']['rules']}
+            entries=[]
+            records=[]
+            missing_records=0
+            has_table=c.execute("SELECT 1 FROM sqlite_master WHERE name='decision_traces'").fetchone()
+            if has_table:
+                query='SELECT data FROM decision_traces WHERE session_id=?'
+                params=[self.session_id]
+                if segment_id is not None:
+                    query+=' AND segment_id=?';params.append(segment_id)
+                for row in c.execute(query,params):
+                    record=json.loads(row[0])
+                    if rule_id is not None:
+                        record['normalized_decisions']=[decision for decision in record['normalized_decisions']
+                                                        if decision.get('rule_id')==rule_id]
+                        record['validation']['evidence_gate_checks']=[item for item in record['validation']['evidence_gate_checks']
+                                                                       if item.get('rule_id')==rule_id]
+                        if not record['normalized_decisions']:continue
+                    records.append(record)
+            for segment in self._segments(c):
+                if segment_id is not None and segment['id'] != segment_id:continue
+                result=segment.get('review_result') or {}
+                evidence={x['id']:dict(x,kind='asr') for x in segment.get('subtitles',[])}
+                evidence.update({x['id']:dict(x,kind='image') for x in segment.get('frames',[])})
+                def project(ref):
+                    item=evidence.get(ref)
+                    if not item:return {'id':ref,'available':False}
+                    value={'id':ref,'kind':item['kind'],'available':True}
+                    for field in ('start_ms','end_ms','time_ms','text'):
+                        if field in item:value[field]=item[field]
+                    return value
+                for decision in result.get('rules',[]):
+                    current_rule_id=decision.get('rule_id')
+                    if rule_id is not None and current_rule_id != rule_id:continue
+                    rule=rules.get(current_rule_id,{})
+                    events=[]
+                    for event in decision.get('events',[]):
+                        claim_refs=list(event.get('evidence_ids',[]))
+                        counterpart_refs=list(event.get('counterpart_evidence_ids',[]))
+                        events.append({
+                            'evidence_ids':claim_refs,
+                            'observed_evidence':[project(ref) for ref in claim_refs],
+                            'counterpart_evidence_ids':counterpart_refs,
+                            'observed_counterpart_evidence':[project(ref) for ref in counterpart_refs],
+                            'event_text':event.get('text',''),
+                            **{k:event[k] for k in ('claim_basis','claim_quote','comparison_scope','counterpart_quote') if k in event},
+                            'start_ms':event.get('start_ms'),'end_ms':event.get('end_ms'),
+                        })
+                    gate=rule.get('evidence_gate')
+                    recorded=next((record for record in reversed(records)
+                                   if record.get('segment_id')==segment['id']
+                                   and record.get('evidence_revision')==segment.get('evidence_revision')
+                                   and any(d.get('rule_id')==current_rule_id and d==decision
+                                           for d in record.get('normalized_decisions',[]))),None)
+                    check=next((item for item in (recorded or {}).get('validation',{}).get('evidence_gate_checks',[])
+                                if item.get('rule_id')==current_rule_id),None)
+                    if recorded is None:missing_records+=1
+                    entries.append({
+                        'segment_id':segment['id'],'evidence_revision':segment.get('evidence_revision'),
+                        'reviewed_at':segment.get('reviewed_at'),'rules_version':task['rules_snapshot'].get('version'),
+                        'rule_id':current_rule_id,'rule_name':rule.get('name'),'status':decision.get('status'),
+                        'reason':decision.get('reason',''),'channels':decision.get('channels',{}),
+                        'evidence_gate':gate,
+                        'gate_validation':{
+                            'status':('passed' if decision.get('status')=='hit' else 'not_required') if check and gate else 'unknown',
+                            'requires_counterpart':(any(e.get('claim_basis')=='contradiction' for e in events) if gate=='claim_specific' else gate=='counterpart') if gate else None,
+                            'counterpart_evidence_present':any(event['counterpart_evidence_ids'] for event in events),
+                        },
+                        'events':events,
+                    })
+            return {'task_id':self.task_id,'rules_version':task['rules_snapshot'].get('version'),
+                    'segment_id':segment_id,'rule_id':rule_id,'records':records,'entries':entries,
+                    'review_dispositions':[{'segment_id':int(key.split(':',2)[0]), 'evidence_revision':int(key.split(':',2)[1]),
+                                            'rule_id':key.split(':',2)[2], **value}
+                                           for key,value in task.get('review_dispositions',{}).items()
+                                           if len(key.split(':',2)) == 3
+                                           and (segment_id is None or key.split(':',2)[0] == str(segment_id))
+                                           and (rule_id is None or key.split(':',2)[2] == rule_id)],
+                    'replayable':bool(entries) and missing_records==0,
+                    'message':('records 保存了当时的规则、合同、全量本段证据、模型提交与校验结果，可用于复检与 Prompt/流程优化。'
+                               if entries and missing_records==0 else
+                               '审计记录不完整；部分 entries 仅由现存结果重建，不能保证完整复放。' if records else
+                               '未找到新式审计记录；entries 仅由现存结果重建，不能保证完整复放。')}
+        return self._read_with_retry(read)
 
     def load_rule_bundle(self,value):
         """Add evidence-backed industry rules without pausing ordinary review."""
@@ -568,7 +831,7 @@ class Store:
         from runtime.rules import load_rules, ALIASES
         if not isinstance(value,dict):raise ValueError('rule request must be an object')
         bundle=ALIASES.get(value.get('bundle'),value.get('bundle'))
-        if bundle not in {'ecommerce','finance'}:raise ValueError('unsupported rule bundle')
+        if bundle not in SCENARIOS:raise ValueError('unsupported rule bundle')
         with self.connection(True) as c:
             from runtime.finishing import advance, closed
             if closed(advance(self,c)):
@@ -666,6 +929,9 @@ class Store:
                         **({'segment':selected[0]} if limit==1 else {'segments':selected}), 'rules':rules,'finishing':finish}
         return {'task_id':self.task_id,'session_id':self.session_id,**({'segment':None} if limit==1 else {'segments':[]}), 'status':self.status()}
     def defer(self,payload):
+        from runtime.sampling import report_store, WindowStore, VIDEO_FULL_POLICY
+        if not isinstance(self,WindowStore) and self.task().get('inspection_policy')==VIDEO_FULL_POLICY:
+            return report_store(self).defer(payload)
         from runtime.review_errors import ReviewError, review_error
         if self.task().get('kind')!='video':raise ReviewError('VIDEO_ONLY','command','此命令仅适用于视频。',retryable=False)
         if not isinstance(payload,dict) or payload.get('task_id')!=self.task_id:raise review_error('task binding mismatch')
@@ -679,8 +945,16 @@ class Store:
             if type(payload.get('evidence_revision')) is not int or payload['evidence_revision']!=segment['evidence_revision']:
                 raise review_error('evidence changed; read segment again',sid)
             if segment['review_status'] in {'done','skipped'}:raise review_error('segment already reviewed',sid)
-            self._update_segment(c,sid,review_status='deferred',review_defer={'reason_code':reason,'evidence_revision':segment['evidence_revision']})
-        return {'status':'deferred','segment_id':sid,'next_action':'review-next'}
+            skipped=self._task(c).get('inspection_policy')==VIDEO_FULL_POLICY
+            fields=({'review_status':'skipped','skip_code':reason,
+                     'skip_reason':{'INPUT_REPAIR_EXHAUSTED':'判定输入修正次数耗尽','EVIDENCE_UNAVAILABLE':'判定证据不可用','REVIEW_BLOCKED':'判定受阻'}[reason],
+                     'window_status':'skipped','sealed_at':time.time()} if skipped else
+                    {'review_status':'deferred','review_defer':{'reason_code':reason,'evidence_revision':segment['evidence_revision']}})
+            if skipped:
+                segment.update(fields)
+                self._write_segment(c,sid,segment)
+            else:self._update_segment(c,sid,**fields)
+        return {'status':'skipped' if skipped else 'deferred','segment_id':sid,'next_action':'review-next'}
     def submit(self,payload):
         if isinstance(payload,dict) and "segments" in payload:
             return self._submit(payload)
@@ -689,7 +963,9 @@ class Store:
         from runtime.review_contract import enabled as protocol_v2, expand
         if protocol_v2(self.task()) and isinstance(payload,dict) and 'context_id' in payload and 'segments' not in payload:
             try:
+                original=copy.deepcopy(payload)
                 payload=expand(self,payload)
+                payload['_audit_submission']=original
             except (ValueError,TypeError,KeyError) as error:
                 from runtime.review_metrics import record_attempt
                 from runtime.review_errors import review_error
@@ -737,13 +1013,15 @@ class Store:
                     'error_count':sum(r['status']=='error' for r in results),
                     'retry_segment_ids':[r['segment_id'] for r in retryable],
                     'repair_required':bool(retryable),
-                    **({'next_action':'review-submit' if retryable else 'review-next'} if failures else {})}
-        digest=hashlib.sha256(encode({k:v for k,v in payload.items() if k != '_source_context'}).encode()).hexdigest()
+                    **({'next_action':'rules-load' if any(r.get('next_action')=='rules-load' for r in retryable)
+                        else 'review-submit' if retryable else 'review-next'} if failures else {})}
+        digest=hashlib.sha256(encode({k:v for k,v in payload.items() if k not in {'_source_context','_audit_submission','_sales_base','_sales_products','_normalized_sales','_clarification_context','_clarification_required','_normalized_clarifications','_normalized_clarification_checks','_qa_context','_qa_check_context','_normalized_qa','_normalized_qa_checks'}}).encode()).hexdigest()
         with self.connection(True) as c:
             from runtime.realtime_policy import current as realtime_current
             from runtime.finishing import advance, closed
             if realtime_current(self._task(c)) and closed(advance(self,c)):
                 return {'status':'inspection_finished','retryable':False,'next_action':'report'}
+            frozen = {}
             if payload.get('_source_context'):
                 from runtime.live_review import check_context
                 check_context(c, self, payload['_source_context'])
@@ -772,15 +1050,24 @@ class Store:
             evidence={x['id']:dict(x,kind='asr') for x in s.get('subtitles',[])}
             evidence.update({x['id']:dict(x,kind='image') for x in s.get('frames',[])})
             route=payload.get('content_route')
-            if self._task(c).get('inspection_policy') in {'lite_live_realtime_v1','lite_live_realtime_v2'} and route is not None:
-                if not isinstance(route,dict) or route.get('type') not in {'general','finance','ecommerce'} or not isinstance(route.get('reason'),str) or not route['reason'].strip():raise ValueError('content route required')
+            task=self._task(c)
+            routing_required=task.get('rules_mode')=='dynamic' and task.get('rule_routing_version')==1
+            if routing_required or (task.get('inspection_policy') in {'lite_live_realtime_v1','lite_live_realtime_v2'} and route is not None):
+                allowed_routes = task_scenarios(task) | {'general', 'undetermined'}
+                if not isinstance(route,dict) or route.get('type') not in allowed_routes or not isinstance(route.get('reason'),str) or not route['reason'].strip():raise ValueError('content route required')
                 refs=route.get('evidence_ids')
-                if not isinstance(refs,list) or any(ref not in evidence for ref in refs) or (s.get('subtitles') and not refs):raise ValueError('content route requires actual evidence')
-                loaded=self._task(c).get('loaded_rule_bundles',[])
-                if self._task(c).get('rules_mode') == 'dynamic' and route['type'] != 'general' and route['type'] not in loaded and route['type'] not in self._task(c).get('rule_load_gaps',{}):
+                needs_evidence=bool(evidence) if routing_required else bool(s.get('subtitles'))
+                if (not isinstance(refs,list) or any(not isinstance(ref,str) or ref not in evidence for ref in refs)
+                        or len(set(refs))!=len(refs) or (needs_evidence and not refs)
+                        or (routing_required and not evidence and route['type']!='undetermined')):
+                    raise ValueError('content route requires actual evidence')
+                loaded=task.get('loaded_rule_bundles',[])
+                if task.get('rules_mode') == 'dynamic' and route['type'] in SCENARIOS and route['type'] not in loaded and route['type'] not in task.get('rule_load_gaps',{}):
                     raise ValueError('specialist rules must be loaded before judgment')
             viewed=payload.get('images_viewed',[])
             if not isinstance(viewed,list) or any(i not in evidence or evidence[i]['kind']!='image' for i in viewed):raise ValueError('invalid viewed image IDs')
+            if routing_required and any(evidence[ref]['kind']=='image' and ref not in viewed for ref in route['evidence_ids']):
+                raise ValueError('image must be viewed before judgment')
             from runtime.full_live import speech_can_clear
             can_clear_speech = speech_can_clear(self._task(c), s)
             result=[]
@@ -799,14 +1086,19 @@ class Store:
                         if not isinstance(refs,list) or not refs or any(r not in evidence for r in refs):raise ValueError('foreign evidence')
                         items=[evidence[r] for r in refs]
                         if len(set(refs)) != len(refs):raise ValueError('duplicate evidence IDs')
-                        if any(('speech' if e['kind']=='asr' else 'image') not in rule['modalities'] for e in items):raise ValueError('evidence channel not allowed by rule')
-                        if any(e['kind']=='image' and e['id'] not in viewed for e in items):raise ValueError('image must be viewed before judgment')
+                        counterpart_refs=event.get('counterpart_evidence_ids',[])
+                        if not isinstance(counterpart_refs,list) or any(ref not in evidence for ref in counterpart_refs) or len(set(counterpart_refs)) != len(counterpart_refs):raise ValueError('invalid counterpart evidence')
+                        check_event_gate(rule,event,evidence)
+                        all_items=items+[evidence[ref] for ref in counterpart_refs]
+                        if any(('speech' if e['kind']=='asr' else 'image') not in rule['modalities'] for e in all_items):raise ValueError('evidence channel not allowed by rule')
+                        if any(e['kind']=='image' and e['id'] not in viewed for e in all_items):raise ValueError('image must be viewed before judgment')
                         speech=[e['text'] for e in items if e['kind']=='asr']
-                        if any(e['kind']=='image' for e in items) and not str(event.get('description','')).strip():raise ValueError('image description required')
+                        if any(e['kind']=='image' for e in all_items) and not str(event.get('description','')).strip():raise ValueError('image description required')
+                        if any(min(s['end_ms'],e.get('end_ms',e.get('time_ms',0)+1000))<=max(s['start_ms'],e.get('start_ms',e.get('time_ms'))) for e in all_items):raise ValueError('evidence outside segment')
                         a=max(s['start_ms'],min(e.get('start_ms',e.get('time_ms')) for e in items))
                         b=min(s['end_ms'],max(e.get('end_ms',e.get('time_ms',0)+1000) for e in items))
                         if b<=a:raise ValueError('evidence outside segment')
-                        bound.append({'evidence_ids':refs,'start_ms':a,'end_ms':b,'text':event.get('description') or ''.join(speech)})
+                        bound.append({**({k:event[k] for k in ('claim_basis','claim_quote','comparison_scope','counterpart_quote') if k in event} if rule.get('evidence_gate')=='claim_specific' else {}),'evidence_ids':refs,'counterpart_evidence_ids':counterpart_refs,'start_ms':a,'end_ms':b,'text':event.get('description') or ''.join(speech)})
                         from runtime.remediation import enabled as remediation_enabled, normalize as normalize_remediation
                         if remediation_enabled(self._task(c)) and "remediation" in event:
                             bound[-1]['remediation'] = normalize_remediation(event['remediation'], source='compliance', rule_id=row['rule_id'])
@@ -849,7 +1141,40 @@ class Store:
                     if str(error) in {'foreign evidence','image must be viewed before judgment','channel hit requires matching evidence'}:
                         detail.allowed_evidence_ids=list(evidence)
                     raise detail from error
-            if not self._update_segment(c,s['id'],review_status='done',**({'speech_reviewed':True,'speech_review_completed_at':s.get('speech_review_completed_at',time.time())} if full(self._task(c)) else {}),review_result={**({'content_route':route} if route else {}),'rules':result,'decisions':result,'images_viewed':viewed,**({'summary':payload['summary']} if 'summary' in payload else {})},claim_token=None,lease_until=0,reviewed_at=now_iso(),judgment_elapsed_ms=max(0,round((time.time()-s['review_started_at'])*1000)) if s.get('review_started_at') else None):
+            sales = {}
+            if 'clarification_observations' in payload:
+                from runtime.clarifications import normalize as normalize_clarifications
+                sales['clarification_observations'] = normalize_clarifications(payload['clarification_observations'], s, payload.get('_clarification_context', []))
+                if '_clarification_required' in payload:
+                    from runtime.clarifications import check_coverage
+                    sales['clarification_checks'] = check_coverage(payload.get('clarification_checks'),sales['clarification_observations'],payload['_clarification_required'],s)
+            elif 'clarification_observations' in s.get('previous_review_result', {}):
+                sales['clarification_observations'] = s['previous_review_result']['clarification_observations']
+                if 'clarification_checks' in s['previous_review_result']:
+                    sales['clarification_checks'] = s['previous_review_result']['clarification_checks']
+            if 'sales_observation' in payload:
+                from runtime.sales_state import normalize
+                sales['sales_observation'] = normalize(payload['sales_observation'], s, viewed, payload.get('_sales_base'), payload.get('_sales_products', []))
+            elif s.get('previous_review_result', {}).get('sales_observation'):
+                sales['sales_observation'] = s['previous_review_result']['sales_observation']
+            if payload.get('_source_context'):
+                frozen = json.loads(c.execute('SELECT data FROM review_contexts WHERE id=? AND session_id=?',
+                                             (payload['_source_context'], self.session_id)).fetchone()[0])
+                if 'viewer_contexts' in frozen:
+                    s['viewer_context'] = frozen['viewer_contexts'].get(str(s['id']), {})
+            if 'qa_observations' in payload:
+                from runtime.interactions import normalize as normalize_qa
+                sales['qa_observations'] = normalize_qa(payload['qa_observations'], s, viewed, payload.get('_qa_context', []), sales.get('sales_observation'))
+                if frozen.get('qa_check_version') in {1,2} and str(s['id']) not in frozen.get('supplements', {}):
+                    from runtime.interactions import check_coverage
+                    sales['qa_checks'] = check_coverage(payload.get('qa_checks', []), sales['qa_observations'],
+                                                       payload.get('_qa_context', []), s, version=frozen.get('qa_check_version',1),
+                                                       required_previous=payload.get('_qa_check_context'))
+            elif 'qa_observations' in s.get('previous_review_result', {}):
+                sales['qa_observations'] = s['previous_review_result']['qa_observations']
+                if 'qa_checks' in s['previous_review_result']:
+                    sales['qa_checks'] = s['previous_review_result']['qa_checks']
+            if not self._update_segment(c,s['id'],review_status='done',**({'speech_reviewed':True,'speech_review_completed_at':s.get('speech_review_completed_at',time.time())} if full(self._task(c)) else {}),review_result={**sales,**({'content_route':route} if route else {}),'rules':result,'decisions':result,'images_viewed':viewed,**({'summary':payload['summary']} if 'summary' in payload else {})},claim_token=None,lease_until=0,reviewed_at=now_iso(),judgment_elapsed_ms=max(0,round((time.time()-s['review_started_at'])*1000)) if s.get('review_started_at') else None):
                 return {'status':'inspection_finished','retryable':False,'next_action':'report'}
             from runtime.realtime_policy import current as realtime_current
             if realtime_current(self._task(c)) and payload.get('batch_id'):
@@ -858,6 +1183,17 @@ class Store:
                 batch['review_progress_at'] = time.time()
                 save(c, self.session_id, batch)
             c.execute('INSERT INTO submissions VALUES(?,?,?)',(digest,s['id'],digest))
+            if 'sales_observation' in sales:
+                payload['_normalized_sales'] = sales['sales_observation']
+            if 'clarification_observations' in sales:
+                payload['_normalized_clarifications'] = sales['clarification_observations']
+            if 'clarification_checks' in sales:
+                payload['_normalized_clarification_checks'] = sales['clarification_checks']
+            if 'qa_observations' in sales:
+                payload['_normalized_qa'] = sales['qa_observations']
+            if 'qa_checks' in sales:
+                payload['_normalized_qa_checks'] = sales['qa_checks']
+            save_decision_trace(c,self,s,digest,self._task(c),rules,evidence,result,payload)
         return {'status':'saved','segment_id':s['id']}
 
     def _scene_input(self,c):
@@ -1008,14 +1344,22 @@ class Store:
                 if not isinstance(refs,list) or not refs or any(not isinstance(r,str) or r not in evidence for r in refs):raise review_error('foreign evidence',sid,rule_index,event_index)
                 items=[evidence[r] for r in refs]
                 if len(set(refs)) != len(refs):raise review_error('duplicate evidence IDs',sid,rule_index,event_index)
-                if any(('speech' if e['kind']=='asr' else 'image') not in rule['modalities'] for e in items):raise review_error('evidence channel not allowed by rule',sid,rule_index,event_index)
-                if any(e['kind']=='image' and e['id'] not in viewed for e in items):raise review_error('image must be viewed before judgment',sid,rule_index,event_index)
+                counterpart_refs=event.get('counterpart_evidence_ids',[])
+                if not isinstance(counterpart_refs,list) or any(not isinstance(ref,str) or ref not in evidence for ref in counterpart_refs) or len(set(counterpart_refs)) != len(counterpart_refs):raise review_error('invalid counterpart evidence',sid,rule_index,event_index)
+                try:
+                    check_event_gate(rule,event,evidence)
+                except ValueError as exc:
+                    raise review_error(str(exc),sid,rule_index,event_index) from exc
+                all_items=items+[evidence[ref] for ref in counterpart_refs]
+                if any(('speech' if e['kind']=='asr' else 'image') not in rule['modalities'] for e in all_items):raise review_error('evidence channel not allowed by rule',sid,rule_index,event_index)
+                if any(e['kind']=='image' and e['id'] not in viewed for e in all_items):raise review_error('image must be viewed before judgment',sid,rule_index,event_index)
                 speech=[e['text'] for e in items if e['kind']=='asr']
-                if any(e['kind']=='image' for e in items) and not str(event.get('description','')).strip():raise review_error('image description required',sid,rule_index,event_index)
+                if any(e['kind']=='image' for e in all_items) and not str(event.get('description','')).strip():raise review_error('image description required',sid,rule_index,event_index)
+                if any(min(s['end_ms'],e.get('end_ms',e.get('time_ms',0)+1000))<=max(s['start_ms'],e.get('start_ms',e.get('time_ms'))) for e in all_items):raise review_error('evidence outside segment',sid,rule_index,event_index)
                 a=max(s['start_ms'],min(e.get('start_ms',e.get('time_ms')) for e in items))
                 b=min(s['end_ms'],max(e.get('end_ms',e.get('time_ms',0)+1000) for e in items))
                 if b<=a:raise review_error('evidence outside segment',sid,rule_index,event_index)
-                bound.append({'evidence_ids':refs,'start_ms':a,'end_ms':b,'text':event.get('description') or ''.join(speech)})
+                bound.append({**({k:event[k] for k in ('claim_basis','claim_quote','comparison_scope','counterpart_quote') if k in event} if rule.get('evidence_gate')=='claim_specific' else {}),'evidence_ids':refs,'counterpart_evidence_ids':counterpart_refs,'start_ms':a,'end_ms':b,'text':event.get('description') or ''.join(speech)})
                 from runtime.remediation import enabled as remediation_enabled, normalize as normalize_remediation
                 if remediation_enabled(self._task(c)) and "remediation" in event:
                     bound[-1]['remediation'] = normalize_remediation(event['remediation'], source='compliance', rule_id=row['rule_id'])
@@ -1023,6 +1367,7 @@ class Store:
         if not self._update_segment(c,s['id'],review_status='done',review_result={'rules':result,'decisions':result,'images_viewed':viewed},claim_token=None,lease_until=0,reviewed_at=now_iso(),review_defer=None,review_attempts=None):
             return {'status':'inspection_finished','retryable':False,'next_action':'report'}
         c.execute('INSERT INTO submissions VALUES(?,?,?)',(digest,s['id'],digest))
+        save_decision_trace(c,self,s,digest,self._task(c),rules,evidence,result,payload)
         return {'status':'saved','segment_id':s['id']}
 
     def skip_asr(self,sid,code,**recovery):
@@ -1045,7 +1390,7 @@ class Store:
             return True
 
     def read_snapshot(self):
-        from runtime.sampling import report_store, enabled, WindowStore
+        from runtime.sampling import capture_task, report_store, enabled, WindowStore
         if not isinstance(self,WindowStore) and enabled(self.task()):return report_store(self).read_snapshot()
         self.finish_tick()
         def read(c):
@@ -1055,9 +1400,17 @@ class Store:
             if protocol_v2(task) and c.execute("SELECT 1 FROM sqlite_master WHERE name='review_batches'").fetchone():
                 from runtime.live_review import rows
                 task['_review_batches']=rows(c,self.session_id)
-            return task,segments
-        task,segments=self._read_with_retry(read)
-        return task,segments,self._status(task,segments)
+            from runtime.live_room import report as room_report
+            from runtime import qa_pipeline
+            qa_data=({'qa':qa_pipeline.view(self,conn=c,segments=segments),
+                      'qa_processing':qa_pipeline.progress(self,conn=c,task=task,segments=segments)}
+                     if qa_pipeline.enabled(task) else {})
+            if task.get('qa_pipeline') in ('comments_v1', 'split_v1'):
+                qa_data['comment_summary'] = qa_pipeline.monitor_comment_summary(
+                    c, self.session_id, purchases=task['qa_pipeline'] == 'comments_v1')
+            return task,segments,room_report(self,c,task),qa_data,capture_task(self,c,task)
+        task,segments,room,qa_data,coverage_task=self._read_with_retry(read)
+        return task,segments,{**self._status(coverage_task,segments),'live_room':room,**qa_data}
 
     def status(self):
         return self.read_snapshot()[2]

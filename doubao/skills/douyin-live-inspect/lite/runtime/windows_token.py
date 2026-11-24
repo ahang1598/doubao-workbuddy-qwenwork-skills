@@ -13,7 +13,9 @@ def private_sids(user, logon_sids, restricted_sids, appcontainer):
     for sid in restricted_sids:
         if sid in logon_sids and sid.startswith('S-1-5-5-'):
             allowed.add(sid)
-    if not set(restricted_sids).issubset(allowed):
+    # A restricting SID may satisfy the second access check without granting every SID.
+    # Keep the grants unchanged; DACL verification and the actual IO probe remain mandatory.
+    if restricted_sids and set(restricted_sids).isdisjoint(allowed):
         raise ValueError('unsupported restricted identity')
     return sorted(allowed)
 

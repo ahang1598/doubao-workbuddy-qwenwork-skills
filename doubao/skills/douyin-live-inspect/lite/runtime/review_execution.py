@@ -499,7 +499,9 @@ def child(argv, request_id, compact):
             if not envelope.get('ok') and record.get('task_id'):
                 envelope.setdefault('data', {}).setdefault('task_id', record['task_id'])
             data = envelope.get('data', {})
-            if args.command == 'review-submit' and data.get('repair_required'):
+            if args.command == 'review-submit' and data.get('repair_required') and data.get('next_action')=='rules-load':
+                data['repair_instruction']='先按专项适用证据执行 rules-load --next，直接填写返回的新合同；旧规则版本的重试输入不可继续使用。'
+            elif args.command == 'review-submit' and data.get('repair_required'):
                 # A repaired draft is a new request; preserve automatic continuation.
                 data['retry_argv'] = retry_command(root, input_path, record['resume_options'])
                 data['retry_command_argv'] = data['retry_argv'][2:]

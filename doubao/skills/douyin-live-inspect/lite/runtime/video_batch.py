@@ -135,7 +135,9 @@ def _dispatch(command, directory, value=None):
                         item.update(status='failed', error=store.task().get('setup_error') or 'VIDEO_NO_INSPECTABLE_MEDIA')
                         atomic_json(root / 'batch.json', data)
                         continue
-                    if status['report_ready'] or (store.task()['worker_status'] in {'done','failed','stopped'} and status['segment_count']):
+                    if (status['report_ready'] or
+                            (status['review_ready_pending'] and status.get('finishing',{}).get('mode')!='immediate') or
+                            (store.task()['worker_status'] in {'done','failed','stopped'} and status['segment_count'])):
                         return {**public(root,data),'current_index':i+1,'task_dir':str(path),
                                 'next_action':'report' if status['report_ready'] else 'review-next' if status['review_ready_pending'] else 'report --allow-partial'}
                     # Existing task is always continued by id, including a crash between

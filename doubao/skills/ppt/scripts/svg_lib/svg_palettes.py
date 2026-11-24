@@ -461,6 +461,10 @@ PALETTES["deep_indigo"] = {
 }
 
 PALETTES["exec_navy"] = {
+    "exhibit": {   # board / finance: navy carries the data, copper marks the one number that matters
+        "main": "#16283C", "accent": "#B4782D", "second": "#4A5A6E", "light": "#A9B7C6", "light2": "#E6D2B4",
+        "third": "#7A8CA0", "deep": "#0D1B2A", "neg": "#A23B32",
+    },
     "ink": "rgba(22,40,60,1)",
     "accent": "rgba(180,120,45,1)",
     "secondary": "rgba(74,90,110,1)",
@@ -738,6 +742,10 @@ PALETTES["rust_terracotta"] = {
 }
 
 PALETTES["sage_review"] = {
+    "exhibit": {   # HR / admin / public sector: deep sage carries the data, brick red marks the gap
+        "main": "#3E5B4C", "accent": "#B84C3A", "second": "#738A78", "light": "#B9C7BC", "light2": "#E9C3BA",
+        "third": "#9E8E6E", "deep": "#262D2A", "neg": "#B7791F",
+    },
     "ink": "rgba(38,45,42,1)",
     "accent": "rgba(184,76,58,1)",
     "secondary": "rgba(115,138,120,1)",
@@ -1853,5 +1861,278 @@ PALETTES["imeta_cobalt_gold"] = {
         "rgba(138,147,163,1)",  # Mid Grey #8A93A3
         "rgba(122,201,67,1)",  # Vivid Lime #7AC943
         "rgba(125,211,219,1)",  # Soft Aqua #7DD3DB
+    ],
+}
+
+
+# Additional palettes used by the Exhibit chart library.
+PALETTES["claret_oxford"] = {
+    "series_order": "fixed",
+    "exhibit": {   # FT-style: oxford blue carries the data, claret marks the one number that matters
+        "main": "#0F3E6E", "accent": "#990F3D", "second": "#4C7AA6", "light": "#A9C1D9", "light2": "#E8C7D1",
+        "third": "#8C8478", "deep": "#0A2540", "neg": "#C2662D",
+    },
+    "ink": "rgba(10,37,64,1)",
+    "accent": "rgba(153,15,61,1)",
+    "secondary": "rgba(15,62,110,1)",
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(110,110,110,0.65)",
+    "series": ["rgba(15,62,110,1)", "rgba(153,15,61,1)", "rgba(76,122,166,1)", "rgba(169,193,217,1)",
+               "rgba(176,176,176,1)", "rgba(214,214,214,1)"],
+}
+
+PALETTES["mckinsey_blue"] = {
+    "series_order": "fixed",
+    "exhibit": {
+        "main": "#0B3A5E", "accent": "#0A8FDF", "second": "#2F78B4", "light": "#9FC6E4", "light2": "#D6E8F5",
+        "third": "#5FA8CF", "deep": "#05223A",
+    },
+    # Sampled from consulting decks: deep ink-navy carries the bulk, steel blue is the second layer, one mid-blue
+    # marks the subject, ice-blue for forecast / pale fills. No electric or purple blues (they glare on slides).
+    "ink": "rgba(5,34,58,1)",  # Ink Navy #05223A
+    "accent": "rgba(10,143,223,1)",  # Signal Blue #0A8FDF
+    "secondary": "rgba(11,58,94,1)",  # Deep Navy #0B3A5E
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(118,118,118,0.65)",  # Grey #767676
+    "series": [
+        "rgba(11,58,94,1)",  # Deep Navy #0B3A5E
+        "rgba(10,143,223,1)",  # Signal Blue #0A8FDF
+        "rgba(47,120,180,1)",  # Steel Blue #2F78B4
+        "rgba(159,198,228,1)",  # Mist Blue #9FC6E4
+        "rgba(176,176,176,1)",  # Grey #B0B0B0
+        "rgba(214,214,214,1)",  # Light Grey #D6D6D6
+    ],
+}
+
+PALETTES["bcg_green"] = {
+    "series_order": "fixed",
+    "exhibit": {
+        "main": "#197048", "accent": "#D6861E", "second": "#4A9A72", "light": "#A9D9BF", "light2": "#F0CFA0",
+        "third": "#3EAD92", "deep": "#192620",
+    },
+    # Forest green depth ramp; amber accent only for the one callout.
+    "ink": "rgba(25,38,32,1)",  # Charcoal Green #192620
+    "accent": "rgba(214,134,30,1)",  # Amber #D6861E
+    "secondary": "rgba(74,154,114,1)",  # Muted green #4A9A72 (was neon #29BA74)
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(105,110,108,0.65)",
+    "series": [
+        "rgba(25,112,72,1)",  # BCG Green #197048
+        "rgba(74,154,114,1)",  # Muted green #4A9A72
+        "rgba(62,173,146,1)",  # Teal Green #3EAD92
+        "rgba(180,222,200,1)",  # Pale Green #B4DEC8
+        "rgba(150,156,153,1)",  # Grey #969C99
+        "rgba(210,214,212,1)",  # Light Grey #D2D6D4
+    ],
+}
+
+PALETTES["bain_red"] = {
+    "series_order": "fixed",
+    "exhibit": {
+        "main": "#3F4A55", "accent": "#9B2335", "second": "#7D8A96", "light": "#C9D1D8", "light2": "#E6C1C7",
+        "third": "#5E1A24", "deep": "#1F262D", "neg": "#5E1A24",
+    },
+    # Oxblood red as the single highlight on slate blue-greys: red marks the protagonist, everything else is quiet.
+    "ink": "rgba(31,38,45,1)",  # Slate ink #1F262D
+    "accent": "rgba(155,35,53,1)",  # Oxblood #9B2335
+    "secondary": "rgba(125,138,150,1)",  # Slate grey #7D8A96
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(115,120,128,0.65)",
+    "series": [
+        "rgba(63,74,85,1)",  # Slate #3F4A55
+        "rgba(155,35,53,1)",  # Oxblood #9B2335
+        "rgba(125,138,150,1)",  # Slate grey #7D8A96
+        "rgba(94,26,36,1)",  # Deep oxblood #5E1A24
+        "rgba(201,209,216,1)",  # Light slate #C9D1D8
+        "rgba(230,193,199,1)",  # Blush #E6C1C7
+    ],
+}
+
+PALETTES["ember_orange"] = {
+    "series_order": "fixed",
+    "exhibit": {
+        "main": "#C2561C", "accent": "#8F3A14", "second": "#DE9A62", "light": "#F3CBA8", "light2": "#FBE7D6",
+        "third": "#8A6B58", "deep": "#5C2A0E", "neg": "#7A6A5E",
+    },
+    # Burnt-orange depth ramp on white: every slot is an orange shade or a warm neutral, so a bright brand orange
+    # dropped into main or accent stays in the family (no dark slate taking over the deck).
+    "ink": "rgba(43,33,28,1)",  # Warm charcoal #2B211C
+    "accent": "rgba(143,58,20,1)",  # Deep rust #8F3A14 (was bright #F07C28: same hue as main, read as cheap)
+    "secondary": "rgba(222,154,98,1)",  # Apricot #DE9A62
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(120,110,104,0.65)",
+    "series": [
+        "rgba(194,86,28,1)",  # Burnt orange #C2561C
+        "rgba(143,58,20,1)",  # Deep rust #8F3A14
+        "rgba(222,154,98,1)",  # Apricot #DE9A62
+        "rgba(243,203,168,1)",  # Peach #F3CBA8
+        "rgba(160,152,146,1)",  # Warm grey #A09892
+        "rgba(216,211,207,1)",  # Light warm grey #D8D3CF
+    ],
+}
+
+PALETTES["burgundy_coral"] = {
+    "series_order": "fixed",
+    "exhibit": {
+        "main": "#8B1E3F", "accent": "#E05A47", "second": "#C47A8A", "light": "#EBD0D7", "light2": "#F6E3DE",
+        "third": "#9A8F8F", "deep": "#5B1129", "neg": "#5F6B73",
+    },
+    # Wine red body, rose secondary, coral highlight and warm greys: one warm family, no gold.
+    "ink": "rgba(42,34,36,1)",  # Warm charcoal #2A2224
+    "accent": "rgba(224,90,71,1)",  # Coral #E05A47
+    "secondary": "rgba(196,122,138,1)",  # Rose #C47A8A
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(120,112,112,0.65)",
+    "series": [
+        "rgba(139,30,63,1)",  # Wine #8B1E3F
+        "rgba(196,122,138,1)",  # Rose #C47A8A
+        "rgba(224,90,71,1)",  # Coral #E05A47
+        "rgba(235,208,215,1)",  # Blush #EBD0D7
+        "rgba(154,143,143,1)",  # Warm grey #9A8F8F
+        "rgba(246,227,222,1)",  # Shell #F6E3DE
+    ],
+}
+
+PALETTES["forest_gold"] = {
+    "series_order": "fixed",
+    "exhibit": {
+        "main": "#1E4D3A", "accent": "#B08A3E", "second": "#5C8A73", "light": "#C3D6CB", "light2": "#F0E2AE",
+        "third": "#8FA89B", "deep": "#12291F", "neg": "#8C4A2F",
+    },
+    # Deep forest green body with a gold highlight; ochre-brown (not red) for declines, so no red–green clash.
+    "ink": "rgba(18,41,31,1)",  # Forest ink #12291F
+    "accent": "rgba(176,138,62,1)",  # Antique gold #B08A3E (was mustard #C9A227)
+    "secondary": "rgba(92,138,115,1)",  # Sage #5C8A73
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(110,124,116,0.65)",
+    "series": [
+        "rgba(30,77,58,1)",  # Forest #1E4D3A
+        "rgba(176,138,62,1)",  # Antique gold #B08A3E
+        "rgba(92,138,115,1)",  # Sage #5C8A73
+        "rgba(143,168,155,1)",  # Grey green #8FA89B
+        "rgba(195,214,203,1)",  # Pale green #C3D6CB
+        "rgba(240,226,174,1)",  # Pale gold #F0E2AE
+    ],
+}
+
+PALETTES["oxford_navy_gold"] = {
+    "series_order": "fixed",
+    "exhibit": {
+        "main": "#101E38", "accent": "#B8862E", "second": "#426291", "light": "#8CA5C8", "light2": "#E3CFA3",
+        "third": "#6E8FB5", "deep": "#0A1324",
+    },
+    # Navy + muted gold: sovereign / macro / financial-institution themes.
+    "ink": "rgba(16,30,56,1)",  # Oxford Navy #101E38
+    "accent": "rgba(184,134,46,1)",  # Antique Gold #B8862E
+    "secondary": "rgba(66,98,145,1)",  # Steel Blue #426291
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(110,116,128,0.65)",
+    "series": [
+        "rgba(16,30,56,1)",  # Oxford Navy #101E38
+        "rgba(66,98,145,1)",  # Steel Blue #426291
+        "rgba(140,165,200,1)",  # Powder Blue #8CA5C8
+        "rgba(184,134,46,1)",  # Antique Gold #B8862E
+        "rgba(155,160,168,1)",  # Grey #9BA0A8
+        "rgba(212,215,220,1)",  # Light Grey #D4D7DC
+    ],
+}
+
+PALETTES["rolandberger_grey"] = {
+    "series_order": "fixed",
+    "exhibit": {"main": "#3A4148", "accent": "#4C6D96", "second": "#7F8182", "light": "#BFC3C6", "light2": "#E4E5E7", "third": "#A2A6A7", "deep": "#1E2328"},
+    # Charcoal greys carry everything; one steel blue marks the subject. Engineering / industrial / auto.
+    "ink": "rgba(30,35,40,1)",
+    "accent": "rgba(76,109,150,1)",
+    "secondary": "rgba(127,129,130,1)",
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(118,118,118,0.65)",
+    "series": [
+        "rgba(58,65,72,1)",  # #3A4148
+        "rgba(76,109,150,1)",  # #4C6D96
+        "rgba(127,129,130,1)",  # #7F8182
+        "rgba(162,166,167,1)",  # #A2A6A7
+        "rgba(191,195,198,1)",  # #BFC3C6
+        "rgba(228,229,231,1)",  # #E4E5E7
+    ],
+}
+
+PALETTES["strategyand_burgundy"] = {
+    "series_order": "fixed",
+    "exhibit": {"main": "#6E1E1E", "accent": "#A8322F", "second": "#8A7474", "light": "#D9C4C3", "light2": "#EFE3E2", "third": "#4D4446", "deep": "#3A0F0F"},
+    # Oxblood + brick red on warm greys (Strategy&): corporate strategy, transformation, deals.
+    "ink": "rgba(58,15,15,1)",
+    "accent": "rgba(168,50,47,1)",
+    "secondary": "rgba(138,116,116,1)",
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(118,118,118,0.65)",
+    "series": [
+        "rgba(110,30,30,1)",  # #6E1E1E
+        "rgba(168,50,47,1)",  # #A8322F
+        "rgba(138,116,116,1)",  # #8A7474
+        "rgba(77,68,70,1)",  # #4D4446
+        "rgba(217,196,195,1)",  # #D9C4C3
+        "rgba(239,227,226,1)",  # #EFE3E2
+    ],
+}
+
+PALETTES["kearney_purple"] = {
+    "series_order": "fixed",
+    "exhibit": {"main": "#4E3F69", "accent": "#9A73B0", "second": "#7F6C9C", "light": "#C6B7D3", "light2": "#EAE1F0",
+                "third": "#ABA0BE", "deep": "#2F2640", "neg": "#6E6676"},
+    # Dusty grey-violet body, soft lilac for forecast / context, one orchid for the subject; muted brick for declines.
+    # (Was a bright violet #7B4FC9 + lavender, which read as candy.) Operations, supply chain, procurement, digital.
+    "ink": "rgba(47,38,64,1)",
+    "accent": "rgba(154,115,176,1)",
+    "secondary": "rgba(127,108,156,1)",
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(118,112,128,0.65)",
+    "series": [
+        "rgba(78,63,105,1)",  # #4E3F69
+        "rgba(154,115,176,1)",  # #9A73B0
+        "rgba(127,108,156,1)",  # #7F6C9C
+        "rgba(171,160,190,1)",  # #ABA0BE
+        "rgba(198,183,211,1)",  # #C6B7D3
+        "rgba(234,225,240,1)",  # #EAE1F0
+    ],
+}
+
+PALETTES["plum_mauve"] = {
+    "series_order": "fixed",
+    "exhibit": {"main": "#5E4473", "accent": "#A06DAE", "second": "#8C7A99", "light": "#D4C5DC", "light2": "#EFE8F2",
+                "third": "#B9A3C6", "deep": "#3B2A4A", "neg": "#73687A"},
+    # Dusty mauve family (consulting purple decks): deep plum carries the data, one orchid-mauve marks the subject,
+    # grey-lilac for context, pale lilac for forecast / fills; warm brick only for declines. Beauty, healthcare,
+    # consumer, elderly care, lifestyle brands with a purple / violet identity.
+    "ink": "rgba(59,42,74,1)",  # Plum ink #3B2A4A
+    "accent": "rgba(160,109,174,1)",  # Mauve #A06DAE
+    "secondary": "rgba(140,122,153,1)",  # Grey lilac #8C7A99
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(118,110,124,0.65)",
+    "series": [
+        "rgba(94,68,115,1)",  # Plum #5E4473
+        "rgba(160,109,174,1)",  # Mauve #A06DAE
+        "rgba(140,122,153,1)",  # Grey lilac #8C7A99
+        "rgba(185,163,198,1)",  # Lilac #B9A3C6
+        "rgba(212,197,220,1)",  # Pale lilac #D4C5DC
+        "rgba(239,232,242,1)",  # Mist #EFE8F2
+    ],
+}
+
+PALETTES["lek_forest"] = {
+    "series_order": "fixed",
+    "exhibit": {"main": "#1F4238", "accent": "#3F8C68", "second": "#5E7F72", "light": "#A9C7B8", "light2": "#DDE8E2", "third": "#7D938E", "deep": "#12281F"},
+    # Dark forest + sage, muted (L.E.K.): healthcare, life sciences, PE due diligence, consumer.
+    "ink": "rgba(18,40,31,1)",
+    "accent": "rgba(63,140,104,1)",
+    "secondary": "rgba(94,127,114,1)",
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(118,118,118,0.65)",
+    "series": [
+        "rgba(31,66,56,1)",  # #1F4238
+        "rgba(63,140,104,1)",  # #3F8C68
+        "rgba(94,127,114,1)",  # #5E7F72
+        "rgba(125,147,142,1)",  # #7D938E
+        "rgba(169,199,184,1)",  # #A9C7B8
+        "rgba(221,232,226,1)",  # #DDE8E2
     ],
 }

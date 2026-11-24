@@ -8,6 +8,11 @@ MAX_SEGMENT = 64 * 1024 * 1024
 MAX_WAIT_MS = 15000
 REORDER_MS = 250
 
+# One 16x16 black, baseline H.264 IDR (1 fps). Generated once with libx264;
+# no encoder or decoder is needed at runtime. Audio packets remain untouched.
+BLACK_CONFIG = bytes.fromhex('17000000000142c00affe100156742c00ada7b011000000300100000030028f1226a01000468ce0fc8')
+BLACK_FRAME = bytes.fromhex('17010000000000000a6588843a2628000902e0')
+
 
 class Unsupported(ValueError):
     """A fixed parser reason, optionally with the two timestamps that triggered it."""
@@ -21,6 +26,54 @@ def tag(kind, stamp, payload):
     return (bytes([kind]) + len(payload).to_bytes(3, 'big') +
             (stamp & 0xffffff).to_bytes(3, 'big') + bytes([stamp >> 24]) + b'\0\0\0' +
             payload + (11 + len(payload)).to_bytes(4, 'big'))
+
+
+def black_video(source, target):
+    """Make an ASR-only FLV; preserve AAC bytes/timestamps and the source file."""
+    if source == target or not 13 < source.stat().st_size <= MAX_SEGMENT:
+        raise ValueError('invalid ASR source')
+    temporary = target.with_suffix('.flv.part')
+    try:
+        with source.open('rb') as src, temporary.open('wb') as dst:
+            os.chmod(temporary, 0o600)
+            header = src.read(13)
+            if header != b'FLV\x01\x05\0\0\0\x09\0\0\0\0' and header != b'FLV\x01\x04\0\0\0\x09\0\0\0\0':
+                raise ValueError('invalid ASR FLV header')
+            dst.write(header[:4] + b'\x05' + header[5:])
+            dst.write(tag(9, 0, BLACK_CONFIG))
+            audio_config = audio = False
+            next_frame = last = 0
+            while True:
+                head = src.read(11)
+                if not head:break
+                if len(head) != 11 or head[0] not in (8, 9, 18) or head[8:] != b'\0\0\0':
+                    raise ValueError('invalid ASR FLV tag')
+                size = int.from_bytes(head[1:4], 'big')
+                if size > MAX_TAG:raise ValueError('invalid ASR FLV size')
+                payload = src.read(size)
+                previous = src.read(4)
+                if len(payload) != size or previous != (11 + size).to_bytes(4, 'big'):
+                    raise ValueError('truncated ASR FLV')
+                if head[0] == 18:continue  # Old video metadata is no longer valid.
+                stamp = int.from_bytes(head[4:7], 'big') | head[7] << 24
+                if stamp > 10800000:raise ValueError('invalid ASR FLV duration')
+                last = max(last, stamp)
+                while next_frame <= stamp:
+                    dst.write(tag(9, next_frame, BLACK_FRAME));next_frame += 1000
+                if head[0] == 8:
+                    if len(payload) < 2 or payload[0] >> 4 != 10 or payload[1] not in (0, 1):
+                        raise ValueError('invalid ASR AAC')
+                    if payload[1] == 0:audio_config = True
+                    elif audio_config:audio = True
+                    else:raise ValueError('missing ASR AAC config')
+                    dst.write(head + payload + previous)
+            if not audio:raise ValueError('missing ASR audio')
+            if last != next_frame - 1000:dst.write(tag(9, last, BLACK_FRAME))
+            dst.flush();os.fsync(dst.fileno())
+        os.replace(temporary, target)
+        return target
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 class Slicer:

@@ -645,6 +645,10 @@
   border-color: #efc9c7;
   box-shadow: inset 3px 0 0 var(--red);
 }
+.dashboard .audit.warning {
+  border-color: #eadfb9;
+  box-shadow: inset 3px 0 0 #c8ad57;
+}
 .dashboard .audit.has-evidence {
   grid-template-columns: 112px minmax(0, 1fr) auto;
   grid-template-rows: auto 1fr;
@@ -656,6 +660,9 @@
 }
 .dashboard .audit.rejected:hover {
   border-color: #e7aaa7;
+}
+.dashboard .audit.warning:hover {
+  border-color: #dbc98d;
 }
 .dashboard .audit-head {
   min-width: 0;
@@ -887,6 +894,9 @@
     height: 40px;
   }
 }
+.audit-group > summary { cursor: pointer; padding: 12px; color: #344054; font-weight: 600; }
+.audit-group.warning > summary { color: #8a754b; font-weight: 400; }
+.audit-group > .audit { margin-top: 8px; }
 @media (prefers-reduced-motion: reduce) {
   .dashboard *,
   .dashboard *::before,

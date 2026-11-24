@@ -28,15 +28,16 @@
 ## 视频容错、部分报告与续办
 
 - 停止采集不等于完成判定。已有内容仍待识别或判定时，按原任务返回的 `next_action` 继续；不能直接宣称内容不足或检测完成。
+- 已有就绪片段时先领取并提交，不因其他片段的媒体恢复失败或 worker 无响应而只轮询。批次也先处理当前视频的就绪片段。就绪片段处理完后，若采集与处理都已结束则按指引交付部分报告，否则沿原任务恢复；依赖或权限失败按 [启动恢复](startup.md) 核对固定错误详情，不循环重建任务或扩大目录权限。
 
 - 新建豆包云电脑视频默认 `html_snapshot`，同机桌面默认 `local_dashboard`；仅用户明确要求纯文字时使用 `chat`。已有任务保留原交付模式，不因报告或附件故障切换。
 - 视频判定失败先读结构化 `error.code/field/segment_id/retryable/next_action`。首次失败最多修正两次，同一参数不重放；`REVIEW_INPUT_REPEATED` 要求修正，`REVIEW_RETRY_EXHAUSTED` 或 `next_action=review-defer` 要求保留待续办。证据版本变化先重新领取；不能用全 `no_hit` 绕过校验。ASR 已失败但处理终止时，依赖语音的规则使用 `insufficient`，已取得画面的规则仍独立判定。
-- 使用 `review-defer --task-dir <原目录>`，stdin 为 `{"task_id":"原任务编号","segment_id":24,"evidence_revision":3,"reason_code":"INPUT_REPAIR_EXHAUSTED"}`；原因仅允许 `INPUT_REPAIR_EXHAUSTED`、`EVIDENCE_UNAVAILABLE`、`REVIEW_BLOCKED`。延期不算完成判定，也不生成规则结果。默认 `review-next` 跳过延期片段，继续其余可用片段。
-- 本轮可处理片段完成后，若仍有阻塞或无有效证据，执行 `report --task-dir <原目录> --allow-partial`，交付部分结果，不无限等待 `not_ready`。常规 `report` 仍保留完整处理门槛。报告的 `processing_complete` 与 `coverage_complete` 分别表示处理收敛、全片证据覆盖完整；文件生成成功不等于两者为真。以结构化 `report` 生成 Chat 摘要，不读取 `html/data.js` 手工拼接另一套结论。
+- 使用 `review-defer --task-dir <原目录>`，stdin 为 `{"task_id":"原任务编号","segment_id":24,"evidence_revision":3,"reason_code":"INPUT_REPAIR_EXHAUSTED"}`；原因仅允许 `INPUT_REPAIR_EXHAUSTED`、`EVIDENCE_UNAVAILABLE`、`REVIEW_BLOCKED`。全视频任务将该窗标为跳过并保存原因，不生成规则结果，继续后续窗口；历史非全视频任务仍保留延期续办语义。
+- 本轮可处理片段完成后，若仍有阻塞或无有效证据，执行 `report --task-dir <原目录> --allow-partial`，交付部分结果，不无限等待 `not_ready`。采集与处理进程均已结束时，常规 `report` 也会生成部分报告；仍在运行时使用显式 `--allow-partial`。报告的 `processing_complete` 与 `coverage_complete` 分别表示处理收敛、全片证据覆盖完整；文件生成成功不等于两者为真。以结构化 `report` 生成 Chat 摘要，不读取 `html/data.js` 手工拼接另一套结论。
 - 实际文件交付、版本回执和失败续办按 [交付](delivery.md)。
 
 - 报告列出已判定、待判定、待续办和证据缺失的范围与原因，覆盖率按时间区间而非片段数量计算。`部分检测结果` 必须说明不能排除未检测内容的其他风险；无有效证据写 `未完成有效检测`。规则命中按规则与证据事件计数，同一时间可能命中多条规则。
-- 用户要求继续时先 `status`；仅补判使用 `review-next --include-deferred`，重新打开本段有限修正机会，不启动采集。新证据会自动清除旧延期及旧判定，已成功且证据未变的片段不重复提交。确实仍需媒体处理时才 resume。续办后重新 report 并交付新版本，旧 HTML 是不可变历史快照。
+- 用户要求继续时先 `status`；全视频已跳过窗口保留封存结果，不重新提交迟到判定。历史延期片段仅补判使用 `review-next --include-deferred`，重新打开本段有限修正机会，不启动采集。新证据会自动清除旧延期及旧判定，已成功且证据未变的片段不重复提交。确实仍需媒体处理时才 resume。续办后重新 report 并交付新版本，旧 HTML 是不可变历史快照。
 - 批次每项交付并确认后再 `batch-next`；部分报告已交付可继续下一项，批次保留 partial，不宣称全量检测完成。原任务随时可以单独续办；零判定项补判并交付有效新报告后，批次同步更新检测状态。
 - 云端 ASR 只有明确未执行的错误才允许有界重试（首次加两次，间隔2秒和10秒）；提交结果未知不得自动重放。`upload_address_failed` 单独不足以证明未提交或凭证失效。保留缺口并沿原任务核对或由本地接管。
 
@@ -46,7 +47,9 @@
 
 领取后直接填写 `submission_contract.template`，即使规则正文已缓存，模板仍列出全部规则。每条填写 `status`（hit/no_hit/insufficient/not_applicable）和非空 `reason`；命中 `events` 引用本窗口的 `evidence_ids`，非命中填空数组。追加专项后重新领取更新模板。不要使用 live-review.md 的直播 `segments/context_id/reviewed` 精简格式，不得用空 `rules` 表示全未命中。只在回执为 saved/already_saved 后计为已判定；格式修复期间沿原窗口提交。
 
-新视频待判片段不因等待、判定或收尾超时自动跳过；采集结束后继续判定全部片段。失败或用户停止导致未完成时，只能交付明确标注缺口的部分结果。历史抽检任务沿用原策略和保存期限，封存窗口不重开。
+新动态任务每窗按模板填写带证据的 `content_route`，行业适用边界和无法确定时的处理见[追加专项](rules.md#追加专项)。对照图片也须实际查看、列入 `images_viewed` 并在事件中描述。
+
+全视频不设总检测时长上限；单窗证据准备或领取后的判定默认最多等待120秒，超时跳过并继续后续窗口。证据已就绪但尚未轮到领取的窗口不因排队超时跳过。明确无法判定或输入修正耗尽时立即使用 review-defer 跳过，不循环重试。已完成判定保留，报告披露跳过原因与未检范围，不能称全片通过；历史抽检任务沿原策略，封存窗口不重开。
 
 - `review-next` 每次只领取一个窗口，即使传入更大 limit 也不并行领取。每窗按证据判断是否需要追加专项，否则直接使用当前规则。`segment.id` 是独立窗口 ID；不要对原始 ASR 片段提交判定。
 - 不把窗口内每个断句拆为独立判定。`window_expired` 表示本地运行时已经封存该窗口，按返回 next_action 继续，不重试旧提交。

@@ -130,7 +130,7 @@
 | 属性 | 说明 |
 |------|------|
 | `textType` | `title` / `headline` / `sub-headline` / `body` / `caption` |
-| `verticalAlign` | 垂直对齐：`top` / `middle` / `bottom`（默认 `middle`） |
+| `verticalAlign` | 垂直对齐：`top` / `middle` / `bottom`（默认 `top`） |
 | `textAlign` | 文本对齐：`left` / `center` / `right` / `justify` / `dist`（`shape type="text"` 默认 `left`，其它形状默认 `center`） |
 | `lineSpacing` | 行间距，默认 `multiple:1.5` |
 | `letterSpacing` | 字间距，单位 px，作用于 `content`/`p` 层级，默认 `0`（正值拉开、负值收紧） |
@@ -215,7 +215,7 @@
 
 | 属性 | 必需 | 说明 |
 |------|------|------|
-| `type` | 是 | 形状类型：常用 `text`（文本框）/ `rect` / `round-rect` / `slides-full-round-rect` / `ellipse` / `triangle` / `diamond`；完整枚举 `grep -A40 '^## \`<shape>\`' references/xml/slides_xml_schema_index.md` |
+| `type` | 是 | 形状类型：常用 `text`（文本框）/ `rect` / `round-rect` / `slides-full-round-rect` / `ellipse` / `triangle` / `diamond` / `right-arrow` / `chevron`；原生箭头选型见下表，完整枚举 `grep -A40 '^## \`<shape>\`' references/xml/slides_xml_schema_index.md` |
 | `topLeftX` | 是 | 左上角 X 坐标 |
 | `topLeftY` | 是 | 左上角 Y 坐标 |
 | `width` | 是 | 宽度 |
@@ -245,7 +245,23 @@
 - `rect` 和 `round-rect` 写了 `presetHandlers` 后行为完全一致，区别只在不写时的默认值：`rect` 是 `0`（直角），`round-rect` 是 `16`。
 - `<border>` 的 `width` 只能取正整数，不支持小数。
 - 估算文本框宽度时需要注意大部分字体里的中文、英文、数字不等宽。
-- 除常用 7 种，ShapeType 共 **191 种**（箭头 / 标注 / 流程图符号 / 数学符号等）；`type="custom"` + `path` 可画任意 SVG 路径形状；文本 `vert` 支持竖排 / 旋转共 6 种方向。均 `grep -n 'ShapeType\|type="custom"\|vert' references/xml/slides_xml_schema_index.md`。
+- ShapeType 共 **191 种**（箭头 / 标注 / 流程图符号 / 数学符号等）；`type="custom"` + `path` 可画任意 SVG 路径形状；文本 `vert` 支持竖排 / 旋转共 6 种方向。均 `grep -n 'ShapeType\|type="custom"\|vert' references/xml/slides_xml_schema_index.md`。
+
+原生箭头按场景选型：
+
+需要可填充的块状箭头时，可直接用 `<shape type="…">` 选择预设轮廓，通过 `<fill>` / `<border>` 设置样式。
+
+| 应用场景 | 常用 `type` | 使用要点 |
+|----------|-------------|----------|
+| 单个方向指示、输入到输出 | `right-arrow` / `left-arrow` / `up-arrow` / `down-arrow` | 按实际流向选方向，用于突出一次转换关系 |
+| 阶段名放在形状内、多个阶段横向连续排列 | `chevron` | 左侧凹口、右侧尖头；阶段名放在中部实心区域，同高、同基线排列，详细说明放在对应阶段下方 |
+| 双向交换、相互作用 | `left-right-arrow` / `up-down-arrow` | 仅用于确有双向关系的对象；普通对比不必加箭头 |
+| 回退、返工 | `uturn-arrow` | 用 U 形回转表达返回关系，明确返回的步骤或对象 |
+| 循环迭代 | `circular-arrow` | 用于实际存在的循环过程；有多个阶段时仍需标清顺序 |
+| 重点说明、指向标注 | `right-arrow-callout` | 说明文字可放在 `<content>` 中，箭头指向被解释的内容 |
+
+- 用 `topLeftX` / `topLeftY` / `width` / `height` 定位整个箭头；可用 `rotation` 或 `flipX` / `flipY` 调整方向。块状箭头不需要 `<startArrow>` / `<endArrow>`。
+- 节点间需要细连接线或绕行路线时，用下面的 `line` / `polyline` 加端点箭头；原生箭头 shape 不会自动吸附节点或避开文字。SVG 示意图的连线按 [svg-writing-guide.md](svg-writing-guide.md) 使用 `d.arrow`。
 
 **示例**
 
@@ -279,6 +295,31 @@
   </fill>
 </shape>
 ```
+
+原生箭头通用写法（示例 `type` 为 `right-arrow`，按上表场景替换）：
+
+```xml
+<shape type="right-arrow" topLeftX="120" topLeftY="240" width="240" height="80">
+  <fill>
+    <fillColor color="rgb(37,99,235)"/>
+  </fill>
+</shape>
+```
+
+需要在形状内放文字时添加 `<content>`，文字留在实心区域；宽高按轮廓调整，例如环形箭头可使用接近正方形的宽高，避免过度拉伸。
+
+Chevron（横向阶段中的一个步骤）：
+
+```xml
+<shape type="chevron" topLeftX="120" topLeftY="240" width="180" height="64">
+  <fill><fillColor color="rgb(37,99,235)"/></fill>
+  <content fontSize="16" color="rgb(255,255,255)" textAlign="center" verticalAlign="middle" paddingLeft="24" paddingRight="24">
+    <p>评估</p>
+  </content>
+</shape>
+```
+
+多个阶段可保持相同的 `topLeftY` 和 `height`，依次调整 `topLeftX` 与阶段文字，形成横向连续排列。
 
 ### line
 
@@ -670,9 +711,52 @@
 
 ## 完整示例
 
+**示例材料（虚构，仅用于演示；实际任务须替换为真实已读材料）**：
+
+1. 示例数据：上季度营收 80 万元，本季度营收 100 万元；两期均为同一业务范围的销售收入，单位为万元。
+2. 示例计划：拟在下季度启动区域试点，目前尚未开展。
+3. 写作要求：总结交付优势；除营收外，未提供项目记录、客户反馈或交付周期。
+
+本例把上方材料视为用户已提供的演示输入；实际任务中模型自行拟写的示例应使用 `kind: "example"` 和 `sources: []`。下面先把依据集中保存在 `references.json`，再在正文和讲稿实际使用处标编号。同一事实只存一次，编号 [1]、[2]、[3] 在正文和讲稿中复用；两项事实来自同一条材料，仍分别编号。`direct` 是直接转述，`calculated` 是计算，`inferred` 需列出推导。第3条写作要求不能证明“流程成熟、交付高效”，因此列为信息缺口，正文和讲稿均留待补。正文和讲稿保留“示例数据”“尚未开展”等限定；不能因为编号存在就扩写出原文没有的结论。
+
+以下 JSON 和 XML 是一组作者工作文件；编号只在注释中，不显示在 PPT 画面。示例展示完整文档结构，逐页提交时只取其中的 `<slide>`。
+
+`references.json`：
+
+```json
+{
+  "references": [
+    {
+      "id": 1,
+      "fact": "本季度营收100万元（示例数据）",
+      "sources": [{"source": "本节示例材料（虚构）", "locator": "第1条", "evidence": "示例数据：上季度营收 80 万元，本季度营收 100 万元；两期均为同一业务范围的销售收入，单位为万元。"}],
+      "kind": "direct",
+      "status": "示例数据，不是真实经营结果"
+    },
+    {
+      "id": 2,
+      "fact": "同口径营收环比增长25%（示例数据）",
+      "sources": [{"source": "本节示例材料（虚构）", "locator": "第1条", "evidence": "示例数据：上季度营收 80 万元，本季度营收 100 万元；两期均为同一业务范围的销售收入，单位为万元。"}],
+      "kind": "calculated",
+      "status": "基于示例数据的计算",
+      "derivation": "两期同一业务范围，单位均为万元；(100-80)/80×100%=25%。"
+    },
+    {
+      "id": 3,
+      "fact": "区域试点拟下季度启动，尚未开展，成效待验证（示例计划）",
+      "sources": [{"source": "本节示例材料（虚构）", "locator": "第2条", "evidence": "示例计划：拟在下季度启动区域试点，目前尚未开展。"}],
+      "kind": "inferred",
+      "status": "计划，尚未开展",
+      "derivation": "材料明确试点尚未开展，不能报告实施成效，成效须在开展后验证。"
+    }
+  ],
+  "gaps": ["仅有总结交付优势的写作要求，缺少项目记录、客户反馈或交付周期，不能肯定描述交付能力。"]
+}
+```
+
 ```xml
 <presentation xmlns="https://www.larkoffice.com/sml/2.0" width="960" height="540">
-  <title>季度报告</title>
+  <title>经营回顾与计划（示例）</title>
   <theme>
     <textStyles>
       <title fontFamily="思源宋体" fontSize="54" fontColor="rgba(0, 0, 0, 1)"/>
@@ -688,16 +772,20 @@
     <data>
       <shape type="text" topLeftX="80" topLeftY="72" width="760" height="100">
         <content textType="title" fontSize="36">
-          <p>2024 年第一季度报告</p>
+          <p>经营回顾与计划（示例）</p>
         </content>
       </shape>
       <shape type="text" topLeftX="80" topLeftY="200" width="520" height="180">
         <content textType="body" fontSize="16">
-          <p>核心指标</p>
+          <p>数据与计划</p>
           <ul>
-            <li><p>用户增长：+25%</p></li>
-            <li><p>收入增长：+30%</p></li>
-            <li><p>市场份额：15%</p></li>
+            <!-- citation: [1] -->
+            <li><p>本季度营收：100万元（示例数据）</p></li>
+            <!-- citation: [2] -->
+            <li><p>营收环比增长：25%（示例数据）</p></li>
+            <!-- citation: [3] -->
+            <li><p>区域试点：拟下季度启动，尚未开展，成效待验证（示例计划）</p></li>
+            <li><p>交付优势：待补项目记录与客户反馈后评估</p></li>
           </ul>
         </content>
       </shape>
@@ -710,7 +798,13 @@
     </data>
     <note>
       <content textType="body">
-        <p>讲到增长率时补充样本范围。</p>
+        <!-- citation: [1] -->
+        <p>这页使用示例数据，本季度营收为100万元。</p>
+        <!-- citation: [1][2] -->
+        <p>按示例中相同的营收口径，从上季度80万元到本季度100万元，环比增长25%。</p>
+        <!-- citation: [3] -->
+        <p>区域试点在本例中拟下季度启动，尚未开展，因此成效待开展后验证。</p>
+        <p>现有材料不足以判断交付优势，补充项目记录与客户反馈后再评估。</p>
       </content>
     </note>
   </slide>

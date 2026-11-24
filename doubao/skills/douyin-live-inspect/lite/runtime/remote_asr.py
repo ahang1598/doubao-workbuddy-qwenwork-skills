@@ -100,6 +100,10 @@ def _process(processor, store, segment, cancel=None):
         if not unknown and not terminal:
             mediakit.recover_credentials(store)
             cloud={'ready':True} if submitted else cloud_available(store)
+            if (not cloud['ready'] and cloud.get('code')=='CLOUD_ASR_AUTH_UNAVAILABLE'
+                    and mediakit.refresh_after_failure(store, current(), 'credentials_unavailable', cancel=cancel,
+                        remaining=max(0,segment.get('asr_cloud_deadline_at',time.time()+90)-time.time()))):
+                cloud=cloud_available(store)
             if cloud['ready'] and not mediakit.submissions_paused(store):
                 if not store.update_segment(sid,asr_backend='mediakit'):return
                 mediakit.process_asr(EvidenceStore(store,current()),current(),cancel=cancel,defer_failure=True)
@@ -132,7 +136,7 @@ def _process(processor, store, segment, cancel=None):
             if 'generation' in selection: backend_routing.remote_result(store,'asr',selection,True)
             return
         if segment['asr_status'] in {'running','submitted','pending'}:return
-        if 'generation' in selection:
+        if 'generation' in selection and (segment.get('asr_diagnostic') or {}).get('stage') != 'prepare':
             backend_routing.remote_result(store,'asr',selection,False,
                 category=(segment.get('asr_diagnostic') or {}).get('category'))
     if cancel.is_set():return

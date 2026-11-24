@@ -23,10 +23,6 @@ def annotate(data, complete=False, *, store=None):
     nested = isinstance(next_result, dict) and bool(next_result.get('next_action'))
     target = next_result if nested else data
     action = target.get('next_action')
-    if not complete and action in {'status','review-next'} and task.get('kind','live') == 'live':
-        from runtime.mediakit import host_refresh_due
-        if host_refresh_due(task):
-            action = target['next_action'] = 'refresh-credentials'
     data['workflow_complete'] = target['workflow_complete'] = complete
     if not action:
         return
@@ -41,12 +37,12 @@ def annotate(data, complete=False, *, store=None):
     elif action in {'deliver-dashboard-url', 'deliver-html-snapshot', 'deliver-chat-start-message'}:
         instruction = ('先实际交付 delivery，再立即执行 after_delivery_next_action，持续领取和提交判定。'
                        '工作台刷新和后台媒体进程不会代替当前 Agent 判定或生成复盘；进度用中间消息，不以最终回复结束执行。')
-    elif action == 'refresh-credentials':
-        instruction = ('立即在豆包工作的新一次宿主工具调用中执行原 CLI 的 refresh-credentials --task-dir '
-                       + str(store.root) + '，继承该次宿主注入的环境；不要由后台进程或持久 shell 自行刷新。'
-                       '不要读取、打印或让用户粘贴凭证。刷新后立即按回执执行 status，继续原任务。'
-                       'credential_changed=false 表示未取得新凭证，不代表续期成功；继续本地接管和判定，'
-                       '运行时最多每120秒再次请求刷新。上传地址异常只触发核验，不能据此声称凭证已过期。')
+    elif action == 'credential-worker-next':
+        data['continuation_instruction'] = '立即执行 command_argv 继续常驻凭证维护；由程序等待和安排刷新，不接管主流程。'
+        return
+    elif action == 'finish-credential-subagent':
+        data['continuation_instruction'] = '只回报凭证导入结果并结束当前凭证子任务；主任务和后台 ASR 自行继续。'
+        return
     elif action == 'status':
         target['poll_after_seconds'] = data['poll_after_seconds'] = 3
         instruction = ('本次尚未完成，最多等待 3 秒后执行 status，按返回的 next_action 自动续办。'
@@ -61,6 +57,8 @@ def annotate(data, complete=False, *, store=None):
         instruction = data['source_refresh']['instruction']
     elif action == 'review-next':
         instruction = '立即以新的 request-id 执行 review-next；不重放已保存提交，不等待用户回复。'
+    elif action == 'qa-next':
+        instruction = '本批风险已保存，立即执行 qa-next；在独立问答上下文处理已就绪评论，追平后继续 review-next；不等停播后集中补做。'
     elif action == 'review-submit':
         instruction = ('按合同提交；勿重领。' if target.get('segments') else
                        '按本批证据与提交合同完成判定；校验失败时仅修复失败项并使用重试合同。')
@@ -82,6 +80,10 @@ def annotate(data, complete=False, *, store=None):
         instruction = '先自动执行 source_refresh 的取流和原任务交接，保留本回执，再继续当前动作。' + instruction
     if not complete:
         instruction = INCOMPLETE_INSTRUCTION + ' ' + instruction
+        if data.get('credential_worker_action'):
+            instruction += ' 先处理 credential_worker_action，交由豆包常驻 subAgent 提前维护宿主凭证；保留本回执继续当前动作，不等待刷新完成。'
+        if data.get('qa_worker_action'):
+            instruction += ' 完成必要交付后、继续风险判定前，先处理 qa_worker_action 的全部空位并确认运行或记录失败；未到重试时间继续本回执原动作，不等待问答完成。'
         if task.get('capture_status') in {'ended','stopped','failed'}:
             instruction += (' 采集结束不等于任务完成：继续等待已有媒体处理、提交可判定内容，再生成并交付质检和复盘。'
                             '待判定为0不代表转写已完成；按 next_action 续办，无法处理的范围如实披露。'

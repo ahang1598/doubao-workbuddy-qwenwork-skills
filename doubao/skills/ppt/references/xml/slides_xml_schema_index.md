@@ -2199,7 +2199,7 @@
 | 属性 | 必需 | 默认/固定 | 类型 | 枚举、数值与格式约束 |
 |---|---|---|---|---|
 | `textType` | 否 | 默认 `body` | `TextType` | 文本语义层级, 影响默认字号和样式 title = 大标题 headline = 标题 sub-headline = 副标题 body = 正文 caption = 小号正文；字符串；枚举：title \| headline \| sub-headline \| body \| caption |
-| `verticalAlign` | 否 | 默认 `middle` | `VerticalAlignType` | 字符串；枚举：top \| middle \| bottom |
+| `verticalAlign` | 否 | 默认 `top` | `VerticalAlignType` | 字符串；枚举：top \| middle \| bottom |
 | `paddingTop` | 否 | - | `PaddingValueType` | 单个内边距值, 单位: px, 取值范围 [0, 1584]；浮点数；限制：>= 0，<= 1584 |
 | `paddingRight` | 否 | - | `PaddingValueType` | 单个内边距值, 单位: px, 取值范围 [0, 1584]；浮点数；限制：>= 0，<= 1584 |
 | `paddingBottom` | 否 | - | `PaddingValueType` | 单个内边距值, 单位: px, 取值范围 [0, 1584]；浮点数；限制：>= 0，<= 1584 |

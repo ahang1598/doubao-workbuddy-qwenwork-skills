@@ -1,5 +1,7 @@
 """保证 Agent 续办信息可读，同时不丢弃完整质检证据。"""
 import os
+import datetime
+import sys
 import tempfile
 from pathlib import Path
 from runtime.store import encode
@@ -41,6 +43,10 @@ def attach_report_delivery(data, command):
         channel = 'chat'
     delivery['message'] += ('结论仅限已检测内容；说明已检测与舍弃数量、范围及原因，不把未检测当无风险；实际交付后才确认对应回执。'
         '质检报告先交付，再按后续动作完成复盘；不得在仅交付质检报告时结束执行；两份结果均实际交付前不得宣称完成。')
+    if kind == 'review' and data.get('status') == 'ready' and data.get('available'):
+        delivery['message'] += ('复盘成功交付并完成原流程确认后，仅在最终聊天回复结尾邀请用户“继续聊聊”：'
+            '结合经营数据分析、挑选高光剪辑、优化下一场直播脚本；结合本场发现简短推荐，等待用户选择后再执行。'
+            '引导不写入报告正文、HTML 或 summary.md。执行细节见 ../references/doubao-delivery.md 的“复盘后继续聊聊”。')
     media = artifacts.get('media', {})
     if media.get('path', '').endswith('.zip'):
         delivery['message'] += '完整 MP4 合成失败。请通过 present_files 或宿主附件工具随报告单独交付 media 中的 FLV 切片 ZIP，展示实际下载入口；附件交付失败时如实说明。'
@@ -60,21 +66,44 @@ def retain_local_reports(store, data):
     import hashlib
     import shutil
     from runtime.platform_support import private_directory, file_lock
-    from runtime.static_delivery import media_file
+    from runtime.static_delivery import media_file, atomic
+    from runtime.live_room import web_rid
     message = ('豆包优先通过 present_files 将 delivery.path 交付为文件卡片，使用宿主实际返回的入口；'
         '已展示卡片时总结引用卡片，不额外贴 file://。其他宿主仅在确认支持本地文件链接时使用 delivery.url。'
         '附件不可用或打开失败时说明报告页尚不可访问，复用原报告补交或交付完整 Chat 正文；不重新采集。'
         'workflow_complete 仅表示交付回执齐全，不证明宿主打开、刷新或回放成功。')
     delivery['message'] = message + delivery.get('message', '')
     selected = [a for a in data.get('artifacts', [])
-                if a.get('status') == 'ready' and a.get('type') in {'quality', 'review', 'media'}]
+                if a.get('status') == 'ready' and a.get('type') in {'quality', 'review', 'media', 'summary'}]
     try:
         # The original path separates legacy tasks even when they lack a business ID.
         identity = hashlib.sha256(str(store.root.resolve()).encode()).hexdigest()[:24]
         base = private_directory(Path.home() / 'DouyinLiveInspect')
-        root = private_directory(private_directory(base / 'Reports') / identity)
+        task = store.task()
+        room = web_rid(task)
+        if room:
+            try:
+                started = datetime.datetime.fromisoformat(task['created_at'].replace('Z', '+00:00'))
+                if started.tzinfo is None:
+                    raise ValueError('task start timezone missing')
+                stamp = started.astimezone(datetime.timezone(datetime.timedelta(hours=8))).strftime('%Y-%m-%d %H:%M:%S')
+                if sys.platform == 'win32':
+                    stamp = stamp.replace(':', '：')
+            except (KeyError, ValueError, TypeError, AttributeError):
+                room = None  # Legacy tasks without a start time retain their task identity.
+        root = private_directory(private_directory(base / 'Reports') / (room or identity))
         replacements = {}
         with file_lock(root / '.delivery.lock', timeout=2):
+            if room:
+                folder = root / stamp
+                owner = folder / '.task'
+                if folder.exists() and (not owner.is_file() or owner.read_text() != identity):
+                    folder = root / (stamp + ' (' + identity + ')')
+                root = private_directory(folder)
+                owner = root / '.task'
+                if owner.exists() and owner.read_text() != identity:
+                    raise ValueError('report directory belongs to another task')
+                atomic(owner, identity)
             # Publish media first so a newly opened report never references an unfinished copy.
             for item in sorted(selected, key=lambda a: a['type'] != 'media'):
                 source = media_file(store, item['path'])
@@ -109,14 +138,6 @@ def public_live_report(report):
     result['display_scope']='checked_content'
     for key in ('asr_sources','sampling'):
         result.pop(key,None)
-    conclusion=result.get('conclusion')
-    if isinstance(conclusion,dict):
-        assessment=conclusion.get('assessment','undetermined')
-        result['conclusion']={**conclusion,'assessment':assessment,'summary':{
-            'hit':'已检测内容中发现规则命中。',
-            'no_hit_in_checked_scope':'已检测内容中未发现规则命中。',
-            'not_applicable':'已检测内容中未发现适用规则命中。'
-        }.get(assessment,'检测未完成，无法给出质检结论。') + (' 存在未检测内容，详见覆盖范围与缺口。' if result.get('skipped_segment_count') else '')}
     for rule in result.get('rules',[]):
         rule['display_scope']='checked_content'
         for key in ('coverage_summary','counts','judgments'):rule.pop(key,None)
@@ -173,11 +194,11 @@ def recap_brief(store, source):
     context = source['scoring_context']
     risk_segments = {e['segment_id'] for e in context['evidence']
                      if e['kind'] == 'quality' and e.get('result') == 'hit'}
+    # Scoring retains content evidence, including segments with no risk hits.
     result = {**source,
         'evidence_file': bounded_output(store, 'recap-input', source, force=True)['data']['result_file'],
         'segments': [{k:v for k,v in s.items() if k not in ('evidence_ids', 'decisions')} for s in source['segments']],
-        'evidence': [e for e in source['evidence'] if e['segment_id'] in risk_segments],
-        'scoring_context': {**context, 'evidence': [e for e in context['evidence'] if e['kind'] == 'quality']}}
+        'evidence': [e for e in source['evidence'] if e['segment_id'] in risk_segments]}
     if 'quality_conclusion' in source:
         result['quality_conclusion'] = {**source['quality_conclusion'],
             'coverage_summary': compact_coverage(source['quality_conclusion']['coverage_summary'])}
@@ -229,6 +250,11 @@ def compact_report(store, data):
         result['submission_contract'] = {**result['submission_contract'], 'instruction':
             '先交付质检报告，再完整读取 recap_input.result_file；无法读文件才按 read_argv 分页。'
             + result['submission_contract']['instruction']}
+    if len(encode(result).encode()) > 22000 and result.get('submission_contract',{}).get('analysis_rules'):
+        # Keep the complete policy available without exceeding the command reply budget.
+        result['submission_contract'] = {**result['submission_contract'],
+            'analysis_rules':'分析前读取 analysis_rules_file 的完整规则；不能以本回执摘要代替规则。',
+            'analysis_rules_file':str(Path(__file__).resolve().parents[1]/'assets/rules/recap-rules.md')}
     return result
 
 
@@ -274,7 +300,7 @@ def bounded_output(store, command, data, *, force=False, read_only=False):
     # Host delivery must remain actionable even when evidence moves to a file.
     summary.update({k:data[k] for k in ('delivery_mode','delivery','artifact_status','artifacts',
         'source_end_reason','live_source_status','capture_status_text','source_refresh',
-        'capture_failure','diagnostic_delivery','snapshot_check','snapshot_events','snapshot_delivery','after_delivery_next_action',
+        'capture_failure','diagnostic_delivery','snapshot_check','snapshot_events','snapshot_delivery','after_delivery_next_action','credential_worker_action','qa_worker_action',
         'poll_after_seconds','wait_command_argv','continuation_path','continuation_instruction') if k in data})
     if 'continuation_instruction' in summary:
         # The immediate action is pagination; the saved result retains its own
@@ -289,6 +315,8 @@ def bounded_output(store, command, data, *, force=False, read_only=False):
     if data.get('snapshot_delivery'):delivery_instruction += '先交付 snapshot_delivery 工作台附件。'
     if data.get('diagnostic_delivery'):delivery_instruction += '按 diagnostic_delivery 交付采集失败诊断；这不是有效报告。'
     if data.get('delivery'):delivery_instruction += '报告按 delivery 交付；Chat 降级须完整读取正文。'
+    if data.get('credential_worker_action'):delivery_instruction += '先处理 credential_worker_action，再继续原动作；不等待刷新完成。'
+    if data.get('qa_worker_action'):delivery_instruction += '继续风险判定前先处理 qa_worker_action：补齐子任务或记录具体失败，未到重试时间则继续原流程。'
     return {'ok':True,'command':command,'data':{**summary,
         'next_action':'read-result-pages','result_id':result_id,'total_bytes':len(raw.encode('utf-8')),
         'total_chars':len(raw),'offset_unit':'unicode_code_points','result_file':str(path),

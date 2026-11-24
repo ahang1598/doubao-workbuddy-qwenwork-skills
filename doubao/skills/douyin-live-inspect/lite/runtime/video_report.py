@@ -45,6 +45,11 @@ def video_report(store, *, allow_partial=False, mode=None, single_file=False):
     with file_lock(store.root/'.video-report.lock'):
         frozen=FrozenStore(store)
         status=frozen.status()
+        # Terminal videos still deliver useful results with explicit coverage gaps.
+        task=frozen.task()
+        allow_partial = allow_partial or (task.get('kind') == 'video'
+                                          and task.get('capture_status') in {'ended','stopped','failed'}
+                                          and task.get('worker_status') in {'done','stopped','failed'})
         if not status['report_ready'] and not allow_partial:
             return {'status':'not_ready',**status,**inspection_continuation(status),'artifacts':[]}
         from runtime.delivery_notice import effective_delivery_mode

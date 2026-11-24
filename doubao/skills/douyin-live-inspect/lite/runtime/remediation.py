@@ -88,9 +88,12 @@ def _item(source, source_id, title, reason, metadata, occurrences, *, rule_id=No
 def build(task, segments, *, include_content=False, source=None):
     if not enabled(task):
         return {'status': 'ungraded', 'message': '未分级：此任务未启用整改分级', 'items': [], 'pending': []}
+    warnings=[(s['id'],s.get('evidence_revision'),d['rule_id']) for s in segments
+              for d in _decisions(s,task.get('review_dispositions')) if d.get('review_disposition')]
     base = {'version': VERSION, 'evidence_version': _hash([
         task.get('rules_snapshot', {}).get('version'),
-        [{k: s.get(k) for k in ('id', 'evidence_revision', 'review_status', 'subtitles', 'frames', 'review_result')} for s in segments]])}
+        [{k: s.get(k) for k in ('id', 'evidence_revision', 'review_status', 'subtitles', 'frames', 'review_result')} for s in segments]]
+        + ([warnings] if warnings else []))}
     if task.get('capture_status') not in {'ended', 'stopped', 'failed'} or task.get('worker_status') not in {'done', 'stopped', 'failed'}:
         return {**base, 'status': 'waiting', 'message': '检测结束后生成整改清单', 'items': [], 'pending': []}
     items = []
@@ -98,7 +101,7 @@ def build(task, segments, *, include_content=False, source=None):
     for segment in segments:
         if segment.get('review_status') != 'done' and not segment.get('speech_reviewed'):
             continue
-        for di, decision in enumerate(_decisions(segment)):
+        for di, decision in enumerate(_decisions(segment,task.get('review_dispositions'))):
             rid = str(decision.get('rule_id'))
             if rid not in rules or _result(decision) not in {'hit', 'insufficient'}:
                 continue

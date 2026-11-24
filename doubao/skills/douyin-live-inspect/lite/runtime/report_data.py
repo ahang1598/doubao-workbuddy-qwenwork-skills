@@ -21,20 +21,44 @@ DECISION_RESULTS = ('hit', 'no_hit', 'not_applicable', 'insufficient', 'pending'
 ASR_SUCCESS = {'done', 'ready', 'completed', 'success'}
 
 
-def _decisions(segment):
+def _disposition_key(segment, decision):
+    return ':'.join((str(segment.get('id')), str(segment.get('evidence_revision')),
+                     str(decision.get('rule_id'))))
+
+
+def _decisions(segment, review_dispositions=None):
     review = segment.get('review_result') or {}
-    return review.get('decisions', review.get('rules', [])) or []
+    decisions = review.get('decisions', review.get('rules', [])) or []
+    projected = []
+    for decision in decisions:
+        disposition = (review_dispositions or {}).get(_disposition_key(segment, decision))
+        if disposition and disposition.get('disposition') == 'warning' and _result(decision) == 'hit':
+            projected.append({**decision, 'status': 'warning', 'result': 'warning',
+                              'review_disposition': disposition})
+        elif _result(decision) == 'hit' and (disposition or {}).get('disposition') == 'insufficient':
+            reason = disposition['reason']
+            channels = {
+                key: {**channel, 'status': 'insufficient', 'result': 'insufficient', 'reason': reason}
+                if _result(channel) == 'hit' else channel
+                for key, channel in (decision.get('channels') or {}).items()
+            }
+            projected.append({**decision, 'status': 'insufficient', 'result': 'insufficient',
+                              'channels': channels, 'reason': reason, 'events': [],
+                              'review_disposition': disposition})
+        else:
+            projected.append(decision)
+    return projected
 
 
 def _result(decision):
     return decision.get('result', decision.get('status'))
 
 
-def _rule_summary(rule, segments):
+def _rule_summary(rule, segments, review_dispositions=None):
     counts = dict.fromkeys(DECISION_RESULTS, 0)
     groups = {}
     for segment in segments:
-        decisions = [d for d in _decisions(segment) if str(d.get('rule_id')) == rule['id']]
+        decisions = [d for d in _decisions(segment, review_dispositions) if str(d.get('rule_id')) == rule['id']]
         retained_hit=segment.get('full_live') and any(_result(d)=='hit' for d in decisions)
         if retained_hit:
             decisions=[d for d in decisions if _result(d)=='hit']
@@ -47,29 +71,29 @@ def _rule_summary(rule, segments):
             decisions = [{'result': 'insufficient', 'reason': '该片段缺少规则判断结果'}]
         results = [_result(d) for d in decisions]
         # Duplicate/unknown historical decisions cannot silently clear a segment.
-        result = ('hit' if 'hit' in results else
+        result = ('hit' if 'hit' in results else 'warning' if 'warning' in results else
                   results[0] if len(decisions) == 1 and results[0] in DECISION_RESULTS else 'insufficient')
-        counts[result] += 1
+        counts[result] = counts.get(result, 0) + 1
         for decision in decisions:
             status = _result(decision)
-            status = status if status in DECISION_RESULTS else 'insufficient'
-            reason = public_text(decision.get('reason') or '').strip() or '未保存判断依据，无法展示具体原因'
+            status = status if status in DECISION_RESULTS or status == 'warning' else 'insufficient'
+            reason = public_text((decision.get('review_disposition') or {}).get('reason') or decision.get('reason') or '').strip() or '未保存判断依据，无法展示具体原因'
             key = (status, reason)
             groups.setdefault(key, {'result': status, 'reason': reason, 'segments': []})
             span = {'segment_id': segment['id'], 'start': segment.get('start_ms', 0) / 1000,
                     'end': segment.get('end_ms', 0) / 1000}
             if span not in groups[key]['segments']:
                 groups[key]['segments'].append(span)
-    result = ('hit' if counts['hit'] else 'pending' if counts['pending'] else
+    result = ('hit' if counts['hit'] else 'warning' if counts.get('warning') else 'pending' if counts['pending'] else
               'insufficient' if counts['insufficient'] or counts['skipped'] or not segments else
               'not_applicable' if counts['not_applicable'] == len(segments) else 'clear')
     return {'result': result, 'counts': counts, 'judgments': list(groups.values()),
-            'assessment': assessment(counts), 'coverage_summary': rule_coverage(rule, segments)}
+            'assessment': assessment(counts), 'coverage_summary': rule_coverage(rule, segments, review_dispositions)}
 
 
 def assessment(counts):
     """A scoped conclusion never claims that unchecked content is clear."""
-    return ('hit' if counts.get('hit') else 'no_hit_in_checked_scope' if counts.get('no_hit') else
+    return ('hit' if counts.get('hit') else 'warning' if counts.get('warning') else 'no_hit_in_checked_scope' if counts.get('no_hit') else
             'not_applicable' if counts.get('not_applicable') else 'undetermined')
 
 
@@ -119,10 +143,10 @@ def summarize_coverage(rows, issues):
             'speech_insufficient_segments':speech_insufficient, 'segments': rows, 'issues': issues}
 
 
-def rule_coverage(rule, segments):
+def rule_coverage(rule, segments, review_dispositions=None):
     rows, issues = [], []
     for segment in segments:
-        decisions = [d for d in _decisions(segment) if str(d.get('rule_id')) == rule['id']]
+        decisions = [d for d in _decisions(segment, review_dispositions) if str(d.get('rule_id')) == rule['id']]
         results = [_result(d) for d in decisions]
         retained_hit = segment.get('full_live') and 'hit' in results
         span = {'segment_id': segment['id'], 'start': segment.get('start_ms', 0) / 1000,
@@ -204,19 +228,23 @@ def report_coverage(rules, source_gaps=()):
 
 def report_conclusion(rules, summary, speech_only=False):
     """生成规则结论，并把证据不足、未采集和语音-only 限制带入最终结果。"""
-    counts = {key: sum(r['counts'].get(key, 0) for r in rules) for key in DECISION_RESULTS}
+    counts = {key: sum(r['counts'].get(key, 0) for r in rules) for key in (*DECISION_RESULTS, 'warning')}
     result = assessment(counts)
     scope = '已检测字幕' if speech_only else '已检测范围'
-    text = ('已发现规则命中' if result == 'hit' else f'{scope}中未发现规则命中' if result == 'no_hit_in_checked_scope'
+    text = ('已发现规则命中' if result == 'hit' else '发现待复核风险线索，未计入规则命中' if result == 'warning' else f'{scope}中未发现规则命中' if result == 'no_hit_in_checked_scope'
             else '已判定内容中的规则均不适用' if result == 'not_applicable' else '没有足够的有效判断，无法给出质检结论')
     if summary['has_gaps']:
         text += '，存在检测缺口'
+    if any(i['kind']=='rule_routing' for i in summary['issues']):
+        text += '，专项路由未完成'
+    if any(i['kind']=='rule_load' for i in summary['issues']):
+        text += '，专项规则加载未完成'
     if summary['has_pending']:
         text += '，仍有待判定内容'
     return {'assessment': result, 'summary': text + '。', 'coverage_summary': summary}
 
 
-def _report_gaps(segments, capture, rules, speech_only=False, planned=()):
+def _report_gaps(segments, capture, rules, speech_only=False, planned=(), *, task=None):
     if planned:
         from runtime.store import uncovered_ranges
         capture = {**capture, **{key:uncovered_ranges(capture.get(key, []), planned)
@@ -234,6 +262,17 @@ def _report_gaps(segments, capture, rules, speech_only=False, planned=()):
     for segment in segments:
         span = {'segment_id': segment['id'], 'start': segment.get('start_ms', 0) / 1000,
                 'end': segment.get('end_ms', 0) / 1000, 'seekable': True}
+        if task and task.get('rules_mode')=='dynamic':
+            from runtime.rules import BUNDLE_NAMES, task_scenarios
+            scenarios = task_scenarios(task)
+            route=(segment.get('review_result') or {}).get('content_route') or {}
+            if route.get('type') not in scenarios | {'general'}:
+                gaps.append({**span,'kind':'rule_routing','reason':'专项路由未完成；当前结论仅覆盖已加载规则'})
+            missing=set(task.get('rule_load_gaps',{}))-set(task.get('loaded_rule_bundles',[]))
+            if route.get('type') in scenarios and route['type'] not in task.get('loaded_rule_bundles',[]):
+                missing.add(route['type'])
+            for bundle in sorted(missing & scenarios):
+                gaps.append({**span,'kind':'rule_load','reason':BUNDLE_NAMES[bundle]+'专项追加未完成；该专项不在本次结论范围内'})
         if segment.get('review_status') == 'skipped':
             gaps.append({**span,'kind':'judgment','reason':'语音已判定，补充画面未完成判定' if segment.get('speech_reviewed') else skip_reason(segment),'duration_ms':segment['end_ms']-segment['start_ms']})
             continue
@@ -322,7 +361,8 @@ def video_coverage(task, segments, rules, coverage, status):
     required={m for r in rules for m in r.get('modalities',[])}
     source_missing=any(('speech' in required and s.get('asr_status') not in ASR_SUCCESS|{'no_audio'})
                        or ('image' in required and (s.get('frame_status') not in ASR_SUCCESS or not s.get('frames'))) for s in segments)
-    complete=bool(duration and rules and effective and reviewed_ms==duration and processing and not incomplete and not source_missing)
+    complete=bool(duration and rules and effective and reviewed_ms==duration and processing and not incomplete and not source_missing
+                  and not any(g['kind'] in {'rule_routing','rule_load'} for g in gaps))
     label='未完成有效检测' if not effective else '完整检测结果' if complete else '部分检测结果'
     coverage['message'] += f' 已判定时间覆盖 {reviewed_ms/1000:g}/{duration/1000:g} 秒；待续办 {len(deferred)} 段。'
     return {'processing_complete':bool(processing),'coverage_complete':complete,'label':label,

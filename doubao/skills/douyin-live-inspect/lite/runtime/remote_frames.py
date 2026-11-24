@@ -21,8 +21,10 @@ def sample(store, row, source, offset, target, cancel, local):
             record=row.get('frame_remote_samples',{}).get(key,{})
             capability={'ready':True} if record else cloud_available(store,capability='frames')
             if not capability['ready']:
+                from runtime.cloud_frames import FrameError, FrameRequest
                 category=capability.get('code')
-                ok=False
+                request=FrameRequest(store, row['id'], row['sample_at_ms'], offset)
+                ok=request.failed('submit', FrameError('credentials_unavailable' if category == 'CLOUD_ASR_AUTH_UNAVAILABLE' else 'cloud_frames_unavailable'))
             else:
                 ok=cloud_frame(store,row,source,offset,target,cancel)
         except (OSError,ValueError,TypeError,RuntimeError,subprocess.SubprocessError) as error:

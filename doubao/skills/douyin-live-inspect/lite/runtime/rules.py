@@ -85,7 +85,30 @@ RULE_DEFINITIONS = {'通用': [['DY_BASE_001_P0', '内容安全-涉嫌违法违�
         ['FIN_CORE_003', '金融业务合规', 'P1', ['speech', 'image']]],
  '汽车': [['AUTO_LOCAL_001', '驾驶辅助的危险能力保证', 'P1', ['speech', 'image']],
         ['AUTO_LOCAL_002', '车辆规格、价格及质保的明确矛盾', 'P1', ['speech', 'image']]]}
-BUNDLE_NAMES = {'common': '通用', 'ecommerce': '电商', 'finance': '金融', 'automotive': '汽车'}
+BUNDLE_NAMES = {'common': '通用', 'ecommerce': '电商', 'finance': '金融', 'automotive': '汽车', 'life_service': '生活服务'}
+
+# Every rule declares its evidence gate. Direct rules can be established by the
+# inspected content itself; counterpart rules also need an independent,
+# same-segment fact such as a visible product detail, policy or configuration.
+COUNTERPART_RULE_IDS = frozenset({
+    'DY_FALSE_002_P1', 'DY_ECOM_004_P1', 'AUTO_LOCAL_002',
+    'LIFE_SERVICE_003_P1', 'LIFE_SERVICE_004_P1',
+})
+
+
+def task_scenarios(task):
+    # Existing tasks can finish against their frozen specialist or recorded load gap.
+    if ('life_service' in task.get('loaded_rule_bundles', [])
+            or 'life_service' in task.get('rule_load_gaps', {})
+            or task.get('scenario') in {'生活服务', 'life_service'}):
+        return SCENARIOS | {'life_service'}
+    return SCENARIOS
+
+
+def evidence_gate(rule_id):
+    if rule_id == 'DY_FALSE_001_P1':
+        return 'claim_specific'
+    return 'counterpart' if rule_id in COUNTERPART_RULE_IDS else 'direct'
 
 
 def _sections(text, level):
@@ -123,7 +146,7 @@ def review_snapshot(snapshot, *, compact=False):
     compatible with callers; legacy interpretation and evidence requirements
     remain available for frozen snapshots.
     """
-    fields = ('id', 'name', 'description', 'modalities', 'priority', 'kind',
+    fields = ('id', 'name', 'description', 'modalities', 'priority', 'kind', 'evidence_gate',
               'count_as_risk', 'order', 'full_prompt',
               'interpretation', 'evidence_requirements', 'policy')
     rules = []
@@ -146,7 +169,7 @@ def load_rules(scenario, custom_path=None):
     if not isinstance(scenario, str) or scenario not in SCENARIOS | {'common'} | ALIASES.keys():
         raise InputValidationError('START_SCENARIO_INVALID', 'scenario 必须是 common、电商、金融、汽车或对应英文 ecommerce、finance、automotive。')
     scenario = ALIASES.get(scenario, scenario)
-    principles, groups, source_hash = _read_builtin()
+    principles, groups, markdown_hash = _read_builtin()
     active, seen = [], set()
     policies = {'common': {'requirements': principles}}
     for bundle in (['common'] if scenario == 'common' else ['common', scenario]):
@@ -165,7 +188,8 @@ def load_rules(scenario, custom_path=None):
             rule = dict(id=rule_id, name=title, description=title,
                         scenarios=sorted(SCENARIOS) if bundle == 'common' else [bundle],
                         modalities=modalities, priority=priority, order=len(active)+1,
-                        full_prompt=body, scope=bundle, policy=bundle)
+                        full_prompt=body, scope=bundle, policy=bundle,
+                        evidence_gate=evidence_gate(rule_id))
             if separator and scenario == 'finance':
                 # Marker only; supplement text already occurs once in full_prompt.
                 rule['active_supplements'] = True
@@ -182,6 +206,7 @@ def load_rules(scenario, custom_path=None):
             if rule['enabled'] and scenario in rule['scenarios']:
                 rule['policy'] = 'common'
                 active.append(rule)
+    source_hash = hashlib.sha256(markdown_hash.encode()).hexdigest()
     canonical = json.dumps({'rules': active, 'policies': policies}, ensure_ascii=False,
                            sort_keys=True, separators=(',', ':'))
     digest = hashlib.sha256(canonical.encode()).hexdigest()

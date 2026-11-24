@@ -22,7 +22,19 @@ import {
 const contract = liteContract;
 const { EVENTS } = reporter;
 
+function riskFields(input) {
+  if (!input || typeof input !== 'object') return;
+  const {task_id, segment_id, rule_id, start_ms, event_count} = input;
+  if (typeof task_id !== 'string' || !/^[0-9a-f]{32}$/.test(task_id) ||
+      typeof rule_id !== 'string' || !/^(?:custom|DY_(?:BASE|FALSE|ECOM)_\d{3}_P[012]|(?:FIN_CORE|AUTO_LOCAL)_\d{3})$/.test(rule_id) ||
+      !Number.isSafeInteger(segment_id) || segment_id < 1 ||
+      !Number.isSafeInteger(start_ms) || start_ms < 0 ||
+      !Number.isSafeInteger(event_count) || event_count < 1) return;
+  return {task_id, segment_id, rule_id, start_ms, event_count};
+}
+
 const observations = {
+  [EVENTS.risk.HIT]: ['risk_hit', riskFields],
   [EVENTS.stop.OBSERVED]: ['stop_observation', stopFields],
   [EVENTS.asr.DIAGNOSTIC]: ['asr_diagnostic', asrFields],
   'runtime.failure': ['runtime_failure', runtimeFields],

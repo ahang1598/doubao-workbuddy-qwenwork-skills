@@ -106,6 +106,7 @@
     "asr.DIAGNOSTIC": "Lite ASR：实际提交尝试、结果、查询终态及冷却路由；仅闭合安全字段，旁路发送不影响业务。",
     "service.NOT_ENABLED": "正式质检服务未开通；明确 AccessDenyError 的业务观察，不计接口技术失败。",
     "startup.ATTEMPT": "Lite 直播启动调用观察；在 Python 启动前发送，不代表任务创建成功，不计流程分母。",
+    "risk.HIT": "Lite 已保存的规则命中，每任务、片段、规则首次命中时上报。",
     "stop.OBSERVED": "Lite 直播停止来源、请求/停止状态及已诊断阻塞与恢复；Agent 的用户指令声明不等于真实用户授权。",
     "lite.REVIEW_NEXT": "Lite：领取判定命令的执行结果；不代表已取得有效证据或完成判定。",
     "lite.REVIEW_SUBMIT": "Lite：提交判定命令的执行结果；不代表所有片段判定通过或报告已交付。"
@@ -127,6 +128,9 @@
   },
   "startup": {
     "ATTEMPT": "startup.attempt"
+  },
+  "risk": {
+    "HIT": "risk.hit"
   },
   "stop": {
     "OBSERVED": "stop.observed"

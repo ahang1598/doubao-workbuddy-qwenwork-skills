@@ -24,9 +24,9 @@ ROOT = Path(__file__).resolve().parents[2] / 'lite'
 CHILD_MARKER = 'BYTEDLIVE_LITE_TELEMETRY_CHILD'
 _CONTEXT = 'BYTEDLIVE_LITE_TELEMETRY_IDENTITY'
 _KEYS = json.loads((ROOT.parent / 'telemetry/telemetry-events.json').read_text(encoding='utf-8'))
-TASK, FUNNEL, ASR, STOP = (SimpleNamespace(**_KEYS[k]) for k in ('task','funnel','asr','stop'))
+TASK, FUNNEL, ASR, STOP, RISK = (SimpleNamespace(**_KEYS[k]) for k in ('task','funnel','asr','stop','risk'))
 COMMANDS = frozenset(_KEYS['lite'].values())
-BRIDGE_COMMANDS = COMMANDS | {'doctor','status','resume','refresh-credentials','asr-reconcile','review-next','review-state','rules-load','review-submit','prepare-runtime','start-video','batch-create','batch-next','batch-status','batch-stop','recap-input','recap-submit','report-delivery-ack','delivery-ack','result-page','scene-confirm','review-defer','snapshot'}
+BRIDGE_COMMANDS = COMMANDS | {'qa-next','qa-submit','qa-worker','doctor','status','resume','refresh-credentials','asr-reconcile','review-next','review-state','rules-load','review-submit','prepare-runtime','start-video','batch-create','batch-next','batch-status','batch-stop','recap-input','recap-submit','report-delivery-ack','delivery-ack','result-page','scene-confirm','review-defer','snapshot','history-search'}
 _METADATA = {}
 _CHANNEL_FD = None
 _MAX_BYTES = 4 * 1024 * 1024

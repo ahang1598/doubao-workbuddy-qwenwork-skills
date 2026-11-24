@@ -39,6 +39,7 @@ class Connection(sqlite3.Connection):
 class PendingEvents:
     def __init__(self,store,connection):
         self.store=store;self.connection=connection;self.actions=set();self.baselines={}
+        self.risk_hits=[]
 
     def register(self,kind,before=None,after=None):
         if not enabled():return
@@ -81,11 +82,11 @@ class PendingEvents:
             self.actions.add('completion')
 
     def prepare(self):
-        if not self.actions or not enabled():return []
+        if not enabled() or not (self.actions or self.risk_hits):return []
         c=self.connection;c.execute('SAVEPOINT optional_telemetry')
         try:
             task=self.store._task(c);r=task.get('_telemetry');b=self.baselines;a=self.actions
-            emitted=[]
+            emitted=[{'command':bridge.RISK.HIT,'extra':hit} for hit in self.risk_hits]
             if 'dimensions' in a:
                 if r:r['dimensions']=dimensions(task,batch=bool(r.get('batch_directory')))
                 if task.get('_recap_telemetry'):task['_recap_telemetry']['dimensions']=dimensions(task)
@@ -199,11 +200,11 @@ def observe_video_delivery(store, receipt, frozen):
                 return  # A delayed observer must not replace this run's receipt.
             fingerprint = receipt.get('fingerprint')
             segments = store._segments(conn)
-            evidence = token(frozen_task, frozen.segments())
-            if (evidence != token(task, segments) or not fingerprint
-                    or fingerprint != video_fingerprint(store, task, segments)):
+            if [(s['id'],s.get('evidence_revision')) for s in frozen.segments()] != [(s['id'],s.get('evidence_revision')) for s in segments]:
+                return  # Recap settings may change, but delayed acknowledgements cannot cross evidence revisions.
+            if not fingerprint or fingerprint != video_fingerprint(store, task, segments):
                 return  # Same-run delayed observations must not replace newer reports either.
-            task['_funnel_video_receipt'] = {'fingerprint': fingerprint, 'token': evidence,
+            task['_funnel_video_receipt'] = {'fingerprint': fingerprint,
                 'report_run': receipt['report_run'],
                 # Use the report's frozen run, not a possibly resumed current task.
                 'run_index': frozen_run,

@@ -356,7 +356,6 @@ def extract_audio(store, segment, folder):
     """抽取片段音频供 ASR 使用；成功后才把输出纳入任务状态。"""
     import wave
     task = store.task()
-    if task.get('image_inspection') is False:return ({'frames':[], 'frame_status':'disabled'},None,[])
     path = store.root / segment['media_file']
     details = probe(path, task, store)
     if not any(stream.get('codec_type') == 'audio' for stream in details.get('streams', [])):
@@ -1115,6 +1114,9 @@ def _run_worker(task_dir, cancel, warmed_bridge=None):
         heartbeat_done.set();pulse.join(timeout=3)
         return
     store.update_task(worker_status='running',processing_completed_at=None,recovery_state=None)
+    from runtime.visual_quality import run as quality_loop
+    quality_thread = threading.Thread(target=quality_loop, args=(store,heartbeat_done,cancel), daemon=True)
+    quality_thread.start()
     acquisition = None
     local_processor = None
     local = store.task().get('asr_backend') == 'local'
@@ -1137,7 +1139,13 @@ def _run_worker(task_dir, cancel, warmed_bridge=None):
         from runtime.local_asr import MediaCancellation
         media_cancel=MediaCancellation(store,cancel)
     production = {'frames': {}, 'audio': {}}
+    room_process = None
+    from runtime import live_room
     try:
+        try:
+            room_process = live_room.start(store)
+        except OSError:
+            live_room.state(store, 'unavailable', {'kind':'process_start_failed'})
         if store.task().get('worker_mode') == 'processing_only':
             # Import only already closed artifacts, including a tail journaled before a crash.
             for journal in sorted((store.root / 'media').glob('session-*.json')):
@@ -1161,6 +1169,7 @@ def _run_worker(task_dir, cancel, warmed_bridge=None):
             acquisition = threading.Thread(target=capture_fn, args=(task_dir, cancel,warmed_bridge) if store.task().get('pipeline_version')==2 else (task_dir,cancel), daemon=True)
             acquisition.start()
         store.asr_upload_slots = threading.BoundedSemaphore(2)
+        asr_process = local_processor.process if local else process_asr
         asr_concurrency = 10 if store.task().get('inspection_policy')=='lite_live_realtime_v2' else 2 if store.task().get('pipeline_version')==2 else 1 if local else max(1, int(config(store.task(), 'asr_concurrency', 2)))
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as frame_pool, \
                 concurrent.futures.ThreadPoolExecutor(max_workers=2) as audio_pool, \
@@ -1194,7 +1203,8 @@ def _run_worker(task_dir, cancel, warmed_bridge=None):
                 if not local or store.task().get('asr_policy')=='local_first': attempted.difference_update(recover_credentials(store))
                 paused = False if local else submissions_paused(store)
                 todo = jobs.pending()
-                for segment in store.segments():
+                segments = store.segments()
+                for segment in segments:
                     sid = segment['id']
                     if segment.get('asr_status') == 'pending' and sid not in reviewing:
                         attempted.discard(sid)
@@ -1205,7 +1215,7 @@ def _run_worker(task_dir, cancel, warmed_bridge=None):
                         if len(reviewing) < asr_concurrency:
                             attempted.add(sid)
                             token = live_backlog.Cancellation(store,cancel,sid) if live_backlog.enabled(store.task()) else cancel
-                            reviewing[sid] = asr_pool.submit(local_processor.process if local else process_asr, store, segment, cancel=token)
+                            reviewing[sid] = asr_pool.submit(asr_process, store, segment, cancel=token)
                 if (acquisition is None or not acquisition.is_alive()) and not any(production.values()) and not reviewing and not todo:
                     break
                 time.sleep(.2)
@@ -1236,6 +1246,11 @@ def _run_worker(task_dir, cancel, warmed_bridge=None):
         cancel.set()
         heartbeat_done.set()
         pulse.join(timeout=3)
+        quality_thread.join(timeout=3)
+        try:
+            live_room.stop(store, room_process)
+        except OSError:
+            pass
         if local_processor: local_processor.close()
         if warmed_bridge:warmed_bridge.close()
 
@@ -1252,6 +1267,8 @@ def run_worker(task_dir, *, supervised=False):
     """运行单任务 worker；异常只更新任务诊断，不能让未知提交结果被自动重放。"""
     """One OS-owned capture/ASR worker per task; process death releases the lock."""
     store = Store(task_dir, capture=True).for_session()
+    if store.task().get('asr_provider')=='ark':
+        raise ValueError('ARK 独立转写已移除，不能恢复该任务的媒体处理；已有结果仍保留。')
     from runtime.realtime_policy import current
     current_drain=current(store.task())
     fd = nofollow_open(store.root / '.worker.lock', os.O_RDWR | os.O_CREAT | getattr(os, 'O_NOFOLLOW', 0), 0o600)

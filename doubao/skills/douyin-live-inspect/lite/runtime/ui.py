@@ -7,8 +7,10 @@ from __future__ import annotations
 import datetime as dt
 import json
 import math
+import re
 from pathlib import Path
 from runtime.recap import recap_report
+from runtime.rules import BUNDLE_NAMES
 from runtime.report_data import public_text, _rules, _rule_summary, _report_gaps, _decisions, _result, ASR_SUCCESS, DECISION_RESULTS, report_coverage, report_conclusion
 
 ASSETS = Path(__file__).resolve().parents[1] / 'assets' / 'ui'
@@ -52,14 +54,17 @@ def visual_samples(task, segments):
         planned.update(segment.get('frame_sample_times_ms', []))
         review = segment.get('review_result') or {}
         viewed = set(review.get('images_viewed', []))
-        decisions = _decisions(segment)
+        decisions = _decisions(segment,task.get('review_dispositions'))
         for frame in segment.get('frames', []):
             fid = frame['id']
             hits = [d for d in decisions if _result(d) == 'hit' and any(
                 fid in event.get('evidence_ids', []) for event in d.get('events', []))]
+            warnings = [d for d in decisions if _result(d) == 'warning' and any(
+                fid in event.get('evidence_ids', []) for event in d.get('events', []))]
             image_results = [d.get('channels', {}).get('image', {}).get('status') for d in decisions
                              if 'image' in d.get('channels', {})]
             status = ('pending' if fid not in viewed or not image_results else 'hit' if hits else
+                      'warning' if warnings else
                       'no_hit' if all(v == 'no_hit' for v in image_results) else 'insufficient')
             items.append({'evidence_id': f"{segment['id']}:{fid}", 'time_ms': frame['time_ms'],
                           'status': status})
@@ -176,9 +181,11 @@ def build_report(store, token=''):
     from runtime.full_live import speech_only_scope
     speech_only=speech_only_scope(task)
     rules = _rules(task)
-    evidence, utterances = [], []
+    evidence, warnings, utterances = [], [], []
     rule_conclusions = {}
+    first_sign = {}
     available = _evidence(store)
+    review_dispositions = task.get('review_dispositions', {})
     for segment in segments:
         subtitles = segment.get('subtitles', [])
         utterances.extend({'start': u.get('start_ms', 0) / 1000,
@@ -186,9 +193,10 @@ def build_report(store, token=''):
                            'text': u.get('text', '')} for u in subtitles)
         if segment.get('review_status') != 'done' and not (segment.get('full_live') and segment.get('speech_reviewed')):
             continue
-        for index, decision in enumerate(_decisions(segment)):
+        for index, decision in enumerate(_decisions(segment, review_dispositions)):
             rule_id = str(decision.get('rule_id', ''))
-            if _result(decision) != 'hit':
+            result = _result(decision)
+            if result not in {'hit', 'warning'}:
                 continue
             if rule_id not in {r['id'] for r in rules}:
                 continue
@@ -203,15 +211,30 @@ def build_report(store, token=''):
                 frame_ids = [f"{segment['id']}:{f['id']}" for f in segment.get('frames', [])
                              if str(f['id']) in references]
                 text = event.get('text') or '\n'.join(u.get('text', '') for u in subtitles if str(u.get('id')) in references)
-                evidence.append({'id': f"s{segment['id']}-d{index}-e{event_index}", 'rule_id': rule_id,
+                target = evidence if result == 'hit' else warnings
+                target.append({'id': f"s{segment['id']}-d{index}-e{event_index}", 'rule_id': rule_id,
                                  'rule_name': next((r['name'] for r in rules if r['id'] == rule_id), '质检规则'),
                                  'start': start / 1000,
                                  'end': end / 1000,
                                  'kind': 'image' if frame_ids else 'text', 'text': text,
-                                 'reason': public_text(decision.get('reason', '')),
+                                 'reason': public_text((decision.get('review_disposition') or {}).get('reason') or decision.get('reason', '')),
+                                 'machine_reason': public_text(decision.get('reason', '')),
                                  'images': [f'evidence:{fid}'
                                             for fid in frame_ids if fid in available],
                                  'frame_ids': frame_ids})
+                # Keep each frame seekable, count the same verified text once for a known offer.
+                if result == 'hit' and frame_ids and len(frame_ids) == len(references):
+                    sale = (segment.get('review_result') or {}).get('sales_observation') or {}
+                    product = sale.get('product_id') or sale.get('product')
+                    # Legacy events lack claim_quote. Only use a single full inscription
+                    # at the end of a frame description, with no additional allegations.
+                    inscription = re.fullmatch(r'[^“「"]*(?:写有|写着|显示|展示)[“「"]([^”」"\n]+)[”」"][。.]?', text)
+                    quote = event.get('claim_quote') or (inscription.group(1) if inscription else '')
+                    if product and sale.get('offer') and quote and not event.get('counterpart_evidence_ids'):
+                        key = (rule_id, product, sale['offer'], ' '.join(quote.split()))
+                        first = first_sign.setdefault(key, target[-1]['id'])
+                        if first != target[-1]['id']:
+                            target[-1]['repeat_of'] = first
             if not positioned_events or positioned_events < len(events):
                 reasons = rule_conclusions.setdefault(rule_id, [])
                 reason = public_text(decision.get('reason') or '').strip() or '规则已命中，具体判断依据未保存'
@@ -220,18 +243,42 @@ def build_report(store, token=''):
     cov = coverage(store)
     captured_content_reviewed = bool(segments) and not cov['pending'] and not cov['skipped'] and not cov['capture'].get('analysis_gaps')
     for rule in rules:
-        rule.update(_rule_summary(rule, segments))
+        rule.update(_rule_summary(rule, segments, review_dispositions))
         rule['status'] = 2 if rule['result'] == 'hit' else 1 if rule['result'] in ('clear', 'not_applicable') else None
-    cov['gaps'] = _report_gaps(segments, cov['capture'], rules, speech_only)
+    # Report projection only: retain the original decisions, grouping equal reasons.
+    segment_text = {s['id']: public_text('\n'.join(u.get('text', '') for u in s.get('subtitles', [])))
+                    for s in segments}
+    # Missing channels belong to coverage, rather than a list of suspected claims.
+    note_segments = {}
+    for segment in segments:
+        if segment.get('review_status') != 'done':
+            continue
+        for decision in _decisions(segment, review_dispositions):
+            channels = decision.get('channels') or {}
+            if _result(decision) == 'insufficient' and (not channels or any(
+                _result(value) == 'insufficient' and segment.get('subtitles' if channel == 'speech' else 'frames')
+                for channel, value in channels.items() if channel in {'speech', 'image'})):
+                note_segments.setdefault(str(decision.get('rule_id')), set()).add(segment['id'])
+    review_notes = []
+    for rule in rules:
+        groups = [{'reason': group['reason'],
+                   'segments': [{**span, 'text': segment_text.get(span['segment_id'], '')}
+                                for span in group['segments']
+                                if span['segment_id'] in note_segments.get(rule['id'], set())]}
+                  for group in rule['judgments'] if group['result'] == 'insufficient']
+        groups = [group for group in groups if group['segments']]
+        if groups:
+            review_notes.append({'rule_id': rule['id'], 'rule_name': rule['name'], 'groups': groups})
+    cov['gaps'] = _report_gaps(segments, cov['capture'], rules, speech_only, task=task)
     cov['speech_gaps'] = sum(g['kind'] == 'speech' for g in cov['gaps'])
     cov['image_gaps'] = sum(g['kind'] == 'image' for g in cov['gaps'])
     rule_counts = {result: sum(r['result'] == result for r in rules)
-                   for result in ('hit', 'clear', 'pending', 'insufficient', 'not_applicable')}
+                   for result in ('hit', 'warning', 'clear', 'pending', 'insufficient', 'not_applicable')}
     asr_summary = {backend: dict.fromkeys(('success', 'failed', 'pending', 'no_audio', 'skipped'), 0)
                    for backend in ('local', 'cloud', 'unknown')}
     for segment in segments:
         backend = segment.get('asr_backend') or task.get('asr_backend', 'mediakit')
-        backend = 'cloud' if backend == 'mediakit' else 'local' if backend == 'local' else 'unknown'
+        backend = 'cloud' if backend in {'mediakit','ark'} else 'local' if backend == 'local' else 'unknown'
         status = segment.get('asr_status')
         state = ('success' if status in ASR_SUCCESS else 'no_audio' if status == 'no_audio' else
                  'failed' if status in ('failed', 'timed_out', 'submission_unknown') else 'skipped' if segment.get('review_status')=='skipped' else 'pending')
@@ -244,7 +291,7 @@ def build_report(store, token=''):
         sample=inspection_status['sampling']
         coverage_complete=coverage_complete and not sample['planned_unchecked_ranges'] and not sample['skipped_ranges']
         planned=sample['planned_unchecked_ranges']
-        cov['gaps']=_report_gaps(segments,cov['capture'],rules,speech_only,planned)
+        cov['gaps']=_report_gaps(segments,cov['capture'],rules,speech_only,planned,task=task)
     duration = max([s.get('end_ms', 0) for s in segments] + [task.get('capture_observed_ms', 0) or 0, task.get('capture_end_ms', 0) or 0]) / 1000
     video_state = {}
     if task.get('kind') == 'video':
@@ -252,8 +299,10 @@ def build_report(store, token=''):
         video_state = video_coverage(task, segments, rules, cov, inspection_status)
         duration = cov['total_ms'] / 1000
     scoped_conclusion = report_conclusion(rules, report_coverage(rules, cov['gaps']), speech_only)
+    if any(g['kind'] in {'rule_routing','rule_load'} for g in cov['gaps']):
+        coverage_complete=False
     rule_gaps=[{'bundle':b,'message':name+'专项追加未完成；该专项不在本次结论范围内。'}
-               for b,name in (('finance','金融'),('ecommerce','电商')) if b in task.get('rule_load_gaps',{})]
+               for b,name in BUNDLE_NAMES.items() if b != 'common' and b in task.get('rule_load_gaps',{})]
     if rule_gaps:
         coverage_complete=False
         scoped_conclusion['rule_load_gaps']=rule_gaps
@@ -267,22 +316,43 @@ def build_report(store, token=''):
         if task.get('kind', 'live') == 'live':
             item['remediation_level'] = levels.get(item['id'],
                 'waiting' if remediation['status'] == 'waiting' else 'ungraded')
-    return {**video_state, 'visual_samples': visual_samples(task, segments), 'remediation': remediation, 'report_kind': task.get('kind', 'live'),
+    from runtime.sales_state import summarize as sales_summary, enabled as sales_enabled
+    sales_findings = [
+        {'id': event['id'], 'status': status, 'rule_name': event['rule_name'],
+         'start_ms': round(event['start'] * 1000), 'end_ms': round(event['end'] * 1000),
+         'text': public_text(event['text']), 'reason': event['reason']}
+        for status, events in (('hit', evidence), ('warning', warnings)) for event in events]
+    from runtime.interactions import summarize as qa_summary, interaction_optimization
+    from runtime import qa_pipeline
+    from runtime.live_room import ANSWER_MATCHING_ENABLED
+    qa = (inspection_status.get('qa',[]) if qa_pipeline.enabled(task) else qa_summary(segments)) if ANSWER_MATCHING_ENABLED else []
+    qa_processing = inspection_status.get('qa_processing') if ANSWER_MATCHING_ENABLED else None
+    interaction = interaction_optimization(qa)
+    sales = sales_summary(segments, findings=sales_findings, questions=qa, end_ms=round(duration * 1000),
+                          include_timeline=sales_enabled(task))
+    from runtime.live_room import report as room_report
+    from runtime.customer_service import build as service_reference
+    room = room_report(store)
+    from runtime.clarifications import report as clarification_report
+    return {'clarifications':clarification_report(segments), 'customer_service':service_reference(segments, qa, room), 'interaction_optimization':interaction,
+            'live_room':room, 'qa': qa, 'qa_processing':qa_processing, 'sales_state': sales, **video_state, 'visual_samples': visual_samples(task, segments), 'remediation': remediation, 'report_kind': task.get('kind', 'live'),
             'inspection_scope': 'speech_only' if speech_only else None,
             'task': {'id': task.get('id'), 'name': task.get('name', '直播内容质检'),
             'scenario_name': '' if task.get('rules_mode')=='dynamic' else task.get('scenario', ''), 'created_time': _seconds(task.get('created_at')),
             'machine_start_time': task.get('capture_epoch', 0),
             'machine_end_time': (task.get('capture_epoch', 0) + task['capture_end_ms'] / 1000) if task.get('capture_epoch') and task.get('capture_end_ms') is not None else 0},
-            'duration_seconds': duration, 'monitored_duration_ms':task.get('monitored_duration_ms'), 'rules': rules,
-            'hit_rule_count': sum(r['status'] == 2 for r in rules), 'evidence': evidence,
-            'hit_event_count':len(evidence), 'hit_count_basis':'按规则与证据事件计数，同一时间可命中多条规则',
+            'duration_seconds': duration if task.get('kind') == 'video' else cov['capture'].get('captured_ms', 0) / 1000,
+            'monitored_duration_ms':task.get('monitored_duration_ms'), 'rules': rules,
+            'hit_rule_count': sum(r['status'] == 2 for r in rules), 'evidence': evidence, 'warnings': warnings,
+            'review_notes': review_notes,
+            'hit_event_count':sum(not e.get('repeat_of') for e in evidence), 'hit_count_basis':'按规则与证据事件计数，同商品套餐、同一画面文案合计一次',
             'rule_conclusions': [{'rule_id': r['id'], 'rule_name': r['name'], 'reasons': rule_conclusions[r['id']]}
                                  for r in rules if r['id'] in rule_conclusions],
             'conclusion': {**scoped_conclusion, **({'scope':'本次没有完成抽检，无法给出质检结论' if not inspection_status['sampling']['completed_windows'] else '本次抽检范围内未发现规则命中' if not any(r['status']==2 for r in rules) else '本次结论仅适用于已完成的抽检范围'} if inspection_status.get('sampling',{}).get('policy')=='lite_sample_v1' else
                               {'scope':'仅字幕检测；画面未检测，画面风险不在结论范围内'} if speech_only else {}), 'captured_content_reviewed': captured_content_reviewed,
                            'progress': 'completed' if inspection_status['report_ready'] or (terminal and captured_content_reviewed) else 'running',
                            'rule_counts': rule_counts,
-                           'has_incomplete_results': bool(rule_gaps) or bool(cov['capture'].get('analysis_gaps')) or not rules or any(r['counts']['pending'] or r['counts']['insufficient'] or r['counts']['skipped']
+                           'has_incomplete_results': scoped_conclusion['coverage_summary']['has_gaps'] or bool(rule_gaps) or bool(cov['capture'].get('analysis_gaps')) or not rules or any(r['counts']['pending'] or r['counts']['insufficient'] or r['counts']['skipped']
                                                                      or r['result'] == 'insufficient' for r in rules),
                            'coverage_complete': coverage_complete, **video_state},
             'asr': {'utterances': sorted(utterances, key=lambda u: u['start']),
@@ -496,10 +566,21 @@ def build_snapshot(store, token='', *, report=None, recap=None):
         name = closed_text + '，' + suffix
     elif failure and not name.startswith(failure):
         name = failure
-    records = [{'id': index + 1, 'rule_id': e['rule_id'], 'rule_name': e['rule_name'],
-                'machine_result': 'hit', 'samples': [{'text': e['text'], 'reason': e['reason'],
-                'time': _time(e['start'] * 1000), 'evidence_id': next(iter(e['frame_ids']), None)}]}
-               for index, e in enumerate(report['evidence'])]
+    records = []
+    sign_records = {}
+    for result, values in (('hit', report['evidence']), ('warning', report.get('warnings', []))):
+        for e in values:
+            sample = {'text':e['text'], 'reason':e['reason'], 'machine_reason':e.get('machine_reason',''),
+                      'time':_time(e['start']*1000), 'evidence_id':next(iter(e['frame_ids']),None)}
+            previous = sign_records.get(e.get('repeat_of'))
+            if previous is not None:
+                previous['samples'].append(sample)
+                continue
+            record = {'id':len(records)+1, 'rule_id':e['rule_id'], 'rule_name':e['rule_name'],
+                      'machine_result':result, **({'review_label':'待复核'} if result=='warning' else {}), 'samples':[sample]}
+            records.append(record)
+            if e.get('id'):
+                sign_records[e['id']] = record
     if task.get('media_frozen'):
         blocked=status_data.get('report_blocked_reason')
         reviewing=finish.get('phase')=='draining' and bool(status_data.get('review_pending'))
@@ -528,7 +609,10 @@ def build_snapshot(store, token='', *, report=None, recap=None):
             'recovery_state': task.get('recovery_state'),
             'created_at': task.get('capture_epoch') or _seconds(task.get('created_at')),
             'updated_at': (task.get('capture_epoch', 0) + task['capture_end_ms'] / 1000) if task.get('capture_epoch') and task.get('capture_end_ms') is not None else _seconds(task.get('updated_at'))},
-            'records': records, 'refreshed_at': dt.datetime.now(dt.timezone.utc).isoformat(),
+            'clarifications':report.get('clarifications'), 'customer_service': report.get('customer_service'), 'interaction_optimization': report.get('interaction_optimization'),
+            'comment_summary': status_data.get('comment_summary'),
+            'live_room': report.get('live_room'), 'qa': report.get('qa', []), 'qa_processing':report.get('qa_processing'), 'sales_state': report.get('sales_state'), 'records': records, 'review_notes': report.get('review_notes', []),
+            'refreshed_at': dt.datetime.now(dt.timezone.utc).isoformat(),
             'quality_report_url': 'quality.html' if store.status()['report_ready'] else '',
             'review_report_supported': task.get('kind') != 'video' or task.get('video_recap_enabled', False), 'recap': {k: v for k, v in recap.items() if k != 'document' and k not in ('evidence', 'references', 'video', 'coverage')},
             'review_report_url': 'review.html' if recap['available'] else '',

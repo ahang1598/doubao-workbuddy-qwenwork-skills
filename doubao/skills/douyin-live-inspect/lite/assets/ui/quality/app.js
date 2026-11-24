@@ -134,33 +134,6 @@ function renderEvidenceImages(item) {
     </a>`).join("")}</div>`;
 }
 
-function renderTimeline() {
-  const timeline = byId("timeline");
-  const duration = Math.max(1, state.duration);
-  const palette = ["#d7312a", "#d46b08", "#c2417c", "#7c4dcc", "#1664ff", "#14857a"];
-  const ruleNames = [...new Set(state.report.evidence.map((item) => item.rule_name || "未分类风险"))].sort((left, right) => left.localeCompare(right, "zh-CN"));
-  const ruleColors = new Map(ruleNames.map((name, index) => [name, palette[index % palette.length]]));
-  const groups = [];
-  for (const item of [...state.report.evidence].sort((left, right) => left.start - right.start || left.end - right.end)) {
-    const previous = groups.at(-1);
-    if (previous && item.start < previous.end) {
-      previous.items.push(item);
-      previous.end = Math.max(previous.end, item.end);
-    } else groups.push({ start: item.start, end: item.end, items: [item] });
-  }
-  const segments = groups.map((group) => {
-    const left = Math.min(99.5, (group.start / duration) * 100);
-    const width = Math.max(0.8, ((Math.max(group.end, group.start + 0.5) - group.start) / duration) * 100);
-    const names = [...new Set(group.items.map((item) => item.rule_name || "未分类风险"))];
-    const colors = names.map((name) => ruleColors.get(name));
-    const background = colors.length === 1 ? colors[0] : `linear-gradient(90deg, ${colors.map((color, index) => `${color} ${index / colors.length * 100}% ${(index + 1) / colors.length * 100}%`).join(", ")})`;
-    const label = names.join("、");
-    return `<button class="timeline-segment" type="button" style="left:${left}%;width:${Math.min(width, 100 - left)}%;--segment-color:${background}" data-seek="${group.start}" data-evidence-id="${escapeHtml(group.items[0].id)}" aria-label="${escapeHtml(`${label}，${formatTime(group.start, true)}`)}"></button>`;
-  }).join("");
-  timeline.innerHTML = `<div class="timeline-track"></div>${segments}<div class="playhead" id="playhead"></div>`;
-  byId("timeline-legend").innerHTML = `${ruleNames.map((name) => `<span title="${escapeHtml(name)}"><i style="background:${ruleColors.get(name)}"></i>${escapeHtml(name)}</span>`).join("")}<span><i class="legend-playhead"></i>当前播放位置</span>`;
-}
-
 function transcriptSegments(utterances) {
   const segments = [];
   for (const utterance of utterances) {
@@ -215,10 +188,14 @@ function renderEvidence(query = "", revealId = null) {
       : !state.report.rules.length ? "本次报告暂无规则检测明细。" : "可查看下方规则检测明细。";
   byId("evidence-summary").textContent = normalizedQuery ? `找到 ${evidence.length} 个相关风险片段，${conclusions.length} 条规则结论`
     : allEvidence.length || hasConclusions ? `共识别 ${allEvidence.length} 个风险片段，${state.report.rule_conclusions?.length || 0} 条规则结论` : emptyTitle;
-  const rows = [...evidence, ...conclusions.map(rule => ({conclusion: rule}))];
-  window.LiteUI.renderRows(byId("evidence-list"), rows, (item) => item.conclusion ? `<article class="analysis-segment rule-conclusion"><div class="analysis-segment-body">
-    <div class="analysis-segment-title"><h3>${escapeHtml(item.conclusion.rule_name)}</h3><span class="rule-tag">规则结论</span></div>
-    <p>${escapeHtml(item.conclusion.reasons.join("；"))}</p></div></article>` : analysisSegment({
+  const groups = new Map();
+  for (const item of evidence) {
+    const key = JSON.stringify([item.rule_id || item.rule_name, item.machine_result || 'hit']);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  }
+  const rows = [...groups.values(), ...conclusions.map(rule => ({conclusion: rule}))];
+  const renderItem = (item) => analysisSegment({
     start: item.start,
     end: item.end,
     title: item.text || (item.images?.length ? "检测到画面风险" : "风险片段"),
@@ -226,7 +203,22 @@ function renderEvidence(query = "", revealId = null) {
     evidenceId: item.id,
     tags: `<div class="evidence-actions"><div class="evidence-tags">${["P0", "P1", "P2"].includes(item.remediation_level) ? `<span class="priority-tag priority-${item.remediation_level.toLowerCase()}">${item.remediation_level}</span>` : state.report.report_kind !== "video" ? `<span class="priority-tag priority-ungraded">${({pending: "待核实", waiting: "待分级"})[item.remediation_level] || "未分级"}</span>` : ""}<span class="rule-tag">${escapeHtml(item.rule_name)}</span><span class="evidence-kind">${escapeHtml(evidenceKindLabel(item.kind))}</span></div><button class="review-button" type="button" data-seek="${item.start}" data-evidence-id="${escapeHtml(item.id)}">定位复核 <span>↗</span></button></div>`,
     extra: renderEvidenceImages(item),
-  }), `<div class="empty-state"><strong>${emptyTitle}</strong><span>${emptyCopy}</span></div>`, evidence.findIndex(item => item.id === revealId));
+  });
+  const renderOccurrences = items => {
+    const groups = new Map();
+    for (const event of items) {
+      const key = event.repeat_of || event.id || event;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(event);
+    }
+    return [...groups.values()].map(([first,...rest]) => renderItem(first) + (rest.length
+      ? `<details class="evidence-group"${rest.some(e=>e.id===revealId) ? ' open' : ''}><summary>同一画面文案另见 ${rest.length} 处</summary>${rest.map(renderItem).join('')}</details>` : '')).join('');
+  };
+  window.LiteUI.renderRows(byId("evidence-list"), rows, (item) => item.conclusion ? `<article class="analysis-segment rule-conclusion"><div class="analysis-segment-body">
+    <div class="analysis-segment-title"><h3>${escapeHtml(item.conclusion.rule_name)}</h3><span class="rule-tag">规则结论</span></div>
+    <p>${escapeHtml(item.conclusion.reasons.join("；"))}</p></div></article>` : item.length === 1 ? renderItem(item[0])
+      : `<details class="evidence-group"${normalizedQuery || item.some(event => event.id === revealId) ? ' open' : ''}><summary>${escapeHtml(item[0].rule_name)} · ${item.length} 次记录（展开查看各次证据）</summary>${renderOccurrences(item)}</details>`,
+    `<div class="empty-state"><strong>${emptyTitle}</strong><span>${emptyCopy}</span></div>`, rows.findIndex(row => Array.isArray(row) && row.some(item => item.id === revealId)));
 }
 
 function scopedAssessment(rule) {
@@ -324,7 +316,7 @@ function renderReport(report) {
     samplePanel.hidden = !samples;
     if (samples) {
       byId("visual-samples-summary").textContent = `每 ${samples.interval_seconds} 秒抽检一帧，仅覆盖抽检时刻；计划 ${samples.planned_count} 张，已采集 ${samples.captured_count} 张，已检测 ${samples.inspected_count} 张。`;
-      const labels = {hit: "发现风险", no_hit: "未发现规则命中", insufficient: "证据不足", pending: "未完成检测"};
+      const labels = {hit: "发现风险", warning: "待复核风险线索", no_hit: "未发现规则命中", insufficient: "证据不足", pending: "未完成检测"};
       byId("visual-samples-list").innerHTML = samples.items.map(item => `<div>${timeButton(item.time_ms / 1000, formatTime(item.time_ms / 1000, true))}<p>${escapeHtml(labels[item.status] || "未完成检测")}</p>${renderEvidenceImages({images: item.image_url ? [item.image_url] : [], rule_name: "画面抽检"})}</div>`).join("") +
         samples.failures.map(item => `<p>${escapeHtml(formatTime(item.time_ms / 1000, true))}：${escapeHtml(item.reason)}</p>`).join("");
     }
@@ -338,10 +330,10 @@ function renderReport(report) {
     byId("coverage-details").hidden = !(cov.gaps || []).length;
     byId("video-report-gaps").innerHTML = (cov.gaps || []).map(g => `<li>${escapeHtml(formatTime(g.start, true))}–${escapeHtml(formatTime(g.end, true))}：${escapeHtml(g.reason).replace(/，具体原因见规则判断依据$/, "")}</li>`).join("");
   }
-  state.duration = Number(report.duration_seconds || report.video.duration_seconds || 0);
+  state.duration = Number(report.video.duration_seconds ?? report.duration_seconds ?? 0);
   const live = report.report_kind === "live";
-  const reportDuration = live && Number.isFinite(report.monitored_duration_ms)
-    ? report.monitored_duration_ms / 1000 : state.duration;
+  const reportDuration = live && Number.isFinite(report.coverage?.capture?.captured_ms)
+    ? report.coverage.capture.captured_ms / 1000 : (report.duration_seconds ?? state.duration);
   const presentation = reportPresentation(report.report_kind);
   byId("report-brand-title").textContent = presentation.reportLabel;
   byId("task-cover-label").textContent = presentation.coverLabel;
@@ -363,7 +355,7 @@ function renderReport(report) {
   session.hidden = !sessionStart && !sessionEnd;
   byId("task-session-label").textContent = presentation.sessionLabel;
   byId("task-session-time").textContent = sessionStart ? `${sessionStart}${sessionEnd ? ` — ${sessionEnd}` : ""}` : "时间暂未返回";
-  byId("risk-count").textContent = report.evidence.length;
+  byId("risk-count").textContent = report.evidence.filter(item => !item.repeat_of).length;
   byId("hit-count").textContent = report.hit_rule_count;
   byId("rule-count").textContent = report.rules.length;
   byId("duration").textContent = formatTime(reportDuration, true);
@@ -385,21 +377,16 @@ function renderReport(report) {
     if (Number.isFinite(video.duration) && !report.video.timeline?.length) {
       state.duration = video.duration;
       if (!live) byId("duration").textContent = formatTime(video.duration, true);
-      renderTimeline();
     }
   }, { once: true });
   video.addEventListener("error", () => { byId("video-empty").hidden = false; });
   video.addEventListener("timeupdate", () => {
-    const duration = Math.max(1, state.duration);
     byId("playhead-time").textContent = formatTime(mediaToSource(video.currentTime), true);
-    const playhead = byId("playhead");
-    if (playhead) playhead.style.left = `${Math.min(100, (mediaToSource(video.currentTime) / duration) * 100)}%`;
     if (state.analysisTab === "risk") {
       const currentEvidence = evidenceAtTime(mediaToSource(video.currentTime));
       if (currentEvidence?.id !== state.activeEvidenceId) selectEvidence(currentEvidence?.id || null);
     }
   });
-  renderTimeline();
   renderEvidence();
   renderRules();
   setAnalysisTab("global");
@@ -423,8 +410,7 @@ document.addEventListener("click", (event) => {
   const target = event.target.closest("[data-seek]");
   if (!target) return;
   const evidence = state.report?.evidence.find((item) => item.id === target.dataset.evidenceId);
-  const scrollDestination = target.classList.contains("timeline-segment") ? "evidence" : "player";
-  seekTo(target.dataset.seek, evidence ? evidence.rule_name : target.textContent.trim(), target.dataset.evidenceId, scrollDestination);
+  seekTo(target.dataset.seek, evidence ? evidence.rule_name : target.textContent.trim(), target.dataset.evidenceId, "player");
 });
 
 byId("asr-search").addEventListener("input", (event) => {

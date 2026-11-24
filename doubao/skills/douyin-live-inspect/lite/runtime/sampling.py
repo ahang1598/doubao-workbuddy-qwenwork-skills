@@ -17,6 +17,15 @@ def enabled(task):
     return task.get('inspection_policy') in {POLICY, VIDEO_FULL_POLICY}
 
 
+def capture_task(store, conn, task):
+    """Recover historical recording spans without altering saved review evidence."""
+    if task.get('inspection_policy') != POLICY or task.get('kind', 'live') != 'live' or 'capture_spans' in task:
+        return task
+    spans = [{'start_ms': row['start_ms'], 'end_ms': row['end_ms']}
+             for row in Store._segments(store, conn)]
+    return {**task, 'capture_spans': spans}
+
+
 def video_windows(duration, task=None):
     if type(duration) is not int or duration <= 0:
         raise ValueError('video duration must be positive milliseconds')
@@ -68,6 +77,8 @@ def tick(store, conn, now=None):
         register(conn.telemetry)
     full_video = task.get('inspection_policy') == VIDEO_FULL_POLICY
     parameters = task.get('sampling_parameters', PARAMETERS)
+    if full_video:
+        parameters={**parameters, **{key:parameters.get(key) or PARAMETERS[key] for key in ('pending_seconds','review_seconds')}}
     by_index = {r['index']: r for r in rows}
     terminal = task.get('capture_status') in {'ended', 'stopped', 'failed'} or task.get('stop_requested') or task.get('live_ended_at')
     if terminal and not state:
@@ -155,14 +166,15 @@ def tick(store, conn, now=None):
         if row['review_status'] != 'pending':
             continue
         started = row.get('review_started_at')
-        if full_video:
-            continue  # Full video work survives waiting and review delays.
-        if state and now >= state['deadline_at']:
+        # Full video has no total-duration cap, but one stalled window cannot hold the rest.
+        if not full_video and state and now >= state['deadline_at']:
             skip(row, 'finish_timeout', now)
         elif started is not None and now - started >= parameters['review_seconds']:
             skip(row, 'review_timeout', now)
-        elif started is None and now - row['created_at'] >= parameters['pending_seconds']:
+        elif (started is None and now - row['created_at'] >= parameters['pending_seconds']
+              and (not full_video or row.get('asr_status') not in ASR_DONE or row.get('frame_status') not in FRAME_DONE)):
             skip(row, 'backlog_skipped', now)
+            if full_video:row['skip_reason']='证据准备超时，未完成检测'
     pending = [r for r in rows if r['review_status']=='pending' and r.get('review_started_at') is None]
     if task.get('kind') != 'video':
         for row in pending[:-1]:
@@ -234,6 +246,11 @@ class WindowStore(Store):
                     'hit 的 events 引用本窗口 evidence_ids，其余 events 留空。summary 为1至200字，images_viewed 只填实际查看的图片。'
                     '不使用直播的 segments/context_id/reviewed 精简格式，未命中也不能省略规则；追加专项后重新领取最新模板。',
             }
+            from runtime.review_contract import routing_contract
+            routing=routing_contract(task)
+            if routing:
+                result['submission_contract']['template']['content_route']=routing['template']
+                result['submission_contract']['instructions']+=' '+routing['instruction']
         return result
 
     def submit(self, payload):
@@ -261,6 +278,8 @@ class WindowStore(Store):
         result['task']['inspection_scope'] = '字幕和画面' if task.get('image_inspection',True) else '仅ASR字幕，未检测画面'
         from runtime import live_backlog
         parameters = dict(task.get('sampling_parameters',PARAMETERS))
+        if task.get('inspection_policy') == VIDEO_FULL_POLICY:
+            parameters.update({key:parameters.get(key) or PARAMETERS[key] for key in ('pending_seconds','review_seconds')})
         if live_backlog.enabled(task):parameters.update(finish_seconds=live_backlog.FINISH_SECONDS, media_seconds=live_backlog.MEDIA_SECONDS)
         result['sampling'] = {'policy': task['inspection_policy'], 'parameters': parameters,
             'image_inspection':task.get('image_inspection',True),
@@ -301,7 +320,8 @@ def recap_windows(task, rows):
     risk_ids={str(r['id']) for r in task['rules_snapshot']['rules'] if r.get('count_as_risk',True)}
     ranks={'p0':4,'p1':3,'p2':2,'p3':1,'high':3,'高':3,'medium':2,'中':2,'low':1,'低':1}
     def risk(row):
-        hits=[d for d in row.get('review_result',{}).get('rules',[]) if d['status']=='hit' and str(d['rule_id']) in risk_ids]
+        from runtime.report_data import _decisions, _result
+        hits=[d for d in _decisions(row,task.get('review_dispositions')) if _result(d)=='hit' and str(d['rule_id']) in risk_ids]
         return max([ranks.get(levels.get(str(d['rule_id'])),1) for d in hits]+[0])
     risky=sorted((s for s in done if risk(s)),key=lambda s:(-risk(s),s['start_ms']))[:3]
     return sorted({s['id']:s for s in done[:1]+risky+done[-8:]}.values(),key=lambda s:s['start_ms'])

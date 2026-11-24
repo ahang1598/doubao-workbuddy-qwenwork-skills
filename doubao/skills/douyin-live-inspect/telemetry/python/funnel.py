@@ -56,10 +56,9 @@ def state(store, task, segments, connection, status=None, *, reviewed=None):
     if task.get('kind') == 'video':
         ready = False  # Generation requires a matching persisted report, not just ready inputs.
         receipt = task.get('_funnel_video_receipt', {})
-        # Both resume and same-run report changes invalidate a previous delivery.
+        # Match quality-report validity; recap-only versions must not revoke its receipt.
         if (receipt and receipt.get('report_run') == task.get('video_report_run', 1)
                 and receipt.get('run_index') == (task.get('_telemetry') or {}).get('run_index', 1)
-                and receipt.get('token') == token(task, segments)
                 and receipt.get('fingerprint') == video_fingerprint(store, task, segments, status)):
             # A generated report can truthfully describe zero completed judgments.
             ready = bool(receipt.get('ready'))

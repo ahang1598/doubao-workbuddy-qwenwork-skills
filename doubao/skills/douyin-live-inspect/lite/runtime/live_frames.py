@@ -4,16 +4,7 @@ import threading
 import subprocess
 from runtime import full_live
 
-def validate_cloud_image(path):
-    # Optional decoder: lack of it degrades pictures, never audio. Do not invoke ffmpeg.
-    try:
-        from PIL import Image
-        if path.stat().st_size>8*1024*1024:return False
-        with Image.open(path) as image:
-            if image.format not in {'JPEG','PNG'} or image.width*image.height>16000000:return False
-            image.verify()
-        return True
-    except Exception:return False
+from runtime.cloud_frames import FrameError, FrameRequest, validate_cloud_image
 
 def prepare_one(store,cancel):
     from runtime.realtime import recording_segments
@@ -84,11 +75,15 @@ def cloud_frame(store,row,source,offset,target,cancel):
     from runtime import mediakit
     from runtime.frame_router import download_image
     task=store.task();records=dict(row.get('frame_remote_samples',{}));key=str(row['sample_at_ms']);record=dict(records.get(key,{}))
-    try:env=mediakit.credentials_env(store)
-    except (OSError,ValueError):raise mediakit.CommandFailure(None,category='credentials_unavailable') from None
+    request = FrameRequest(store, row['id'], row['sample_at_ms'], offset)
+    phase = 'query' if record.get('task_id') else 'submit'
+    with request.stage(phase):
+        try:env=mediakit.credentials_env(store)
+        except (OSError,ValueError):raise mediakit.CommandFailure(None,category='credentials_unavailable') from None
     env={**env,'MEDIAKIT_SURFACE':'skill','MEDIAKIT_RUNTIME':env.get('MEDIAKIT_RUNTIME') or 'unknown'}
     binary=mediakit.config(task,'mediakit_bin','mediakit-cli')
-    if record.get('status')=='unknown' and not record.get('task_id'):return False
+    if record.get('status')=='unknown' and not record.get('task_id'):
+        return request.failed('submit', FrameError('submission_unknown'))
     deadline=record.get('deadline_at',record.get('started_at',time.time())+180)
     if task.get('asr_policy')=='remote_first':
         # Leave time for one local extraction before a video window expires.
@@ -96,31 +91,28 @@ def cloud_frame(store,row,source,offset,target,cancel):
         finish=task.get('finishing',{})
         finish_deadline=finish.get('media_deadline_at',finish.get('deadline_at'))
         if finish_deadline is not None:deadline=min(deadline,finish_deadline)
-    if time.time()>=deadline:return False
+    if time.time()>=deadline:return request.failed(phase, FrameError('deadline_exceeded'))
     if not record.get('task_id'):
         record={'status':'unknown','started_at':time.time(),'deadline_at':deadline}
         records[key]=record
         if not store.update_segment(row['id'],frame_remote_samples=records):return False
-        result=mediakit.invoke(binary,['video','extract-frames','--video-url',str(source),
-                '--snapshot-type','SpecifiedTime','--specified-time',__import__('json').dumps([offset])],env=env,timeout=min(10,max(.001,deadline-time.time())),store=store)
-        remote_id=result.get('task_id')
-        if not isinstance(remote_id,str) or not remote_id:return False
+        remote_id=request.submit(binary, source, env, min(10,max(.001,deadline-time.time())))
         record.update(status='submitted',task_id=remote_id)
         records[key]=record
         if not store.update_segment(row['id'],frame_remote_samples=records):return False
     if cancel.is_set():return False
-    if time.time()>=deadline:return False
-    result=mediakit.invoke(binary,['shared','query-task','--task-id',record['task_id']],env=env,timeout=min(10,deadline-time.time()),store=store)
-    if result.get('status') in {'running','queued','pending','submitted','processing'}:return None
-    snapshots=result.get('snapshots',[])
-    if result.get('status')!='completed' or not isinstance(snapshots,list) or len(snapshots)!=1 or not isinstance(snapshots[0],dict):return False
-    url=snapshots[0].get('image_url')
-    if not isinstance(url,str):return False
+    if time.time()>=deadline:return request.failed('query', FrameError('deadline_exceeded'))
+    url=request.query(binary, record['task_id'], env, min(10,max(.001,deadline-time.time())))
+    if url is None:return None
     temporary=target.with_suffix('.download')
     try:
-        download_image(url,temporary,store)
-        if not validate_cloud_image(temporary):return False
-        temporary.replace(target);return True
+        with request.stage('download'):
+            download_image(url,temporary,store)
+        with request.stage('validate'):
+            if not validate_cloud_image(temporary,store,cancel):
+                raise FrameError('invalid_image')
+            temporary.replace(target)
+        return True
     finally:temporary.unlink(missing_ok=True)
 
 def run(store,done,cancel):

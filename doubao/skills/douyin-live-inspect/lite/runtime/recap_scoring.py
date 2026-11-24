@@ -27,6 +27,7 @@ ERROR_HINTS = {
     'compliance incomplete': '质检未完成或有 unknown 风险时，合规分须为 insufficient，score 为 null。',
     'compliance score required': '质检完整且风险已明确分级时须填写合规分。',
     'compliance band': '合规分超出 scoring_rules 对应风险档位范围，请按该范围修正。',
+    'content evidence unchecked': '本次评分有语音或画面证据，不能把摘要省略当作证据缺失。请核对 scoring_context 或 evidence_file 中的内容；可观察维度正常评分。若全部内容维度仍不可评，在相应 insufficient 项引用已核对的内容证据并说明具体缺口，不强行打分。',
 }
 
 
@@ -85,6 +86,12 @@ def calculate(value, context):
             'evidence': [evidence[i] for i in refs]})
     result.sort(key=lambda r: next(i for i, d in enumerate(RULES['dimensions']) if d['id'] == r['id']))
     scored = [d for d in result if d['status'] == 'scored']
+    if (not any(d['id'] != 'compliance' for d in scored)
+            and any(d['id'] != 'compliance' and d['status'] == 'insufficient' for d in result)
+            and any(e.get('kind') in ('speech', 'image') for e in evidence.values())):
+        require(any(d['id'] != 'compliance' and d['status'] == 'insufficient'
+                    and any(e.get('kind') in ('speech', 'image') for e in d['evidence'])
+                    for d in result), 'content evidence unchecked')
     cap = next((limit for count, limit in RULES['caps'] if high >= count), None)
     total = None
     if any(d['id'] != 'compliance' for d in scored):
@@ -109,7 +116,7 @@ def context_for(task, segments, evidence):
     issues = []
     complete = bool(segments and evidence)
     for s in segments:
-        decisions = _decisions(s)
+        decisions = _decisions(s,task.get('review_dispositions'))
         complete = complete and s.get('review_status') == 'done' and bool(decisions)
         for di, d in enumerate(decisions):
             status = _result(d)
@@ -117,7 +124,7 @@ def context_for(task, segments, evidence):
             rid = str(d.get('rule_id'))
             eid = f"quality:{s['id']}:{di}"
             items.append({'id': eid, 'segment_id': s['id'], 'kind': 'quality', 'start_ms': s['start_ms'], 'end_ms': s['end_ms'],
-                          'text': public_text(d.get('reason', '')), 'rule_id': rid, 'result': status})
+                          'text': public_text((d.get('review_disposition') or {}).get('reason') or d.get('reason', '')), 'rule_id': rid, 'result': status})
             if status != 'hit':
                 continue
             events = d.get('events') or [{}]

@@ -16,6 +16,7 @@ from runtime.platform_support import process_options
 from runtime.delivery_notice import attach_notice, acknowledge, is_doubao_cloud, effective_delivery_mode
 from runtime.recap_submission import RecapInputError, read_submission
 from runtime.input_errors import InputValidationError, ConfigurationError
+from runtime import live_room
 
 ROOT=Path(__file__).resolve().parents[1]
 ENTRY=ROOT/'scripts/live_inspect.py'
@@ -123,6 +124,7 @@ def chat_report(store,status,report=None):
         'evidence_gaps': status['evidence_gaps'],
         'coverage': report['coverage'] if report.get('report_kind')=='video' else status['coverage'],
         'conclusion': report['conclusion'],
+        'customer_service':report.get('customer_service'), 'qa':report.get('qa', []), 'sales_state':report.get('sales_state'),
         'hit_event_count':report['hit_event_count'], 'hit_count_basis':report['hit_count_basis'],
         'asr_sources': [{'segment_id':s['id'],'backend':s.get('asr_backend') or store.task().get('asr_backend','mediakit'),
                          'local_failure':s.get('local_failure'),'status':s['asr_status']} for s in store.segments()],
@@ -135,9 +137,9 @@ def chat_report(store,status,report=None):
 
 
 def record_rule_load_gap(store, value, code=None):
-    from runtime.rules import ALIASES
+    from runtime.rules import ALIASES, SCENARIOS
     bundle=ALIASES.get(value.get('bundle'),value.get('bundle')) if isinstance(value,dict) else None
-    if bundle not in {'finance','ecommerce'}:return
+    if bundle not in SCENARIOS:return
     with store.connection(True) as conn:
         task=store._task(conn)
         if task.get('finishing',{}).get('phase')=='completed':return
@@ -180,12 +182,13 @@ def launch(command,store):
     try:log=open(store.root/f'{command}.log','ab')
     except OSError as error:log_failure(error,stage='worker_log_open')
     try:
+        env=background_env()
         # Only the optional log may degrade. Never retry Popen: an unknown
         # process creation result must not start a second worker.
         return subprocess.Popen([sys.executable,str(ENTRY),command,'--task-dir',str(store.root)],
                                 stdin=subprocess.DEVNULL,stdout=log if log is not None else subprocess.DEVNULL,
                                 stderr=log if log is not None else subprocess.DEVNULL,
-                                **process_options(),env=background_env())
+                                **process_options(),env=env)
     finally:
         if log is not None:
             try:log.close()
@@ -302,20 +305,22 @@ def start(args, value=None, *, kind="live", notice_batch=None):
     result={'runtime':prepared.get('runtime')}
     startup_stage('task_create')
     store=Store.create(folder,name=value.get('name') or ('视频内容质检' if kind=='video' else '直播内容质检'),scenario=scene,source=source,rules=rules,
-                       delivery_mode=delivery_mode,kind=kind,asr_backend="local",notice_batch=notice_batch,video_recap_enabled=kind=="video",
+                       delivery_mode=delivery_mode,kind=kind,asr_backend='local',notice_batch=notice_batch,video_recap_enabled=kind=="video",
                        scenario_selection="confirmed", rules_mode="dynamic" if "scenario" not in value else "fixed",
-                       loaded_rule_bundles=[],
+                       loaded_rule_bundles=[],visual_quality_version=1,
+                       **({'rule_routing_version':1} if 'scenario' not in value else {}),
                        asr_runtime_root=prepared.get('asr_runtime_root'),
                        image_inspection=image_inspection,asr_policy=policy,frames_policy=policy,artifact_specs=prepared.get('artifact_specs',{}),
                        asr_primary_backend=primary,asr_selection_reason=reason,
                        model_preparation_id=preparation_id,model_waiting=waiting,local_setup_error=setup_error,
+                       **({'qa_pipeline':'comments_v1'} if kind=='live' and live_room.web_rid({'source':source}) else {}),
                        **binaries,
                        capture_route='flv' if direct_flv else 'ffmpeg',
                        asr_runtime=None,pipeline_version=2,local_asr_mode='segment',analysis_mode='full_asr',
                        inspection_policy='lite_live_realtime_v2' if kind=='live' else 'lite_video_full_v1',
-                       **({'freeze_on_end':True,'review_protocol':'lite_review_v2','review_dispatch_version':2,'review_scope_version':1,'frame_sampling_origin_ms':0,'frame_required':image_inspection and __import__('runtime.full_live',fromlist=['requires_frames']).requires_frames(rules)} if kind=='live' else {}),
+                       **({'freeze_on_end':True,'review_protocol':'lite_review_v2','review_dispatch_version':2,'review_scope_version':1,'interaction_mode':'comments_only','frame_sampling_origin_ms':0,'frame_required':image_inspection and __import__('runtime.full_live',fromlist=['requires_frames']).requires_frames(rules)} if kind=='live' else {}),
                        asr_startup={'status':'preparing','stage':'checking','deadline_at':None,
-                                    'message':'正在检查远端处理能力' if policy=='remote_first' else '正在检查本地模型'},**video_fields,**options)
+                                    'backend':primary,'message':'正在检查远端处理能力' if policy=='remote_first' else '正在检查本地模型'},**video_fields,**options)
     # Dependency preparation can outlive the observation window; let the worker request fresh evidence.
     if browser_source is not None and time.time()*1000-browser_source['captured_at']<=120000:
         from runtime.xiaohongshu_source import save_candidate
@@ -363,6 +368,9 @@ def start(args, value=None, *, kind="live", notice_batch=None):
 
 def resume_setup(store):
     task=store.task()
+    if task.get('asr_provider')=='ark':
+        return {'ready':False,'issues':[{'code':'ASR_PROVIDER_REMOVED',
+                'message':'ARK 独立转写已移除，原任务仅保留已有结果；继续检测请创建使用本地或 MediaKit 的新任务。'}]}
     if task.get('ffmpeg_fallback_status') == 'failed':
         store.update_task(ffmpeg_fallback_status=None)
     if task.get('inspection_policy')=='lite_live_full_asr_v1':
@@ -454,6 +462,15 @@ def inspection_continuation(status):
             and finish.get('mode')!='immediate'):
         return {'next_action':'review-next','workflow_complete':False,
                 'message':(failure+'；' if failure else '')+'先领取并提交已就绪内容的判定，再按原任务状态恢复剩余媒体；不要仅轮询语音恢复。'}
+    if (task.get('kind')=='video' and status.get('review_ready_pending')
+            and finish.get('mode')!='immediate'):
+        return {'next_action':'review-next','workflow_complete':False,
+                'message':'先领取并提交已就绪片段的判定，再处理剩余媒体恢复；缺失部分保留在报告中。'}
+    if (task.get('kind')=='video' and not status.get('review_ready_pending')
+            and task.get('capture_status') in {'ended','stopped','failed'}
+            and task.get('worker_status') in {'done','failed','stopped'}):
+        return {'next_action':'report --allow-partial','workflow_complete':False,
+                'message':'视频处理已结束，请交付已完成的判定及覆盖缺口；保留原任务供续办。'}
     if task.get('recovery_state') == 'blocked':
         return {'next_action':'resume','message':'媒体处理自动恢复未成功；请在原任务执行 resume，保留已采集内容并继续判定。'}
     if task.get('recovery_state') == 'worker_unresponsive':
@@ -498,6 +515,7 @@ def wait_status(store, seconds):
     if not seconds:return store.status()
     deadline=time.monotonic()+seconds
     from runtime.xiaohongshu_source import refresh_due
+    from runtime.credential_worker import dispatch_due
     initial=None
     while True:
         store.finish_tick()
@@ -506,7 +524,8 @@ def wait_status(store, seconds):
         state=(task.get('capture_status'),task.get('worker_status'),task.get('stop_requested'),
                data.get('finishing',{}).get('phase'))
         if initial is None:initial=state
-        if (refresh_due(store,store.task()) or inspection_continuation(data)['next_action']!='status' or state!=initial
+        refresh_task=store.task()
+        if (dispatch_due(refresh_task) or refresh_due(store,refresh_task) or inspection_continuation(data)['next_action']!='status' or state!=initial
                 or time.monotonic()>=deadline):return data
         from runtime.static_delivery import snapshot_due
         if task_delivery_mode(store)=='html_snapshot' and snapshot_due(store):return data
@@ -527,8 +546,32 @@ def main(argv=None):
     sub.add_parser('doctor')
     sub.add_parser('prepare-runtime')
     sub.add_parser('review-state', help='Read-only request and batch reconciliation')
-    for name in ('start','start-video','worker','serve','watch','snapshot','scene-confirm','review-defer','status','stop','resume','delivery-ack','refresh-credentials','asr-reconcile','review-next','rules-load','review-submit','report','recap-input','recap-submit','recap-report','report-delivery-ack','result-page'):
+    history = sub.add_parser('history-search', help='Search archived summary.md files without starting a task')
+    history.add_argument('--query', default='', help='Optional product/introduction keywords; space-separated AND search')
+    history.add_argument('--reports-dir', help='Archive root; defaults to ~/DouyinLiveInspect/Reports')
+    history.add_argument('--room-id')
+    history.add_argument('--room-name', help='Match the archived live/task name, not product or comment mentions')
+    history.add_argument('--date', help='Startup date in Beijing time: YYYY-MM-DD, 今天, 昨天, 前天, today, yesterday')
+    history.add_argument('--section', choices=['all', 'products', 'clips'], default='all')
+    history.add_argument('--since', help='First startup date, YYYY-MM-DD, Beijing time')
+    history.add_argument('--until', help='Last startup date, YYYY-MM-DD, Beijing time')
+    history.add_argument('--limit', type=int, default=5, choices=range(1, 21))
+    history.add_argument('--offset', type=int, default=0)
+    for name in ('start','start-video','worker','serve','watch','snapshot','scene-confirm','review-defer','status','stop','resume','delivery-ack','refresh-credentials','credential-worker','asr-reconcile','review-next','rules-load','review-submit','review-disposition','audit-trace','qa-next','qa-submit','qa-worker','report','recap-input','recap-submit','recap-report','report-delivery-ack','result-page'):
         p=sub.add_parser(name);p.add_argument('--task-dir',required=name not in ('start','start-video'))
+        if name in ('refresh-credentials','credential-worker'):
+            p.add_argument('--refresh-id',required=name=='credential-worker')
+        if name=='refresh-credentials':p.add_argument('--refresh-cycle',type=int)
+        if name=='credential-worker':
+            p.add_argument('--action',required=True,choices=['prepare','started','unavailable','stopped','next'])
+            p.add_argument('--wait-seconds',type=int,default=0,choices=range(0,31))
+            p.add_argument('--exit-confirmed',action='store_true')
+            p.add_argument('--host-task-id')
+            p.add_argument('--reason-code')
+            p.add_argument('--denial-source',choices=['host_policy','tool_response'])
+            p.add_argument('--evidence-ref')
+            p.add_argument('--discovery-complete',action='store_true')
+            p.add_argument('--not-started-confirmed',action='store_true')
         if name=='status':
             p.add_argument('--include-diagnostics',action='store_true')
             p.add_argument('--wait-seconds',type=int,default=0,choices=range(0,31))
@@ -545,11 +588,20 @@ def main(argv=None):
         if name=='result-page':
             p.add_argument('--result-id',required=True)
             p.add_argument('--offset',type=int,default=0)
+        if name in ('qa-next','qa-submit'):p.add_argument('--worker-id')
+        if name=='qa-submit':p.add_argument('--next',action='store_true',help='After a successful save, claim the next contract for the same worker')
+        if name=='qa-worker':p.add_argument('--input-file')
+        if name=='qa-next':
+            p.add_argument('--lane',choices=['questions','answers'])
+            phase=p.add_mutually_exclusive_group()
+            phase.add_argument('--final',action='store_true')
+            phase.add_argument('--recheck',action='store_true')
+            phase.add_argument('--clarifications',action='store_true')
         if name=='recap-input':
             p.add_argument('--begin',action='store_true')
             p.add_argument('--regenerate',action='store_true')
             p.add_argument('--offset',type=int,help='Read five recap segments starting at this offset')
-        if name in ('resume','start','start-video','recap-submit','review-submit','report-delivery-ack','rules-load'):p.add_argument('--input-file',help='Submit an Agent-authored UTF-8 JSON file; stdin requires EOF within 5 seconds')
+        if name in ('resume','start','start-video','recap-submit','review-submit','qa-submit','review-disposition','report-delivery-ack','rules-load'):p.add_argument('--input-file',help='Submit an Agent-authored UTF-8 JSON file; stdin requires EOF within 5 seconds')
         if name in ('report','recap-report'):p.add_argument('--single-file',action='store_true',help='Embed video in HTML instead of using a separate MP4')
         if name=='report':p.add_argument('--allow-partial',action='store_true')
         if name=='review-next':p.add_argument('--include-deferred',action='store_true')
@@ -557,6 +609,9 @@ def main(argv=None):
         if name=='rules-load':
             p.add_argument('--dispatcher-id',default='main')
             p.add_argument('--limit',type=int,choices=range(1,21))
+        if name=='audit-trace':
+            p.add_argument('--segment-id',type=int)
+            p.add_argument('--rule-id')
     for name in ('batch-create','batch-next','batch-status','batch-stop'):
         p = sub.add_parser(name)
         p.add_argument('--batch-dir',required=True)
@@ -583,6 +638,10 @@ def main(argv=None):
             if args.command=='doctor':
                 from runtime.bridge import capability
                 data['telemetry']=capability()[0]
+        elif args.command == 'history-search':
+            from runtime.report_knowledge import search
+            data = search(args.query, root=args.reports_dir, room_id=args.room_id, room_name=args.room_name, date=args.date,
+                          since=args.since, until=args.until, section=args.section, limit=args.limit, offset=args.offset)
         elif args.command in ('start','start-video'):data=start(args,kind='video' if args.command=='start-video' else 'live')
         elif args.command.startswith('batch-'):
             from runtime.video_batch import dispatch
@@ -700,8 +759,29 @@ def main(argv=None):
                     data=control(store,value)
                 else:
                     data=store.claim(known_rules_version=args.known_rules_version,limit=args.limit or (20 if store.task().get('inspection_policy')=='lite_live_realtime_v2' else 4 if store.task().get('review_protocol')=='lite_review_v2' else 2 if store.task().get('inspection_policy')=='lite_live_full_asr_v1' else 1),include_deferred=getattr(args,"include_deferred",False),dispatcher_id=args.dispatcher_id)
+            elif args.command=='qa-worker' and not (live_room.ANSWER_MATCHING_ENABLED or live_room.extracts_comments(store.task())):
+                data={'status':'disabled','message':'问答匹配已下线；评论在复盘中总结。'}
+            elif args.command=='qa-worker':
+                from runtime.qa_worker import contract, control
+                data=control(store,read_submission(args.input_file)) if args.input_file else contract(store)
+            elif args.command=='qa-next':
+                from runtime.qa_workflow import claim
+                data=claim(store, final=args.final, recheck=args.recheck, clarifications_only=args.clarifications, worker_id=args.worker_id, lane=args.lane)
+            elif args.command=='qa-submit':
+                from runtime.qa_workflow import submit
+                data=submit(store,read_submission(args.input_file),worker_id=args.worker_id)
+                if data.get('status') == 'saved' and task_delivery_mode(store) != 'chat':
+                    from runtime.static_delivery import safe_export
+                    data.update(safe_export(store,allow_partial=True))
+                if args.next and data.get('status')=='saved':
+                    from runtime.qa_workflow import claim
+                    saved=data
+                    data=claim(store,worker_id=args.worker_id)
+                    data['submission_receipt']=saved
             elif args.command=='review-defer':data=store.defer(read_review_input())
             elif args.command=='scene-confirm':data=store.confirm_scene(read_input())
+            elif args.command=='review-disposition':data=store.set_review_disposition(read_submission(args.input_file))
+            elif args.command=='audit-trace':data=store.decision_trace(segment_id=args.segment_id,rule_id=args.rule_id)
             elif args.command=='rules-load':
                 from runtime.review_errors import RULE_LOAD_ERRORS, ReviewError
                 value=read_input(args.input_file)
@@ -739,9 +819,10 @@ def main(argv=None):
                     raise
                 data=store.submit(payload)
                 review_execution.phase('submission_returned')
-                if review_v2_enabled(store.task()) and data.get('error_count') and data.get('next_action') != 'review-next':
+                if review_v2_enabled(store.task()) and data.get('error_count') and data.get('next_action') not in {'review-next','rules-load'}:
                     data['next_action']='review-submit'
-                if args.claim_next and not (review_v2_enabled(store.task()) and data.get('error_count')):
+                from runtime.qa_workflow import interleave_due
+                if args.claim_next and not (review_v2_enabled(store.task()) and data.get('error_count')) and not interleave_due(store):
                     # Submission is already durable. A next-claim failure must not look like a failed submission.
                     try:data['next']=store.claim(known_rules_version=args.known_rules_version,limit=args.limit or (20 if store.task().get('inspection_policy')=='lite_live_realtime_v2' else 4 if store.task().get('review_protocol')=='lite_review_v2' else 2 if store.task().get('inspection_policy')=='lite_live_full_asr_v1' else 1),include_deferred=getattr(args,"include_deferred",False),dispatcher_id=args.dispatcher_id,source_context=payload.get('context_id'))
                     except ValueError as error:
@@ -751,8 +832,18 @@ def main(argv=None):
                     except Exception:data['next']={'status':'retry_review_next','next_action':'review-next'}
             elif args.command=='refresh-credentials':
                 from runtime.mediakit import sync_credentials
-                data={'status':'not_required','backend':'local'} if store.task().get('asr_backend')=='local' and store.task().get('asr_policy') not in {'remote_first','local_first'} else sync_credentials(store)
+                data={'status':'not_required','backend':'local'} if store.task().get('asr_backend')=='local' and store.task().get('asr_policy') not in {'remote_first','local_first'} else sync_credentials(store,refresh_id=args.refresh_id,refresh_cycle=args.refresh_cycle)
                 data['next_action']='status'
+                if args.refresh_id:
+                    from runtime.credential_worker import continuation
+                    continuation(store,args.refresh_id,data)
+            elif args.command=='credential-worker':
+                from runtime.credential_worker import control, tick
+                if args.action=='unavailable' and not args.not_started_confirmed:raise ValueError('confirm subagent never started')
+                if args.action=='stopped' and not args.exit_confirmed:raise ValueError('confirm subagent exited')
+                data=(tick(store,args.refresh_id,wait_seconds=args.wait_seconds) if args.action=='next' else
+                      control(store,refresh_id=args.refresh_id,action=args.action,host_task_id=args.host_task_id,reason_code=args.reason_code,
+                              denial_source=args.denial_source,evidence_ref=args.evidence_ref,discovery_complete=args.discovery_complete))
             elif args.command=='asr-reconcile':
                 from runtime.mediakit import reconcile_submission
                 data=reconcile_submission(store,read_input())
@@ -938,6 +1029,27 @@ def main(argv=None):
                 # A ready recap cannot bypass a missing quality delivery acknowledgement.
                 if continuation.get('next_action') in {'report','recap-report'}:
                     continuation['next_action'] = data['next_action'] = data['completion_next_action']
+        if args.command in ('start','start-video') and data.get('task_dir') and (Path(data['task_dir'])/'inspection.db').is_file():
+            store=Store(data['task_dir'])
+        if store is not None and args.command in {'start','resume','status','review-next','review-submit','rules-load','report'} and live_room.extracts_comments(store.task()):
+            from runtime.qa_worker import contract
+            worker = contract(store)
+            if worker['next_action'] != 'observe-qa-subagents':
+                data['qa_worker_action'] = worker
+        if live_room.ANSWER_MATCHING_ENABLED and store is not None and store.task().get('interaction_mode') == 'separate_v1' and args.command in {'start','resume','status','review-next','review-submit','rules-load','report'}:
+            from runtime.qa_workflow import progress
+            data['qa_task']=progress(store)
+            worker=data['qa_task'].get('worker')
+            if worker and worker['next_action']!='observe-qa-subagents':
+                data['qa_worker_action']=worker
+            if args.command == 'review-submit' and data.get('saved_count') and not data.get('error_count'):
+                from runtime.qa_workflow import interleave_due
+                if interleave_due(store):
+                    data['next_action']='qa-next'
+                    data['continuation_instruction']='本批风险已保存；现在执行 qa-next 完成已就绪问答，队列追平后继续 review-next。不要等停播后再补问答。'
+        if args.command=='recap-input' and data.get('qa_required'):
+            data['next_action']=data['qa_required']['next_action']
+            data['submission_contract']=data['qa_required']
         if args.command=='report' and data.get('status')=='ready' and store.task().get('kind')=='video':
             data['delivery']['message']=(
                 '请交付视频质检报告的 HTML 附件、结论、风险证据及覆盖缺口；如有 media 附件，随报告交付并保留相对目录。不交付实时工作台。' if data['delivery_mode']!='chat' else '请直接交付视频质检报告、结论、风险证据及覆盖缺口，不交付实时工作台。') + ' 随后继续生成并交付带评分的复盘报告。'
@@ -952,9 +1064,6 @@ def main(argv=None):
             first=('next_action','workflow_complete','after_delivery_next_action','recap','submission_contract')
             data={**{key:data[key] for key in first if key in data},
                   **{key:value for key,value in data.items() if key not in first}}
-        # Start creates its store internally; all public commands expose real artifacts.
-        if args.command in ('start','start-video') and data.get('task_dir') and (Path(data['task_dir'])/'inspection.db').is_file():
-            store=Store(data['task_dir'])
         from runtime.static_delivery import snapshot_due
         if (store is not None and review_execution.active() and store.task().get('kind','live')=='live'
                 and task_delivery_mode(store)=='html_snapshot' and snapshot_due(store)):
@@ -1019,6 +1128,9 @@ def main(argv=None):
             data.update(observe(store,recover=False))
             if args.command=='resume' and data.get('report_checkpoint'):
                 data['next_action']=data['report_checkpoint']['next_action']
+        if store is not None and args.command in ('start','start-video','status','resume','review-next','review-submit','rules-load'):
+            from runtime.credential_worker import attach
+            attach(store,data)
         if store is not None:
             from runtime.xiaohongshu_source import attach_refresh
             attach_refresh(store,data)
@@ -1032,7 +1144,7 @@ def main(argv=None):
             from runtime.live_continuation import annotate
             annotate(data, data.get('workflow_complete', False), store=store)
         first=('source_end_reason','live_source_status','capture_status_text','source_refresh','capture_failure','diagnostic_delivery','snapshot_check','delivery_required','delivery','snapshot_delivery','snapshot_events','artifact_status','artifacts',
-               'delivery_ack_contract','next_action','workflow_complete','poll_after_seconds','continuation_instruction','after_delivery_next_action')
+               'delivery_ack_contract','credential_worker_action','qa_worker_action','next_action','workflow_complete','poll_after_seconds','continuation_instruction','after_delivery_next_action')
         data={**{key:data[key] for key in first if key in data},
               **{key:value for key,value in data.items() if key not in first}}
         if store is not None:publish_metadata(store.task())

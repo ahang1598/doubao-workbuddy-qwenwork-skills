@@ -518,13 +518,19 @@ def _custom_shape_from_svg_path(
     )
     border_w = _stroke_border_width(stroke_w) if border_color != "rgba(0,0,0,0)" else 0
     alpha_attr = f' alpha="{opacity:.12g}"' if opacity < 1 else ""
+    pattern = _get_attr(tag, "data-sml-pattern")   # native hatch: SVG <pattern> has no SML equivalent
+    if pattern and re.fullmatch(r"rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)", fill_color):
+        fill_xml = (f'<fillPattern type="{pattern}" foregroundColor="{fill_color}" '
+                    f'backgroundColor="rgb(255,255,255)"/>')
+    else:
+        fill_xml = f'<fillColor color="{fill_color}"/>'
     body = (
         f'<shape type="custom" topLeftX="{_format_num(_sx(x_min))}" '
         f'topLeftY="{_format_num(_sy(y_min))}" '
         f'width="{_format_num(max(_sw(w), 0.1))}" '
         f'height="{_format_num(max(_sh(h), 0.1))}" '
         f'path="{path}"{alpha_attr}>'
-        f'<fill><fillColor color="{fill_color}"/></fill>'
+        f'<fill>{fill_xml}</fill>'
         f'<border color="{border_color}" width="{border_w}"{border_attrs}/>'
         f"</shape>"
     )

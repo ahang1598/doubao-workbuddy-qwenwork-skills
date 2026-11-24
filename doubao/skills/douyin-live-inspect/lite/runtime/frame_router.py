@@ -11,6 +11,7 @@ from urllib.parse import urljoin
 
 from runtime import backend_routing, mediakit
 from runtime.media_jobs import MediaJobs
+from runtime.cloud_frames import FrameError, FrameRequest, validate_cloud_image
 
 CLOUD_SECONDS = 600
 
@@ -27,21 +28,30 @@ def download_image(url, target, store):
     deadline = time.monotonic() + 30
     for _ in range(4):
         remaining = deadline - time.monotonic()
-        if remaining <= 0: raise RuntimeError('frame_download_timeout')
+        if remaining <= 0: raise FrameError('download_timeout')
         result = media_command([sys.executable, '-I', str(Path(__file__).with_name('http_fetch.py'))],
             input=json.dumps({'url': url, 'headers': {}, 'timeout': remaining, 'maximum_bytes': 8*1024*1024,
                               'content_kind': 'image'}), capture_output=True, text=True, timeout=remaining, env=env, store=store)
-        if result.returncode: raise RuntimeError('frame_download_failed')
+        if result.returncode: raise FrameError('download_worker_failed')
         value = json.loads(result.stdout)
         if 300 <= value.get('status', 0) < 400:
             location = value.get('headers', {}).get('location')
-            if not isinstance(location, str) or not location: break
+            if not isinstance(location, str) or not location: raise FrameError('missing_redirect_location')
             url = urljoin(url, location)
             continue
-        if value.get('status') != 200 or not value.get('body'): break
+        if value.get('error'):
+            from runtime.http_fetch import safe_failure
+            diagnostic = safe_failure(value.get('diagnostic'))
+            raise FrameError(diagnostic.get('kind', 'fetch_failed'))
+        if value.get('status') != 200:
+            status = value.get('status')
+            raise FrameError(f'http_{status}' if type(status) is int and 100 <= status <= 599 else 'invalid_http_status')
+        if not value.get('body'):
+            content_type = value.get('headers', {}).get('content-type', '').lower().split(';', 1)[0].strip()
+            raise FrameError('empty_image' if content_type in {'image/jpeg','image/png'} else 'unsupported_content_type')
         target.write_bytes(base64.b64decode(value['body'], validate=True))
         return
-    raise RuntimeError('frame_download_failed')
+    raise FrameError('too_many_redirects')
 
 
 def extract(store, segment, folder, job, *, cancelled=lambda: False):
@@ -79,12 +89,7 @@ def extract(store, segment, folder, job, *, cancelled=lambda: False):
     def cloud():
         nonlocal fields, files
         if not allowed: raise RuntimeError('cloud_frames_unavailable')
-        if remote_first and not segment.get('frame_remote'):
-            capability=cloud_available(store,capability='frames')
-            if not capability['ready']:
-                raise mediakit.CommandFailure(None,category=capability.get('code','cloud_frames_unavailable'))
-        env = mediakit.credentials_env(store)
-        env = {**env, 'MEDIAKIT_SURFACE': 'skill', 'MEDIAKIT_RUNTIME': env.get('MEDIAKIT_RUNTIME') or 'unknown'}
+        env = None
         binary = mediakit.config(task, 'mediakit_bin', 'mediakit-cli')
         records = dict(segment.get('frame_remote') or {})
         deadline = segment.get('frame_cloud_deadline_at')
@@ -105,53 +110,62 @@ def extract(store, segment, folder, job, *, cancelled=lambda: False):
             if valid_frame(target, task, store):
                 frames.append({'id': f"frame-{segment['id']}-{n}", 'path': str(target.relative_to(store.root)), 'time_ms': at})
                 continue
+            request = FrameRequest(store, segment['id'], at, offset)
             record = records.get(str(n)) or {}
-            if record.get('status') == 'unknown': raise RuntimeError('frame_submission_unknown')
+            if record.get('status') == 'unknown':
+                with request.stage('submit'): raise FrameError('submission_unknown')
+            if env is None:
+                with request.stage('query' if record.get('task_id') else 'submit'):
+                    if remote_first and not records and not cloud_available(store, capability='frames')['ready']:
+                        raise FrameError('cloud_frames_unavailable')
+                    try:
+                        env = mediakit.credentials_env(store)
+                    except (OSError, ValueError):
+                        raise mediakit.CommandFailure(None, category='credentials_unavailable') from None
+                    env = {**env, 'MEDIAKIT_SURFACE':'skill', 'MEDIAKIT_RUNTIME':env.get('MEDIAKIT_RUNTIME') or 'unknown'}
             if not record.get('task_id'):
-                if time.time() >= deadline: raise RuntimeError('cloud_frames_timeout')
+                if time.time() >= deadline:
+                    with request.stage('submit'): raise FrameError('deadline_exceeded')
                 # Contract exposes image_url only, not timestamps or an ordering
                 # guarantee. A single requested instant makes attribution exact.
                 records[str(n)] = {'status': 'unknown'}
                 checkpoint(frame_remote=records)
-                result = mediakit.invoke(binary, ['video', 'extract-frames', '--video-url',
-                    str(store.root / segment['media_file']), '--snapshot-type', 'SpecifiedTime',
-                    '--specified-time', json.dumps([offset])],
-                    env=env, timeout=min(60, deadline-time.time()), store=store)
-                remote_id = result.get('task_id')
-                if not isinstance(remote_id, str) or not remote_id.strip(): raise RuntimeError('invalid_frame_task')
+                remote_id = request.submit(binary, store.root / segment['media_file'], env,
+                                           min(60, max(.001, deadline-time.time())))
                 record = records[str(n)] = {'status': 'submitted', 'task_id': remote_id}
                 checkpoint(frame_remote=records)
             while True:
                 if cancelled(): raise FrameJobCancelled()
-                if time.time() >= deadline: raise RuntimeError('cloud_frames_timeout')
+                if time.time() >= deadline:
+                    with request.stage('query'): raise FrameError('deadline_exceeded')
                 # Reading a saved task is retryable; submitting its audio/video is not.
                 try:
-                    result = mediakit.invoke(binary, ['shared','query-task','--task-id',record['task_id']],
-                        env=env, timeout=min(60, deadline-time.time()), store=store)
+                    url = request.query(binary, record['task_id'], env, min(60, max(.001, deadline-time.time())))
                 except mediakit.CommandFailure as failure:
                     if failure.diagnostic.get('category') not in {'request_timeout','network_error','rate_limited','service_unavailable'}:
                         raise
-                    result = {'status': 'running'}
-                state = str(result.get('status', '')).lower()
-                if state == 'completed': break
-                if state not in {'running','queued','pending','submitted','processing'}: raise RuntimeError('cloud_frames_failed')
+                    url = None
+                if url is not None: break
                 until = min(time.monotonic()+3, time.monotonic()+max(0,deadline-time.time()))
                 while time.monotonic() < until:
                     if cancelled(): raise FrameJobCancelled()
                     time.sleep(min(.2, until-time.monotonic()))
-            snapshots = result.get('snapshots')
-            if not isinstance(snapshots, list) or len(snapshots) != 1 or not isinstance(snapshots[0],dict):
-                raise RuntimeError('invalid_frame_result')
-            url = snapshots[0].get('image_url')
-            if not isinstance(url,str): raise RuntimeError('invalid_frame_result')
             raw = cloud_folder / f'{n:03d}.download'
-            download_image(url, raw, store)
-            # The remote image may be PNG. Decode and normalize to the existing
-            # JPEG evidence format; source-video decoding is not needed here.
-            result = media_command([mediakit.config(task,'ffmpeg_bin','ffmpeg'),'-nostdin','-v','error','-y',
-                '-i',str(raw),'-frames:v','1','-vf','scale=min(1280\\,iw):-2',str(image)],
-                capture_output=True,timeout=30,store=store)
-            if result.returncode or not valid_frame(image,task,store): raise RuntimeError('invalid_frame_image')
+            with request.stage('download'):
+                download_image(url, raw, store)
+            with request.stage('validate'):
+                if not validate_cloud_image(raw, store):
+                    raise FrameError('invalid_image')
+                # Preserve the JPEG evidence format for this lane.
+                with raw.open('rb') as stream:
+                    jpeg = stream.read(2) == b'\xff\xd8'
+                if jpeg:
+                    raw.replace(image)
+                else:
+                    result = media_command([mediakit.config(task,'ffmpeg_bin','ffmpeg'),'-nostdin','-v','error','-y',
+                        '-i',str(raw),'-frames:v','1','-vf','scale=min(1280\\,iw):-2',str(image)],
+                        capture_output=True,timeout=30,store=store)
+                    if result.returncode or not valid_frame(image,task,store): raise FrameError('png_conversion_failed')
             files.append((image,target))
             frames.append({'id': f"frame-{segment['id']}-{n}", 'path': str(target.relative_to(store.root)), 'time_ms': at})
         frames.sort(key=lambda frame: frame['time_ms'])

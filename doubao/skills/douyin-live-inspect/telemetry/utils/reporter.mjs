@@ -14,6 +14,7 @@ const OBSERVATIONS = new Set([
   EVENTS.service.NOT_ENABLED,
   EVENTS.startup.ATTEMPT,
   EVENTS.stop.OBSERVED,
+  EVENTS.risk.HIT,
 ]);
 const disabled = (env = process.env) =>
   ['1', 'true'].includes(

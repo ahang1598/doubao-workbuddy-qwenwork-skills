@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/shared/lite.css" />
   </head>
   <body>
-    <div class="page">
+    <div class="page recap-page">
       <header class="header">
         <div class="brand">
           <span class="logo">AI</span
@@ -23,9 +23,10 @@
       <main class="shell" id="report" hidden>
         <section class="conclusion">
           <div class="conclusionHead">
-            <span aria-hidden="true">✦</span>
-            <h2>复盘结论</h2>
+            <h2>本场复盘</h2>
+            <p id="recording-date"></p>
           </div>
+          <details class="recap-scope"><summary>查看记录范围与说明</summary><p id="report-scope"></p><p id="clock-scope"></p></details>
           <div class="conclusionBody">
             <div id="conclusion-score" class="conclusionScore" hidden></div>
             <p id="conclusion"></p>
@@ -101,7 +102,7 @@
           </section>
           <section class="analysis">
             <div class="analysisHeader">
-              <h2>内容分析</h2>
+              <h2>内容时间轴</h2>
               <div class="filters">
                 <div
                   class="arco-radio-group arco-radio-group-size-default arco-radio-group-type-button"
@@ -118,6 +119,7 @@
                 />
               </div>
             </div>
+            <p class="moment-legend"><span class="legend-highlight">● 高光</span><span class="legend-problem">● 问题</span><span>同一时段可同时包含亮点与改进项</span></p>
             <div
               class="analysisBody"
               id="analysis-body"
@@ -130,6 +132,13 @@
             </div>
           </section>
           <section id="scoring-details" class="insights" hidden></section>
+          <section id="clarifications" class="sales-state clarification-panel" hidden></section>
+          <section id="viewer-context" class="insights" hidden>
+            <h2 class="sectionHeading">评论总结</h2>
+            <div id="interaction-summary"></div>
+            <details class="recap-scope"><summary>统计口径与采集范围</summary><p id="viewer-scope"></p></details>
+            <section id="live-room" class="sales-state live-room" hidden></section>
+          </section>
         </div>
       </main>
     </div>

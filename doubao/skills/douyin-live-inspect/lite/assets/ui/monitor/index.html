@@ -97,18 +97,17 @@
             </div>
           </header>
 
-          <section aria-labelledby="audit-title">
+          <section id="audit-section" aria-labelledby="audit-title">
             <header class="detail-section-header">
               <div>
                 <div class="audit-heading-row">
                   <h3 id="audit-title">审核结果</h3>
                 </div>
-                <p>实时识别直播内容风险，最新审核结果将在此持续更新</p>
               </div>
             </header>
             <div class="risk-overview" aria-label="风险概览">
               <div><span>本页命中</span><strong id="risk-total">0</strong></div>
-              <div><span>本页涉及规则</span><strong id="risk-rules">0</strong></div>
+              <div><span title="已加载的确认命中和待复核记录涉及的规则，按规则去重；不随筛选变化">本页涉及规则</span><strong id="risk-rules">0</strong></div>
               <div><span title="相对直播开始时间">最新命中时点</span><strong id="risk-latest">—</strong></div>
               <div><span>主要命中规则</span><strong id="risk-top">—</strong></div>
             </div>
@@ -126,6 +125,9 @@
               </div>
             </div>
           </section>
+          <section id="live-room" class="sales-state live-room" aria-label="在线观众与评论" tabindex="0" hidden></section>
+          <section id="clarifications" class="sales-state clarification-panel" hidden></section>
+          <section id="sales-state" class="sales-state" hidden></section>
         </div>
       </section>
     </main>

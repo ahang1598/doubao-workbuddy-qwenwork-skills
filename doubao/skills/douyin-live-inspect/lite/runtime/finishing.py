@@ -218,7 +218,7 @@ def message(task, finish, pending=0):
     if catch_up(task):
         return f'直播优先检测最新内容，积压时会跳过旧音频。停止后媒体处理最多 {MEDIA_SECONDS} 秒，抽检结果最多 {FINISH_SECONDS} 秒封板；报告注明未检范围，随后生成复盘。'
     if task.get('inspection_policy')=='lite_video_full_v1':
-        return '视频按时间顺序检测至片尾，采集结束后继续处理全部待判片段；报告明确已完成范围及失败缺口。'
+        return '视频按时间顺序检测至片尾；单窗等待或判定超时后跳过并继续，报告保留已完成结果并说明未检范围。'
     if task.get('inspection_policy')=='lite_sample_v1':
         if task.get('kind') == 'video':
             seconds = task.get('sampling_parameters', {}).get('finish_seconds', 60)

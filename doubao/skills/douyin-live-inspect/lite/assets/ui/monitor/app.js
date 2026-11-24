@@ -24,7 +24,8 @@ let latestCoverage = null;
 let lastConfirmedDurationMs = 0;
 
 function setText(id, value) {
-  byId(id).textContent = value === null || value === undefined || value === '' ? '—' : `${value}`;
+  const text = value === null || value === undefined || value === '' ? '—' : `${value}`;
+  if (byId(id).textContent !== text) byId(id).textContent = text;
 }
 
 function statusClass(status) {
@@ -191,7 +192,7 @@ function renderReportAccess(snapshot) {
     paused: '复盘尚未完成，可回到原对话继续。',
     failed: recap.terminal_failure ? '本次复盘未能完成，可回到原对话查看原因。' : '复盘暂未生成，可回到原对话查看原因并重试。',
     blocked: '暂时无法生成复盘，可回到原对话查看原因。',
-    stale: '内容已更新，可回到原对话更新复盘。',
+    stale: '复盘需更新，请回到原对话更新。',
   };
   setText('review-report-action', reviewReady ? '查看复盘报告'
     : recap.recovery_blocked ? '复盘暂未完成，可回到原对话继续处理。'
@@ -219,7 +220,7 @@ function ruleKey(record) {
 }
 
 function isMachineHit(record) {
-  return record.machine_result === 'hit';
+  return ['hit', 'warning'].includes(record.machine_result);
 }
 
 function updateRuleOptions(records) {
@@ -229,19 +230,18 @@ function updateRuleOptions(records) {
   for (const record of records) counts.set(ruleKey(record), (counts.get(ruleKey(record)) || 0) + 1);
   if (activeRule !== 'all' && !names.has(activeRule)) activeRule = 'all';
   const options = [['all', '全部'], ...[...names].sort((a, b) => a[1].localeCompare(b[1], 'zh-CN'))];
-  root.replaceChildren(...options.map(([value, label]) => {
-    const button = document.createElement('button');
+  const update = window.LiteUI.domUpdate(root), add = update.add;
+  for (const [value, label] of options) {
+    const button = add(root, 'button', '', '', value);
     button.type = 'button';
     button.className = `rule-filter-chip${value === activeRule ? ' active' : ''}`;
     button.dataset.rule = value;
-    button.append(document.createTextNode(value === 'all' ? '全部' : displayRuleName(label)));
-    const count = document.createElement('em');
-    count.textContent = value === 'all' ? records.length : counts.get(value);
-    button.append(count);
+    add(button, 'span', value === 'all' ? '全部' : displayRuleName(label));
+    add(button, 'em', value === 'all' ? records.length : counts.get(value));
     button.title = label;
     button.setAttribute('aria-pressed', value === activeRule ? 'true' : 'false');
-    return button;
-  }));
+  }
+  update.finish();
 }
 
 function visibleRecords() {
@@ -251,17 +251,24 @@ function visibleRecords() {
 }
 
 function renderRiskOverview() {
-  const records = [...capturedRecords.values()];
+  const records = [...capturedRecords.values()].filter((record) => record.machine_result === 'hit');
   const counts = new Map();
   for (const record of records) counts.set(ruleKey(record), (counts.get(ruleKey(record)) || 0) + 1);
   const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
   const topName = top ? records.find((record) => ruleKey(record) === top[0])?.rule_name : null;
-  const latest = [...records].sort((a, b) => b.id - a.id)[0];
+  const latest = records.flatMap(record => (record.samples || []).map(sample => sample.time)).filter(Boolean).sort().pop();
   setText('risk-total', records.length);
-  setText('risk-rules', counts.size);
-  setText('risk-latest', latest?.samples?.[0]?.time || '—');
+  // This card describes all loaded records, including pending review; risk totals remain confirmed hits only.
+  setText('risk-rules', new Set([...capturedRecords.values()].filter(isMachineHit).map(ruleKey)).size);
+  setText('risk-latest', latest || '—');
   setText('risk-top', top ? displayRuleName(topName) : '—');
   byId('risk-top').title = topName || '';
+}
+
+function syncChildren(root, rows) {
+  const retained = new Set(rows);
+  for (const child of Array.from(root.children)) if (!retained.has(child)) root.removeChild(child);
+  rows.forEach((node, index) => { if (root.children[index] !== node) root.insertBefore(node, root.children[index] || null); });
 }
 
 function renderRecords() {
@@ -271,99 +278,119 @@ function renderRecords() {
   const filtering = selectedRule() !== 'all';
   const summary = byId('record-summary');
   summary.hidden = false;
-  summary.textContent = filtering ? `筛选显示 ${records.length} / ${capturedRecords.size} 条` : `已加载 ${records.length} 条`;
+  const warningCount = records.filter((record) => record.machine_result === 'warning').length;
+  const hitCount = records.length - warningCount;
+  summary.textContent = filtering ? `筛选显示 ${records.length} / ${capturedRecords.size} 条`
+    : `确认风险 ${hitCount} 条${warningCount ? `；待复核 ${warningCount} 条` : ''}`;
   renderRiskOverview();
   if (!records.length) {
     renderedCards.clear();
-    root.replaceChildren();
-    const empty = document.createElement('div');
+    const update = window.LiteUI.domUpdate(root);
+    const empty = update.add(root, 'div', '', 'audit-empty');
     empty.className = 'audit-empty';
     const reviewed = Number(latestCoverage?.reviewed || 0);
     empty.textContent = capturedRecords.size ? '当前规则筛选下暂无风险命中'
       : failedWithoutMedia({task: latestTask, coverage: latestCoverage}) ? '本次采集失败，未采集到可判定的内容。'
       : reviewed && latestTask?.inspection_policy ? '已检测内容中未发现规则命中' : reviewed ? '当前暂无风险命中'
         : '正在等待首个片段完成判定…';
-    root.append(empty);
+    update.finish();
     return;
   }
   for (const record of records) {
     const signature = JSON.stringify(record);
     const cached = renderedCards.get(record.id);
     if (cached?.signature === signature) { cards.push(cached.article); continue; }
-    const article = document.createElement('article');
+    const article = cached?.article || document.createElement('article');
+    const update = window.LiteUI.domUpdate(article), add = update.add;
     const evidenceId = record.samples?.find((item) => item.evidence_id)?.evidence_id;
-    article.className = `audit rejected${evidenceId ? ' has-evidence' : ''}`;
+    const warning = record.machine_result === 'warning';
+    article.className = `audit ${warning ? 'warning' : 'rejected'}${evidenceId ? ' has-evidence' : ''}`;
     if (recentRecordIds.has(record.id)) article.classList.add('new-arrival');
-    const head = document.createElement('div');
+    const head = add(article, 'div', '', 'audit-head');
     head.className = 'audit-head';
-    const title = document.createElement('strong');
-    title.textContent = displayRuleName(record.rule_name);
+    const title = add(head, 'strong', displayRuleName(record.rule_name));
     title.title = record.rule_name;
-    const time = document.createElement('time');
     const newestTime = record.samples?.[0]?.time;
-    time.textContent = newestTime || record.created_at || `记录 #${record.id}`;
-    head.append(title, time);
-    const sample = document.createElement('p');
-    sample.textContent = sampleText(record);
-    article.append(head, sample);
+    add(head, 'time', newestTime || record.created_at || `记录 #${record.id}`);
+    const sample = add(article, 'p', sampleText(record), '', 'sample');
+    if (record.samples?.length>1) {
+      const occurrences = add(article,'details','','','occurrences');
+      add(occurrences,'summary',`同一画面文案共出现 ${record.samples.length} 次`);
+      add(occurrences,'p',record.samples.map(item=>item.time).join('、'));
+    }
     const annotations = [record.review_label ? `复核：${record.review_label}` : '', record.disposition_label ? `处置：${record.disposition_label}` : ''].filter(Boolean);
     if (annotations.length) {
-      const statusNote = document.createElement('p');
-      statusNote.className = 'reason';
-      statusNote.textContent = `${annotations.join('；')}（不改变自动质检命中计数）`;
-      article.append(statusNote);
+      add(article, 'p', `${annotations.join('；')}（${warning ? '待复核，不计入确认风险' : '不改变自动质检命中计数'}）`, 'reason', 'status');
     }
     const reason = record.samples?.find((item) => item.reason)?.reason || record.audit_comment;
     if (reason && reason !== sample.textContent) {
-      const reasonEl = document.createElement('p');
-      reasonEl.className = 'reason';
-      reasonEl.textContent = `判断依据：${reason}`;
-      article.append(reasonEl);
+      add(article, 'p', `判断依据：${reason}`, 'reason', 'reason');
+    }
+    const machineReason = record.samples?.find((item) => item.machine_reason)?.machine_reason;
+    if (warning && machineReason && machineReason !== reason) {
+      add(article, 'p', `原模型依据：${machineReason}`, 'reason', 'machine-reason');
     }
     if (evidenceId) {
       const imageUrl = record.samples?.find((item) => item.evidence_id === evidenceId)?.image_url || '';
-      const evidence = document.createElement('button');
+      const evidence = add(article, 'button', '', 'audit-evidence');
       evidence.type = 'button';
       evidence.className = 'audit-evidence';
-      evidence.addEventListener('click', () => window.LiteUI.preview(imageUrl, `${record.rule_name}异常画面`, evidence));
+      evidence.onclick = () => window.LiteUI.preview(imageUrl, `${record.rule_name}异常画面`, evidence);
       evidence.setAttribute('aria-label', '查看异常画面大图');
-      const image = document.createElement('img');
-      image.src = imageUrl;
+      const image = add(evidence, 'img', '');
+      if (image._imageUrl !== imageUrl) { image.src = imageUrl; image._imageUrl = imageUrl; }
       image.alt = `${record.rule_name}异常画面`;
       image.loading = 'lazy';
       image.referrerPolicy = 'no-referrer';
-      evidence.append(image);
-      const evidenceLabel = document.createElement('small');
-      evidenceLabel.append(document.createTextNode('查看大图'));
-      const contextLabel = document.createElement('span');
-      contextLabel.textContent = ' · 命中附近画面';
-      evidenceLabel.append(contextLabel);
-      evidence.append(evidenceLabel);
-      article.append(evidence);
+      const evidenceLabel = add(evidence, 'small', '');
+      add(evidenceLabel, 'span', '查看大图');
+      add(evidenceLabel, 'span', ' · 命中附近画面');
     }
+    update.finish();
     renderedCards.set(record.id, {signature, article});
     cards.push(article);
   }
   const visibleIds = new Set(records.map(record => record.id));
   for (const id of renderedCards.keys()) if (!visibleIds.has(id)) renderedCards.delete(id);
-  const retained = new Set(cards);
-  for (const child of Array.from(root.children)) if (!retained.has(child)) root.removeChild(child);
-  cards.forEach((card, index) => { if (root.children[index] !== card) root.insertBefore(card, root.children[index] || null); });
+  const existingGroups = new Map(Array.from(root.children).filter(node => node.dataset.group).map(node => [node.dataset.group, node]));
+  const groups = new Map();
+  records.forEach((record, index) => {
+    const key = JSON.stringify([record.rule_id || record.rule_name, record.machine_result]);
+    if (!groups.has(key)) groups.set(key, {record, cards: []});
+    groups.get(key).cards.push(cards[index]);
+  });
+  const rows = Array.from(groups, ([key, group]) => {
+    if (group.cards.length === 1) return group.cards[0];
+    const details = existingGroups.get(key) || document.createElement('details');
+    details.dataset.group = key;
+    details.className = `audit-group${group.record.machine_result === 'warning' ? ' warning' : ''}`;
+    const title = details._summary || (details._summary = document.createElement('summary'));
+    const titleText = `${displayRuleName(group.record.rule_name)} · ${group.cards.length} 次${group.record.machine_result === 'warning' ? '待复核' : '命中'}（展开查看各次证据）`;
+    if (title.textContent !== titleText) title.textContent = titleText;
+    syncChildren(details, [title, ...group.cards]);
+    return details;
+  });
+  syncChildren(root, rows);
 }
 
-function mergeRecords(records) {
+function mergeRecords(records, fullSnapshot = false) {
   const root = byId('records');
   const wasNearTop = root.scrollTop <= 24;
   const hadInitialRecords = initialRecordsLoaded;
   let newCount = 0;
   const newIds = [];
-  const unknownCount = records.filter((record) => !['hit', 'clear', 'not_applicable'].includes(record.machine_result)).length;
+  if (fullSnapshot) {
+    const present = new Set(records.map(record => record.id));
+    for (const id of capturedRecords.keys()) if (!present.has(id)) capturedRecords.delete(id);
+  }
+  const unknownCount = records.filter((record) => !['hit', 'warning', 'clear', 'not_applicable'].includes(record.machine_result)).length;
   const progressNote = latestCoverage
     ? `内容片段 ${latestCoverage.segments || 0} 个：已判定 ${latestCoverage.reviewed || 0} 个；待判定 ${latestCoverage.pending || 0} 个`
     : '';
   const unknownNote = unknownCount ? `本轮返回 ${unknownCount} 条记录的自动质检状态或来源未明确，未纳入命中统计。` : '';
-  byId('audit-status-note').textContent = [progressNote, unknownNote].filter(Boolean).join('；');
-  byId('audit-status-note').hidden = !progressNote && !unknownNote;
+  const note = [progressNote, unknownNote].filter(Boolean).join(' · ');
+  byId('audit-status-note').textContent = note;
+  byId('audit-status-note').hidden = !note;
   for (const record of records) {
     // 只跟随机审结论更新缓存；人审通过、驳回或警告由适配层独立保留。
     if (!isMachineHit(record)) {
@@ -394,11 +421,16 @@ function mergeRecords(records) {
   }
 }
 
+function monitorStatus(task) {
+  if (task?.media_frozen && task.kind !== 'video' && Number(task.status) !== 5) return '监控已结束';
+  return task?.status_text;
+}
+
 function updateMonitorState(forceError = snapshotConnectionFailed) {
   const root = document.querySelector('.refresh-state');
   root.classList.toggle('error', Number(latestTask?.status) === 5);
   if (pollingComplete) {
-    setText('monitor-state', latestTask?.status_text || '报告已生成');
+    setText('monitor-state', monitorStatus(latestTask) || '监控已结束');
     setText('refresh-frequency', '已停止自动更新');
     return;
   }
@@ -407,7 +439,7 @@ function updateMonitorState(forceError = snapshotConnectionFailed) {
   const failed = Number(latestTask?.status) === 5;
   const noMedia = failedWithoutMedia({task: latestTask, coverage: latestCoverage});
   root.classList.toggle('stale', !forceError && !terminal && age !== null && age >= 15);
-  setText('monitor-state', forceError ? latestTask?.status_text || '结果暂未加载' : failed ? latestTask.status_text || '检测失败' : terminal ? latestTask?.status_text || '监测已结束' : age !== null && age >= 15 ? '更新延迟' : '实时监测中');
+  setText('monitor-state', forceError ? monitorStatus(latestTask) || '结果暂未加载' : failed ? latestTask.status_text || '检测失败' : terminal ? monitorStatus(latestTask) || '监控已结束' : age !== null && age >= 15 ? '更新延迟' : '实时监测中');
   setText('refresh-frequency', forceError ? window.__liveMonitor ? '正在重试更新' : '可手动重新加载' : noMedia ? '未采集到内容' : terminal ? '报告状态自动更新' : age === null ? '正在连接' : age < 10 ? '刚刚更新' : `${age} 秒前更新`);
 }
 
@@ -422,7 +454,6 @@ function render(snapshot, sequence = ++requestSequence) {
   else if (task.stop_requested_at > 0) endAcceptedAt = task.stop_requested_at;
   else if (snapshot.end_accepted_at != null) endAcceptedAt = snapshot.end_accepted_at;
   const terminal = [3, 4].includes(Number(task.status));
-  const reviewSupported = supportsReviewReport(snapshot);
   const isVideo = snapshot.task?.kind === 'video';
   setText('page-title', isVideo ? '本地视频质检工作台' : '直播实时质检工作台');
   setText('page-context', failedWithoutMedia(snapshot) ? '本次采集失败，未采集到可检测内容'
@@ -431,13 +462,13 @@ function render(snapshot, sequence = ++requestSequence) {
     : snapshot.finishing?.phase === 'draining'
     ? '正在完成当前检测，完成后生成质检报告和复盘。'
     : terminal
-    ? reviewSupported ? '实时监控已结束，可查看质检与复盘结果' : '实时监控已结束，可查看质检结果'
+    ? '本场采集已结束'
     : '持续监测直播内容，实时展示质检结果');
   document.title = isVideo ? '本地视频质检工作台' : '直播实时质检工作台';
   if (isVideo) setText('page-context', `视频预处理 ${Math.round((snapshot.task.processed_ms || 0) / 1000)} / ${Math.round((snapshot.task.source_duration_ms || 0) / 1000)} 秒；识别与判定进度见下方`);
   setText('task-name', task.name);
   const status = byId('status');
-  status.textContent = task.status_text;
+  status.textContent = monitorStatus(task);
   status.className = `detail-status ${statusClass(task.status)}`.trim();
   renderReportAccess(snapshot);
   renderEndProgress(snapshot);
@@ -449,7 +480,9 @@ function render(snapshot, sequence = ++requestSequence) {
   setText('refreshed-at', new Date(snapshot.refreshed_at).toLocaleTimeString('zh-CN', { hour12: false }));
   lastSuccessfulRefresh = Date.now();
   updateMonitorState();
-  mergeRecords(records);
+  mergeRecords(records, Array.isArray(snapshot.records));
+  window.LiteUI.renderSalesState(snapshot);
+  window.LiteUI.renderLiveRoom(snapshot);
   syncTimers(snapshot);
 }
 
@@ -522,6 +555,10 @@ function validSnapshot(data) {
       || !data || data.ok !== true || data.task_id !== initial.task_id || data.task?.id !== initial.task_id
       || !Number.isSafeInteger(data.version) || data.version < 1
       || !Array.isArray(data.records) || !object(data.pipeline) || !object(data.coverage)
+      || (data.review_notes != null && (!Array.isArray(data.review_notes) || !data.review_notes.every(note =>
+        object(note) && typeof note.rule_name === 'string' && Array.isArray(note.groups) && note.groups.every(group =>
+          object(group) && typeof group.reason === 'string' && Array.isArray(group.segments) && group.segments.every(span =>
+            object(span) && Number.isFinite(span.start) && Number.isFinite(span.end) && typeof span.text === 'string')))))
       || !fields(data.task) || !selected(data.coverage, ['reviewed','segments','skipped','message'])
       || (data.coverage.capture != null && !selected(data.coverage.capture, ['message']))
       || (data.finishing != null && (!object(data.finishing) || !Object.entries(data.finishing).every(([key, value]) =>

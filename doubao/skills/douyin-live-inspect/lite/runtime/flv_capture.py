@@ -14,6 +14,7 @@ from runtime.store import atomic_json
 MAX_PENDING_BYTES = 256 * 1024 * 1024
 MAX_PENDING_MS = 180000
 MAX_RECORDING_BYTES = 2 * 1024 * 1024 * 1024
+CAPTURE_STATE_POLL_SECONDS = 0.25
 
 
 def enabled(task):
@@ -28,7 +29,8 @@ def recover(store, journals=None):
         store.add_segment(row['index'], row['start_ms'], row['end_ms'], row['media_file'], evidence={
             'analysis_unit':'cloud_window', 'evidence_ready_at':row['closed_at'],
             'audio_file':row['media_file'], 'media_container':'flv', 'media_bytes':row['bytes'],
-            'asr_status':'pending' if row['has_audio'] else 'no_audio', 'asr_backend':'mediakit'})
+            'asr_status':'pending' if row['has_audio'] else 'no_audio',
+            'asr_backend':'mediakit'})
 
 
 def recordings(store):
@@ -80,7 +82,13 @@ def session(store, source, base, index, cancel):
             reader=threading.Thread(target=read,daemon=True);reader.start()
             started=last=time.monotonic();progress_at=0;timed_out=False
             received_bytes=0
-            while not stop_requested(store,cancel) and not store.task().get('live_ended_at'):
+            next_state_check = started
+            while cancel is None or not cancel.is_set():
+                now = time.monotonic()
+                if now >= next_state_check:
+                    if store.should_stop() or store.task().get('live_ended_at'):
+                        break
+                    next_state_check = now + CAPTURE_STATE_POLL_SECONDS
                 try:chunk=chunks.get(timeout=.1)
                 except queue.Empty:
                     if time.monotonic()-last>15:

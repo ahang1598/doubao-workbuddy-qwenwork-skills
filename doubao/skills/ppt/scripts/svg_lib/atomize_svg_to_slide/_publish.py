@@ -12,6 +12,10 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from ._compose import compose_slide
+try:
+    from ...template.initial_blank import initial_blank_target
+except ImportError:
+    from template.initial_blank import initial_blank_target
 
 _SML = "https://www.larkoffice.com/sml/2.0"
 _GENERATED_ONLY = {"bbox_overlap", "embed_svg_bbox_overlap", "text_overflows_container"}
@@ -749,6 +753,14 @@ def _upload(result, xml, generated, origins, presentation, slide_id, before_slid
     cwd = cwd or os.getcwd()
     registry_path, registry = _page_registry(cwd, presentation)
     page_key = None if page is None else (f"p{int(page):02d}" if str(page).isdigit() else str(page))
+    if page_key in ('p1', 'p01') and not registry and not slide_id and not before_slide_id:
+        response = _run(['slides', '+xml-get', '--as', 'user', '--presentation', presentation], cwd)
+        selected = result['initial_blank'] = initial_blank_target(response, presentation)
+        if selected['status'] == 'wrong_deck':
+            result.update(ok=False, errors=[{'code': 'wrong_deck', 'message': '首页回读返回另一 deck；未写入。'}])
+            return result
+        if selected['status'] == 'reused':
+            slide_id = selected['slide_id']
     if page_key and not slide_id and page_key in registry:
         slide_id = registry[page_key]
     if page_key and not slide_id and not before_slide_id:
@@ -822,3 +834,68 @@ def _upload(result, xml, generated, origins, presentation, slide_id, before_slid
         return result
     finally:
         os.unlink(tmp)
+
+
+def _deck_id(presentation):
+    """Extract a deck ID from an ID or a Slides URL."""
+    value = str(presentation or '').split('?')[0].rstrip('/')
+    return value.rsplit('/', 1)[-1]
+
+
+def _deck_slides(response):
+    """Return ordered (slide ID, body) pairs for template export readback."""
+    data = (response or {}).get('data') or {}
+    document = data.get('xml_presentation')
+    content = document.get('content') if isinstance(document, dict) else document
+    if not isinstance(content, str):
+        return []
+    try:
+        root = ET.fromstring(content)
+    except ET.ParseError:
+        return []
+    slides = []
+    prefix = '{' + _SML + '}'
+    for slide in root:
+        if slide.tag not in ('slide', prefix + 'slide') or not slide.get('id'):
+            continue
+        # Normalize only the official namespace in this read-only parsed copy,
+        # so compatibility readers can inspect text, notes and media normally.
+        for node in slide.iter():
+            if node.tag.startswith(prefix):
+                node.tag = node.tag[len(prefix):]
+        body = (slide.text or '') + ''.join(ET.tostring(child, encoding='unicode') for child in slide)
+        slides.append((slide.get('id'), body))
+    return slides
+
+
+def _sync_candidates(cwd):
+    """Read legacy task locations for the template export compatibility entry."""
+    root = Path(cwd or '.')
+    directories = []
+    for kind in ('strategy', 'review'):
+        directories.extend(root.glob(f'.lark-slides/{kind}/*/sync'))
+        directories.extend(root.glob(f'.lark-slides/{kind}/sync'))
+        directories.extend(path.parent for path in root.glob(f'.lark-slides/{kind}/**/status.json')
+                           if 'turns' not in path.relative_to(root).parts)
+    directories.extend(root / name for name in ('SYNC', 'sync')
+                       if (root / name / 'claims.json').exists() or (root / name / 'status.json').exists())
+    return list(dict.fromkeys(directories))
+
+
+def sync_deck(directory):
+    """The deck identity recorded by a legacy task; no files are changed."""
+    try:
+        return (Path(directory, 'deck.txt').read_text(encoding='utf-8').split() or [None])[0]
+    except OSError:
+        return None
+
+
+def sync_finished(directory):
+    """Read legacy completion state without introducing a publishing gate."""
+    try:
+        status = json.loads(Path(directory, 'status.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        status = {}
+    if status.get('abandoned'):
+        return True
+    return (Path(directory, 'exported').exists() or bool(status.get('finished_at'))) and status.get('phase') != 'edit'

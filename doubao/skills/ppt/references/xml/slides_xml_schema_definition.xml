@@ -1371,7 +1371,7 @@
             </xs:sequence>
 
             <xs:attribute name="textType" type="sml:TextType" default="body"/>
-            <xs:attribute name="verticalAlign" type="sml:VerticalAlignType" default="middle"/>
+            <xs:attribute name="verticalAlign" type="sml:VerticalAlignType" default="top"/>
             <xs:attribute name="paddingTop" type="sml:PaddingValueType"/>
             <xs:attribute name="paddingRight" type="sml:PaddingValueType"/>
             <xs:attribute name="paddingBottom" type="sml:PaddingValueType"/>

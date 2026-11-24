@@ -6,15 +6,14 @@
 
 - 目录：`doubao/skills/`
 - 来源：`/mnt/c/Users/15805/AppData/Local/Doubao/User Data/Default/.doubao/agent_mode/workspace/.skills`
-- 条目数：277
-- 文件数：4473
-- 最近同步：2026-11-22 17:39:31 +0800
+- 条目数：278
+- 文件数：4521
+- 最近同步：2026-11-24 18:00:07 +0800
 
 ## 场景导航（按用途）
 
 ### 金融研究
 - **datapro-search** — Use when the user invokes $datapro-search, mentions DataPro Search, or asks for a focused search of academic literature, company registry records, company risk, securities and financial data, vehicle specifications, v...
-- **doubao-announcement-analysis** — 搜索并解读上市公司公告，覆盖 A股（沪深北）、港股（HKEX）、美股（SEC EDGAR）三大市场。支持两种模式：①单条/多条具体公告的深度解读（拆解公告要点、判断重要性、给出多视角分析）；②按公司或时间段批量监控并生成公告摘要合集（时效优先、覆盖面广）。适用于业绩报告解读、重大合同/协议公告解读、股权变动（增减持/回购）解读、股权激励（期权/限制性股票/员工持股计划）解读、监管问询函/关注函及回复公告解读、停牌复牌与退市风险公告...
 - **doubao-daily-stock** — 用于单一上市股票或二级市场公司的当日/近期个股日报，解释涨跌和异动原因，梳理行情、资金流、新闻公告、板块联动、技术面、预期与风险。适用于“某股今天为什么涨跌”“做个日报”“近期表现”“资金面和消息面”等问题；默认生成自包含投行风格 HTML 完整报告，并在对话框只给核心总结和 HTML 文件；不用于长期商业模式/护城河、财报业绩、行业/板块、多股主题、一级市场或大盘事件解读。
 - **doubao-earnings-analysis** — 上市公司财报/季报/年报/业绩的深度因果分析，覆盖A股、港股、美股和中概股。用于解读财报表现、亮点/风险、收入利润等指标变动、超预期或低于预期原因，以及针对毛利率、现金流、费用率等具体变量的归因问题。不用于纯股价、估值、评级、目标价、非财报新闻或未锚定具体公司报告期的宏观行业讨论。
 - **doubao-equity-research** — 面向 A 股、港股、美股及其他上市证券的专业股票研究与HTML 报告交付，覆盖基本面、财报前瞻与解读、盈利模型更新、市场预期、估值、股价与事件、催化剂与风险、同业比较、股票筛选、论点跟踪、组合风险、市场复盘及跨上市地相对价值。单家标的基本面请优先使用doubao-public-company-analysis；估值建模请调用 doubao‑finance‑model‑builder。
@@ -25,7 +24,7 @@
 - **doubao-marketing-material-review** — 营销素材审核。当用户上传待审核的广告宣传语、营销海报、社交媒体推广文案、直播话术等营销素材时，从虚假宣传、夸大宣传、绝对化用语、比较广告、引证数据真实准确性、价格违规、有奖营销、知识产权、风险行业违规宣传（如金融、医疗、三品一械、教育等特殊监管行业）、数据对外披露、不当承诺或表达等维度开展全面审查与风险扫描，对违规点归类、逐条分析判断并直接给出修改建议。当用户提到"营销素材审核""广告文案合规审查""宣传语合规""看看这段宣传/文...
 - **doubao-private-company** — 评估一级市场、私募股权或创业项目的初步投资价值，基于项目材料和相关公开资料形成商业判断、重大风险与下一步核实建议。适用于项目初筛、管理层会前准备及聚焦问题核查；不替代完整尽调或正式投资决策。
 - **doubao-public-company-analysis** — 分析单一上市公司的商业模式、竞争地位、财务质量、估值与风险，形成可追溯、可复算的基本面判断。适用于公司速览、聚焦问题拆解、财务与现金流质量核验、隐含预期分析及单一公司深度研究；不用于多股批量筛选、市场热点事件传导、非上市项目评估或个人资产配置。
-- **doubao-stock-screening** — 用于 A 股、港股、美股及其他股票市场的股票筛选、候选股构建、指定股票比较、行业筛选、主题概念筛选、产业链环节筛选、策略风格筛选和龙头识别。适用于用户要求找股票、筛股票池、比较指定股票、识别行业或主题龙头、按市场/行业/主题/产业链/投资风格/透明指标排序候选标的等场景。强调动态检索、权威信源、业务证据验证、透明分组和可解释结论；禁止隐藏评分、不可解释排名和确定性投资建议。
+- **doubao-stock-screening** — 根据用户给定的业务范围、财务指标或其他条件筛选上市公司，说明入选原因并按要求排序。适用于建立股票池和复筛已有名单；不用于交易执行、自动监控或单公司完整估值。
 - **doubao-ultimate-guide** — 统一攻略创作总控 Skill：根据用户需求路由到旅游攻略、健身攻略、美食烹饪教程、游戏攻略四个分支。短攻略直接对话输出即可，长攻略或需要分享时才创建飞书/Lark 文档。适用于旅行行程、训练健身、菜谱烹饪、游戏实战攻略等中文攻略类创作；不适用于泛资讯、商业分析、医疗诊断、金融投资、法律意见、纯文案包装、无明确攻略目标或不安全/违规请求。
 - **doubao-wealth-planning** — 为个人或家庭分析现金流、应急资金、债务、保障、教育和养老目标，并制定财富规划或年度复盘。涉及当地规则或资产配置时核对辖区与风险承受能力；不替代持牌投资、税务、保险或法律意见。
 - **earned-value-mgmt** — When the user wants to track the financial progress of a large project. Also use when the user mentions "EVM," "Cost Performance Index (CPI)," "Schedule Performance Index (SPI)," "Estimated at Completion (EAC)," or "p...
@@ -37,8 +36,8 @@
 - **industry-analysis** — 回答中文行业基本面问题，适用于行业、价值链环节、产品市场或技术路线的定义、空间、周期、竞争、利润迁移、传导、比较、进入与产业投资机会分析；不用于股票交易阶段研判或单家公司独立估值。
 - **local-life-service-hot-find** — 抖音生活服务热点查找技能。为抖音生活服务商家生成一页 HTML 热点报告，直接推荐商家相关的热点选题、内容打法和可挂商品。触发场景：商家热点选题、同城热点推荐、内容机会选择、挂品建议。不用于宏观金融热点、社会热点追踪、品牌舆情监控（分别走通用热点/舆情类能力）。
 - **ma-process-validation-advisor** — 围绕并购交易全流程提供阶段门禁、材料拆解、尽调校验、估值结构与签署交割协同建议。 Use when the user needs 并购流程与校验顾问; route out when a hard boundary applies.
-- **market-briefing** — 围绕指定市场或关注领域生成问题驱动的盘前、盘后、盘中或区间市场简报，在明确时点、证据层和验证命题下解释变化并给出可复核观察；不用于交易执行、独立估值或系统性行业深研。
-- **multi-stock-comparison** — 比较两家及以上上市公司的业务、财务、成长、估值、市场表现与风险，或为目标公司建立可比组。用于多股横向研究、同行比较、投资二选一、A/H相对价值及多股复盘；不用于单家公司研究、先筛选股票、每日简报或交易执行。
+- **market-briefing** — 用于指定市场的盘前、盘中、盘后及区间简报，涵盖晨会、盘面解读、跨市场概览、涨跌榜及简短市场问答。不用于独立事件深研、筛股、完整公司估值或交易执行。
+- **multi-stock-comparison** — 比较两家及以上上市公司的业务、财务、成长、估值、市场表现与风险，或为目标公司建立可比组。用于多股横向研究、同行比较、投资二选一、A/H相对价值、配对与组合适配分析、供应链与监管影响比较、相对论点跟踪及多股复盘；不用于单家公司研究、先筛选股票、每日简报或交易执行。
 - **quant-research** — 将明确研究假设转成可复现的因子、事件或组合研究，覆盖 point-in-time 数据、可成交回测、成本容量、样本外隔离、稳健性、版本恢复与独立验收。当用户要求因子 IC/分层、策略回测、事件研究、参数敏感性、版本复现或容量分析时使用；当前技术诊断转 equity-technical-analysis，持仓动作转 portfolio-trading-decision。
 - **support-finance-tracker** — 专业的财务分析与管控专家，擅长财务规划、预算管理和经营绩效分析。守住企业财务健康底线，优化现金流，为业务增长提供有数据支撑的财务洞察。
 
@@ -217,7 +216,7 @@
 - **doubao-shortvideo-writing** — 仅当用户明确需要3分钟以内的短视频分镜、拍摄脚本、逐镜头脚本、storyboard、镜头表、视频脚本表格，或需要把选题、口播稿、文案、产品信息、营销卖点、活动信息、已有脚本改成可拍摄的短视频分镜时使用。不要用于小红书图文笔记、公众号文章、论文/学术写作、翻译、润色、摘要、标题库、账号定位、直播话术、评论区话术、平台运营报告或无需镜头拆解的普通口播稿；即使用户说“使用这个 Skill/按这个 Skill 来”，也必须先判断是否需要可...
 - **doubao-tiktok-ads-expert** — 当用户需要在 TikTok Ads 平台搭建广告系列、广告组和广告创意，或进行批量状态、预算、出价及重命名调控时使用。基于平台已绑定的 TikTok Ads MCP 工具，支持 Campaign 到 Ad 的全链路搭建及批量运营操作，授权由平台统一管理。
 - **doubao-wechat-writing** — 生成、润色、改写、策划和评估非商业微信公众号文章，并在用户明确要求时上传至微信公众号、保存草稿、发送预览或发表。写公众号稿、标题、排版、配图、文章评估，或要求上传、预览、发布到微信公众平台时使用。正式成品先以飞书在线文档交付。
-- **douyin-live-inspect** — 抖音、小红书、B 站直播实时质检与视频单项、批量质检，识别画面、话术及内容风险。支持按品牌或账号名查找抖音直播间；交付质检报告及含评分的内容复盘与优化建议。
+- **douyin-live-inspect** — 抖音、小红书、B 站直播实时质检与视频单项、批量质检，识别画面、话术及内容风险。支持按品牌或账号名查找抖音直播间，按直播间和日期查询本机历史报告中的商品、报价与二创片段；交付质检报告及含评分的内容复盘与优化建议。
 - **douyin-live-qc** — 抖音、小红书、B 站直播录屏抽查与主播话术质检。支持三平台直播间链接，抖音支持按账号或品牌搜索。确认目标与时长后交付录屏和妙记，按用户选择的画面、话术、SOP 或售后价格范围生成飞书报告。
 - **generate-premium-promo-kit** — 将商品文档、品牌规范、产品图片、Logo、节庆/周年庆/购物节等促销脑暴文档或飞书群聊自动转成带完整宣传语、Logo、优惠信息与CTA的高端时尚品牌静态宣传物料包。用户说“豆包帮我生成促销活动的全套物料”、要求先出Brief再生成活动KV、电商图、社交海报或邀请函时使用；支持读取企业上下文、按活动意图策划文案、固定调用Seedream 5.0 Pro生成视觉、叠加准确品牌与文字层、执行成品质检，并将Brief和全部宣传物料汇总到飞...
 - **global-ad-creative-advisor** — 出海广告公开情报探查（广告主视角，基于公开信息查询）。当用户需要为出海 App、游戏、电商或工具产品围绕产品×地区做同类型产品数据扫描、官方广告透明库付费素材查询与搜索词采集、内容平台近 7 天原生热点探查，或对公开素材/热点做结构化拆解与模式分析时使用。覆盖海外买量同类型产品调研、广告透明库查询、跑量素材模式、搜索词包、地区原生热点；只查公开信息，不产出广告创意、分镜文案与成片。
@@ -295,7 +294,6 @@
 - **compliant-customer-scripts** — Use when the user asks to 撰写、改写、优化或演练销售、客服、报价异议、营销卖点、健康产品、财富规划、税务/法规、直播脚本、FAQ 或跟进回复，并提到“客户话术”“合规表达”“报价异议”“营销卖点”“健康产品”“事实核验”“风险提示”“可复用回复”，或要求兼顾事实准确、风险边界与可直接使用的表达。
 - **data-analysis-skill** — 面向实证社会科学的数据分析与可复现研究工作流，支持检查面板或截面数据、检索并核验可复现论文、映射分析步骤、生成 Python 与 Stata 分析代码以及整理回归表和学术图表。适用于用户明确要求基于自有数据匹配论文、复刻公开分析、设计固定效应、双重差分、工具变量或事件研究方案，或按期刊规范交付可审计分析产物的场景。
 - **design-guideline-specialist** — 先收集并解析用户提供的品牌 Logo 与设计规范，形成可执行规则并向用户确认；确认后再收集待审资产，对本地文件、文件夹、图片、文档、飞书文档/知识库和多维表格附件进行品牌合规审计。用户要求检查 Logo、品牌名、色彩、字体、排版、品牌物料或视觉设计是否符合规范时使用。
-- **doubao-announcement-analysis** — 搜索并解读上市公司公告，覆盖 A股（沪深北）、港股（HKEX）、美股（SEC EDGAR）三大市场。支持两种模式：①单条/多条具体公告的深度解读（拆解公告要点、判断重要性、给出多视角分析）；②按公司或时间段批量监控并生成公告摘要合集（时效优先、覆盖面广）。适用于业绩报告解读、重大合同/协议公告解读、股权变动（增减持/回购）解读、股权激励（期权/限制性股票/员工持股计划）解读、监管问询函/关注函及回复公告解读、停牌复牌与退市风险公告...
 - **doubao-compliance-assessment-public** — 基于公开法律来源开展交互式合规评估并生成可审阅报告。用户要求评估业务法律风险、审阅 PRD、判断监管红线或生成合规报告时使用。
 - **doubao-contract-amendment** — 用于在已签原协议基础上，依据用户提供的新情况起草补充协议、变更协议或终止协议。先重建主体、标的、资金、条件、时间和文件构成的整体法律状态，再在用户明确授权范围内成文。仅处理既有协议的派生修改；不用于全新合同起草、既有合同风险审查、一般法律咨询或纯 Word 排版与纯文件处理，纯文档编辑改用 lark-doc。
 - **doubao-contract-drafting** — 直接起草中国大陆商业合同并生成无批注、无颜色、中文字体正确的可编辑 Word 文件。适用于采购、服务、营销、工程施工、软件许可、SaaS、委托开发、联合研发、知识产权、租赁、数据处理和保密等场景；读取题干及附件后完成交易信息拆解、风险识别、起草方标准条款与默认商业参数填充、合同生成与交付校验。涉及跨境交易、境外法域或境外争议解决安排时，需升级并要求复核。
@@ -313,6 +311,7 @@
 - **excel-structured-analysis** — 用于 Excel/CSV 已由 sheet 读取后，需要定义统计口径、清洗规则、分组汇总、异常检查和可审计结论的场景。单纯表格读写、公式修复或物流专属分析不使用。
 - **finance-ops-insight** — 基于P&L/BS/GL/现金流与预算实际数据完成差异分解、毛利与现金流/runway分析，输出高管可读财务简报与行动建议。 在用户需要预算实际对比、毛利诊断、发薪可行性、滚动预测或CFO执行摘要时使用。 不用于法定审计、税务申报闭环、ERP主数据改写、催收诉讼或付款执行；前述需求应路由相邻合规/收付技能。
 - **logistics-workbook-analysis** — 用于物流或供应链表格已由 sheet 读取后，需要库存对账、运费核算、KPI、合同执行或供应链台账分析的场景。非物流通用表格任务不使用。
+- **miniapp-caocao-ride-hailing-moa** — 曹操打车出行服务。当用户表达打车、叫车、预约车需求（含"回家"、"上班"、"去某地"、"再来一单"、"呼叫返程"），或询问曹操出行品牌下的订单进度、发票、客服时使用。不处理纯路线导航与公交时刻查询、其他打车平台的订单操作、打车功能的开发问题。在已有打车上下文中，即使本轮只有简短回复，只要用户是在同意、拒绝、继续或放弃修改、取消、重约等前一步操作，也必须使用。
 - **proposal-bid-generation** — 分析招标要求并生成可追溯、合规的提案与投标材料。
 - **security-threat-review** — 对需求文档、技术设计文档、架构方案进行安全威胁评审（STR），基于 STRIDE 方法论识别威胁、评估风险、检查合规并输出可执行的整改建议。当用户上传或提供设计/需求/架构文档并要求安全评审、威胁建模、风险分析、STR 分析、安全审查时使用。不适用于代码级漏洞扫描、渗透测试执行、告警研判或通用安全知识问答。
 - **structured-data-doc-delivery** — Use when 用户要求基于现有资料、附件、Excel/在线表格、文档章节或多源信息完成资料整理成文档、生成报告、表格汇总导出、重写章节内容、事实校验合规、更新在线表格、数据清洗汇总或交付前抽检。
@@ -364,7 +363,7 @@
 - **education-content-iteration** — Use when the user asks to revise, diagnose, structure, generate, or iteratively polish educational content such as 教学文本、教案修改、课件大纲、课程表述、题目练习、刷题陪练或讲座框架，并提到文本润色、格式对齐、用户反馈、定稿、优化表述、按样例修改等场景。
 - **exam-interview-training** — 根据目标考试或面试要求提供诊断、学习计划、练习反馈、模拟训练和复盘。 Use when the user needs 考试备考与面试训练; route out when a hard boundary applies.
 - **exam-prep-coach** — 当用户请求大学英语等级考试、考研、考证或课程考试辅导时，使用本技能；包括四六级备考、学习计划、打卡、复习任务或练习记录。
-- **market-briefing** — 围绕指定市场或关注领域生成问题驱动的盘前、盘后、盘中或区间市场简报，在明确时点、证据层和验证命题下解释变化并给出可复核观察；不用于交易执行、独立估值或系统性行业深研。
+- **market-briefing** — 用于指定市场的盘前、盘中、盘后及区间简报，涵盖晨会、盘面解读、跨市场概览、涨跌榜及简短市场问答。不用于独立事件深研、筛股、完整公司估值或交易执行。
 - **marketing-material-generator** — 基于飞书多维表格的电商营销素材自动化生成工具。当用户需要为商品生成全套营销素材、产品精修图、细节特写、详情页设计、场景图、动态视频，或提到"营销素材"、"商品图"、"精修"、"详情页"、"白底图"、"场景图"、"Cinemagraph"时使用。支持从飞书Base读取产品信息，自动完成5个环节的素材生成并回写到表格。
 - **navigate-campus-places-and-services** — 当用户要核实高校校内建筑、办公室、活动或考试地点，或要了解校内事项的办理入口、材料、部门和线下位置时使用。先确认学校及必要的校区、日期或场次，并以当前官方或事务第一方来源核验。仅提供查询和指引，不做社团或活动推荐、城市导航、课程咨询，也不代登录、提交、缴费或预约。
 - **plan-course-registration-cn** — 帮助中国大陆高校学生比较本校具体课程或教学班并制定可复核的选课、换课与退补选方案。用于核对培养方案、先修条件、时间冲突、学分归属或操作风险；单独做成绩统计、教师评价、课堂笔记或院校职业规划时不使用。
@@ -434,6 +433,7 @@
 - **local-life-service-product-edit** — 抖音生活服务商家商品信息编辑（改品）技能。当抖音生活服务的商家需要修改已上架商品或审核驳回商品的信息时使用。覆盖两种场景：①已上架商品信息修改；②审核驳回商品修改。两种场景修改完成后均需重新提交平台审核。商家带着具体修改诉求来，AI自动定位商品状态和目标字段，先读取真实页面字段能力再建立修改计划，改前改后各确认一次，写入后逐字段回读，提交审核单独确认。新建商品、下架/删除商品、订单处理、退款等非商品编辑需求不适用本技能。
 - **logistics-workbook-analysis** — 用于物流或供应链表格已由 sheet 读取后，需要库存对账、运费核算、KPI、合同执行或供应链台账分析的场景。非物流通用表格任务不使用。
 - **marketing-material-generator** — 基于飞书多维表格的电商营销素材自动化生成工具。当用户需要为商品生成全套营销素材、产品精修图、细节特写、详情页设计、场景图、动态视频，或提到"营销素材"、"商品图"、"精修"、"详情页"、"白底图"、"场景图"、"Cinemagraph"时使用。支持从飞书Base读取产品信息，自动完成5个环节的素材生成并回写到表格。
+- **miniapp-caocao-ride-hailing-moa** — 曹操打车出行服务。当用户表达打车、叫车、预约车需求（含"回家"、"上班"、"去某地"、"再来一单"、"呼叫返程"），或询问曹操出行品牌下的订单进度、发票、客服时使用。不处理纯路线导航与公交时刻查询、其他打车平台的订单操作、打车功能的开发问题。在已有打车上下文中，即使本轮只有简短回复，只要用户是在同意、拒绝、继续或放弃修改、取消、重约等前一步操作，也必须使用。
 - **record-operations-to-skill** — 当用户要求录制电脑操作演示并生成个人 Skill，录制后要求继续处理，回答生成前的澄清问题，或修改由该录制生成的 Skill 时使用；创建后清楚说明适用场景和调用方式。
 - **reference-prompt-iteration** — 用于已有参考图或参考视频，并需要根据多轮反馈迭代图像或视频提示词、分镜和关键帧计划的场景。不用于无参考素材的通用创作、音频生成或直接制作成片。
 - **sales-decision-analysis** — 用于已有销售数据或明确经营假设，需要核对销售口径、汇总复盘、目标拆解、达成率、渠道、客单价或销售投入产出的场景。纯表格操作、通用财务分析或无数据的组织决策不使用。
@@ -468,6 +468,7 @@
 - **deal-win-and-commercial-narrative** — 为单一已锚定B2B商机生成交易地图、购买委员会、采购风险、竞争定位、客户主导商业案例/ROI、提案或POC及优先行动。活跃商机会前/会后可作为执行overlay；一般会议路由办公类Skill，销售人员通话辅导路由sales-call-coaching-and-trends。CRM与销售情报连接器只提供真值、映射和受控动作，不拥有业务判断。
 - **docker-env-troubleshooting** — 用于 Docker Desktop、dockerd、镜像、容器、端口、挂载或配置加载出现明确报错或异常，且用户能提供日志、截图或命令输出的场景。不用于 Kubernetes 集群治理或无 Docker 证据的一般网络故障。
 - **domain-consistent-translation** — Use when the user requests professional translation, bidirectional translation, business communication translation, technical document/manual translation, attachment or image translation, terminology unification, styl...
+- **doubao-announcement-analysis** — 解读上市公司公告，说明披露事项有何变化、如何影响公司。适用于公告快评、方案比较、进展梳理和一段时间内的公告监控摘要；不用于交易执行、纯行情查询或文件格式转换。
 - **doubao-book-writer** — 豆包办公里的非虚构长文档工作台。用于手册、白皮书、报告、培训材料、人物口述、家谱、资料型书稿等长文档的新建、续写、组装、改写、扩写、精修、去AI味、质检和交付。不用于小说、网文、剧本、诗歌、世界观设定、角色剧情创作、短问答、翻译或代码任务。
 - **doubao-critical-reading-companion** — 深度解读文章，把新闻、长评或宣传文案等非学术公共文本转成便于理解、可追溯的阅读地图；用于重建论证链、评价证据与推理、识别隐藏前提、补充替代解释、核查关键事实，并输出可追溯的阅读地图。适用于可信度判断、论证拆解、宣传分析、作者自检和行动决策。
 - **doubao-desktop-pet-builder** — 创建、生成、修复桌面宠物。适用于“把一张图片/照片/角色图变成桌面宠物”“基于文字描述生成桌宠”“修复已有桌宠”等请求；支持单图、完整动作素材、文字描述和已有宠物工程。普通网页/H5、小程序、仅做 IP/吉祥物/头像/动作图集且不需要桌面应用时不要触发。
@@ -567,7 +568,7 @@
 | doubao-academic-evaluator | `doubao/skills/doubao-academic-evaluator` | 研究/调研 | doubao-academic-evaluator | 8 | 用资深审稿人和导师的眼光，对科研工作做"只看不改"的诊断。两类任务：一是评判研究想法值不值得做（打分、查新颖性、判可行性）；二是论文评审，给文章成稿挑硬伤、判断能不能投。只负责找问题、下结论、给修改方向，不替你写正文、不替你画图。要动手写作、搭结构、润色语言，请用姊妹技能 doubao-academic-polish。触发于"帮我看看这个想法""值不值得做""投稿前帮我审一遍""能不能投"。 |
 | doubao-academic-polish | `doubao/skills/doubao-academic-polish` | 设计可视化 | doubao-academic-polish | 53 | 学术论文正文写作、结构设计与语言润色总入口。完整起草、续写、扩写、补写或实质性修订各学科的中英文论文正文时，进入paper-write-zh或paper-write-en；只做提纲、结构诊断或重排方案时，进入paper-shape结构模式；只做忠实润色或不新增研究内容的中译英时，进入paper-shape润色模式。研究评价转/doubao-academic-evaluator；独立系统性文献调研转/doubao-literatur... |
 | doubao-academic-researcher | `doubao/skills/doubao-academic-researcher` | 研究/调研 | doubao-academic-researcher | 69 | 通用学术文献调研Skill，面向研究者、学生和论文写作者在未锁定具体论文题目前摸清某学术方向、概念、机制、热点前沿、学术史或选题依据。执行系统检索、引用真实性核验、证据分级、主题聚类、交叉综合、争议与空白识别，产出结论先行、引用可追溯的结构化调研结果。触发于用户要求调研某方向、梳理研究现状或related work、查看最新进展、梳理热点前沿或学术史、找文献支撑、做选题依据、解释某概念或机制。只做文献调研与证据支撑，不产出摘要引言... |
-| doubao-announcement-analysis | `doubao/skills/doubao-announcement-analysis` | 金融研究 | doubao-announcement-analysis | 26 | 搜索并解读上市公司公告，覆盖 A股（沪深北）、港股（HKEX）、美股（SEC EDGAR）三大市场。支持两种模式：①单条/多条具体公告的深度解读（拆解公告要点、判断重要性、给出多视角分析）；②按公司或时间段批量监控并生成公告摘要合集（时效优先、覆盖面广）。适用于业绩报告解读、重大合同/协议公告解读、股权变动（增减持/回购）解读、股权激励（期权/限制性股票/员工持股计划）解读、监管问询函/关注函及回复公告解读、停牌复牌与退市风险公告... |
+| doubao-announcement-analysis | `doubao/skills/doubao-announcement-analysis` | 其他 | doubao-announcement-analysis | 5 | 解读上市公司公告，说明披露事项有何变化、如何影响公司。适用于公告快评、方案比较、进展梳理和一段时间内的公告监控摘要；不用于交易执行、纯行情查询或文件格式转换。 |
 | doubao-book-writer | `doubao/skills/doubao-book-writer` | 其他 | doubao-book-writer | 72 | 豆包办公里的非虚构长文档工作台。用于手册、白皮书、报告、培训材料、人物口述、家谱、资料型书稿等长文档的新建、续写、组装、改写、扩写、精修、去AI味、质检和交付。不用于小说、网文、剧本、诗歌、世界观设定、角色剧情创作、短问答、翻译或代码任务。 |
 | doubao-clinical-decision-support | `doubao/skills/doubao-clinical-decision-support` | 研究/调研 | doubao-clinical-decision-support | 14 | 循证医学临床辅助决策 Skill。用户需要分析临床问题，解释临床表现，提供循证医学判断时使用，用于针对临床问题，结合病例资料，查阅指南和文献等循证依据，进行科学回答与诊疗决策，进行诊断鉴别、检查路径、用药安全、治疗比较、预后和风险分析，或需要基于病例情况整理生成病历、入院记录、住院病程和会诊记录等文书。医学文献检索调研改用 doubao-medical-literature-search，单纯报告解读改用 doubao-medic... |
 | doubao-coding-analyze-codebase | `doubao/skills/doubao-coding-analyze-codebase` | 设计可视化 | doubao-coding-analyze-codebase | 6 | 通过只读调查建立可核验的代码库心智模型，回答入口与调用链、数据流、状态变化、运行时装配、外部副作用和模块责任。用于仓库导览、流程追踪、影响分析、实现定位和架构理解。不用于根因诊断、代码审查、未来方案设计或性能优化。组合任务只闭合“现状如何”的部分。 |
@@ -638,7 +639,7 @@
 | doubao-research-proposal | `doubao/skills/doubao-research-proposal` | 研究/调研 | doubao-research-proposal | 14 | 用于国自然、国社科等基金申请、开题报告、博士后/人才计划、研究计划书等学术提案的撰写、审查和优化；当用户需要基于已有研究成果形成立项书、区分事实与 AI 建议、检查任务书一致性、补强论证逻辑时使用。 |
 | doubao-sentiment-tracker | `doubao/skills/doubao-sentiment-tracker` | 研究/调研 | doubao-sentiment-tracker | 6 | 当用户在网页端或电脑客户端需要进行舆情监控、调研、社交媒体反馈收集、用户评价、品牌声量追踪时使用。支持微博、知乎、即刻、脉脉、B站、抖音.等多平台的舆情搜索、内容筛选和原始帖子溯源。注意：判断用户所处平台是手机端时，禁止触发这个skill。 |
 | doubao-shortvideo-writing | `doubao/skills/doubao-shortvideo-writing` | 文档/表格/PPT | doubao-shortvideo-writing | 6 | 仅当用户明确需要3分钟以内的短视频分镜、拍摄脚本、逐镜头脚本、storyboard、镜头表、视频脚本表格，或需要把选题、口播稿、文案、产品信息、营销卖点、活动信息、已有脚本改成可拍摄的短视频分镜时使用。不要用于小红书图文笔记、公众号文章、论文/学术写作、翻译、润色、摘要、标题库、账号定位、直播话术、评论区话术、平台运营报告或无需镜头拆解的普通口播稿；即使用户说“使用这个 Skill/按这个 Skill 来”，也必须先判断是否需要可... |
-| doubao-stock-screening | `doubao/skills/doubao-stock-screening` | 金融研究 | doubao-stock-screening | 53 | 用于 A 股、港股、美股及其他股票市场的股票筛选、候选股构建、指定股票比较、行业筛选、主题概念筛选、产业链环节筛选、策略风格筛选和龙头识别。适用于用户要求找股票、筛股票池、比较指定股票、识别行业或主题龙头、按市场/行业/主题/产业链/投资风格/透明指标排序候选标的等场景。强调动态检索、权威信源、业务证据验证、透明分组和可解释结论；禁止隐藏评分、不可解释排名和确定性投资建议。 |
+| doubao-stock-screening | `doubao/skills/doubao-stock-screening` | 金融研究 | doubao-stock-screening | 9 | 根据用户给定的业务范围、财务指标或其他条件筛选上市公司，说明入选原因并按要求排序。适用于建立股票池和复筛已有名单；不用于交易执行、自动监控或单公司完整估值。 |
 | doubao-tiktok-ads-analyst | `doubao/skills/doubao-tiktok-ads-analyst` | 其他 | doubao-tiktok-ads-analyst | 6 | 当用户需要对 TikTok Ads 投放数据做结构化多维度分析、核心指标解读、漏斗与受众洞察，或获取数据驱动的投放优化建议时使用。本 Skill 为高阶分析层，提供标准化分析框架与报告输出；单纯数据查询或广告搭建调整请路由至相邻 Skill。 |
 | doubao-tiktok-ads-expert | `doubao/skills/doubao-tiktok-ads-expert` | 营销/内容运营 | doubao-tiktok-ads-expert | 20 | 当用户需要在 TikTok Ads 平台搭建广告系列、广告组和广告创意，或进行批量状态、预算、出价及重命名调控时使用。基于平台已绑定的 TikTok Ads MCP 工具，支持 Campaign 到 Ad 的全链路搭建及批量运营操作，授权由平台统一管理。 |
 | doubao-ui-design | `doubao/skills/doubao-ui-design` | 数据分析 | doubao-ui-design | 167 | 豆包官方 UI 设计：用于可评审网页或移动端界面，并交付设计说明与可运行原型。覆盖官网、Landing、Dashboard、B 端后台、App、小程序、H5、活动页、设计展板、数据大屏的设计、改版、还原。海报/配图交 doubao-creative-design；完整应用交 doubao-app-builder；只编辑飞书文档交 lark-doc。 |
@@ -646,7 +647,7 @@
 | doubao-visual-creative | `doubao/skills/doubao-visual-creative` | 设计可视化 | doubao-visual-creative | 29 | 输出品牌、时尚、空间、包装、文旅 IP、活动视觉等设计企划案，交付高视觉密度 PPT/飞书 Slides（也叫 lark-slide-pro）或飞书文档；也支持只要生图/只要提示词、以及文档载体；延续修改同样触发。不用于普通汇报 PPT、数据图表、视频、前端与纯格式转换。 |
 | doubao-wealth-planning | `doubao/skills/doubao-wealth-planning` | 金融研究 | doubao-wealth-planning | 42 | 为个人或家庭分析现金流、应急资金、债务、保障、教育和养老目标，并制定财富规划或年度复盘。涉及当地规则或资产配置时核对辖区与风险承受能力；不替代持牌投资、税务、保险或法律意见。 |
 | doubao-wechat-writing | `doubao/skills/doubao-wechat-writing` | 营销/内容运营 | doubao-wechat-writing | 12 | 生成、润色、改写、策划和评估非商业微信公众号文章，并在用户明确要求时上传至微信公众号、保存草稿、发送预览或发表。写公众号稿、标题、排版、配图、文章评估，或要求上传、预览、发布到微信公众平台时使用。正式成品先以飞书在线文档交付。 |
-| douyin-live-inspect | `doubao/skills/douyin-live-inspect` | 营销/内容运营 | douyin-live-inspect | 245 | 抖音、小红书、B 站直播实时质检与视频单项、批量质检，识别画面、话术及内容风险。支持按品牌或账号名查找抖音直播间；交付质检报告及含评分的内容复盘与优化建议。 |
+| douyin-live-inspect | `doubao/skills/douyin-live-inspect` | 营销/内容运营 | douyin-live-inspect | 280 | 抖音、小红书、B 站直播实时质检与视频单项、批量质检，识别画面、话术及内容风险。支持按品牌或账号名查找抖音直播间，按直播间和日期查询本机历史报告中的商品、报价与二创片段；交付质检报告及含评分的内容复盘与优化建议。 |
 | douyin-live-qc | `doubao/skills/douyin-live-qc` | 营销/内容运营 | douyin-live-qc | 19 | 抖音、小红书、B 站直播录屏抽查与主播话术质检。支持三平台直播间链接，抖音支持按账号或品牌搜索。确认目标与时长后交付录屏和妙记，按用户选择的画面、话术、SOP 或售后价格范围生成飞书报告。 |
 | draft-policy-from-rules | `doubao/skills/draft-policy-from-rules` | 其他 | draft-policy-from-rules | 1 | Use when the user needs 制度修订、条款起草、规则整理成制度、上位依据对照、章节归类重组、制度优化建议、合并拆分边界判断或变化点汇总 from scattered rules, superior requirements, current制度文本, business plans,口头规则 or整改要求. |
 | earned-value-mgmt | `doubao/skills/earned-value-mgmt` | 金融研究 | earned-value-mgmt | 7 | When the user wants to track the financial progress of a large project. Also use when the user mentions "EVM," "Cost Performance Index (CPI)," "Schedule Performance Index (SPI)," "Estimated at Completion (EAC)," or "p... |
@@ -714,10 +715,11 @@
 | localization-writer | `doubao/skills/localization-writer` | 其他 | localization-writer | 1 | 将现有内容改写为目标语言与文化语境下的本地化版本，保留核心信息，适配当地用户阅读习惯。 |
 | logistics-workbook-analysis | `doubao/skills/logistics-workbook-analysis` | 文档/表格/PPT | logistics-workbook-analysis | 1 | 用于物流或供应链表格已由 sheet 读取后，需要库存对账、运费核算、KPI、合同执行或供应链台账分析的场景。非物流通用表格任务不使用。 |
 | ma-process-validation-advisor | `doubao/skills/ma-process-validation-advisor` | 金融研究 | ma-process-validation-advisor | 4 | 围绕并购交易全流程提供阶段门禁、材料拆解、尽调校验、估值结构与签署交割协同建议。 Use when the user needs 并购流程与校验顾问; route out when a hard boundary applies. |
-| market-briefing | `doubao/skills/market-briefing` | 金融研究 | market-briefing | 15 | 围绕指定市场或关注领域生成问题驱动的盘前、盘后、盘中或区间市场简报，在明确时点、证据层和验证命题下解释变化并给出可复核观察；不用于交易执行、独立估值或系统性行业深研。 |
+| market-briefing | `doubao/skills/market-briefing` | 金融研究 | market-briefing | 5 | 用于指定市场的盘前、盘中、盘后及区间简报，涵盖晨会、盘面解读、跨市场概览、涨跌榜及简短市场问答。不用于独立事件深研、筛股、完整公司估值或交易执行。 |
 | marketing-material-generator | `doubao/skills/marketing-material-generator` | 文档/表格/PPT | marketing-material-generator | 4 | 基于飞书多维表格的电商营销素材自动化生成工具。当用户需要为商品生成全套营销素材、产品精修图、细节特写、详情页设计、场景图、动态视频，或提到"营销素材"、"商品图"、"精修"、"详情页"、"白底图"、"场景图"、"Cinemagraph"时使用。支持从飞书Base读取产品信息，自动完成5个环节的素材生成并回写到表格。 |
+| miniapp-caocao-ride-hailing-moa | `doubao/skills/miniapp-caocao-ride-hailing-moa` | 法务/合规 | miniapp-caocao-ride-hailing-moa | 1 | 曹操打车出行服务。当用户表达打车、叫车、预约车需求（含"回家"、"上班"、"去某地"、"再来一单"、"呼叫返程"），或询问曹操出行品牌下的订单进度、发票、客服时使用。不处理纯路线导航与公交时刻查询、其他打车平台的订单操作、打车功能的开发问题。在已有打车上下文中，即使本轮只有简短回复，只要用户是在同意、拒绝、继续或放弃修改、取消、重约等前一步操作，也必须使用。 |
 | month-end-close-delivery | `doubao/skills/month-end-close-delivery` | 其他 | month-end-close-delivery | 4 | 规划、执行支持和审查月末结账交付。 |
-| multi-stock-comparison | `doubao/skills/multi-stock-comparison` | 金融研究 | multi-stock-comparison | 5 | 比较两家及以上上市公司的业务、财务、成长、估值、市场表现与风险，或为目标公司建立可比组。用于多股横向研究、同行比较、投资二选一、A/H相对价值及多股复盘；不用于单家公司研究、先筛选股票、每日简报或交易执行。 |
+| multi-stock-comparison | `doubao/skills/multi-stock-comparison` | 金融研究 | multi-stock-comparison | 6 | 比较两家及以上上市公司的业务、财务、成长、估值、市场表现与风险，或为目标公司建立可比组。用于多股横向研究、同行比较、投资二选一、A/H相对价值、配对与组合适配分析、供应链与监管影响比较、相对论点跟踪及多股复盘；不用于单家公司研究、先筛选股票、每日简报或交易执行。 |
 | navigate-campus-places-and-services | `doubao/skills/navigate-campus-places-and-services` | 教育/考试 | navigate-campus-places-and-services | 11 | 当用户要核实高校校内建筑、办公室、活动或考试地点，或要了解校内事项的办理入口、材料、部门和线下位置时使用。先确认学校及必要的校区、日期或场次，并以当前官方或事务第一方来源核验。仅提供查询和指引，不做社团或活动推荐、城市导航、课程咨询，也不代登录、提交、缴费或预约。 |
 | organization-workforce-planning | `doubao/skills/organization-workforce-planning` | 其他 | organization-workforce-planning | 11 | 基于业务目标、能力地图、当前组织、工作量、技能供需、HC 与人力成本构建组织与人力情景及迁移路线。用于组织单元、能力组合、岗位序列和规划周期决策；不自动裁员、调整汇报线、批准预算或套用固定管理跨度阈值。 |
 | paper-craft-master | `doubao/skills/paper-craft-master` | 研究/调研 | paper-craft-master | 10 | 帮助已有研究问题、论文材料或实证结果的社科研究者诊断、起草与修改中英文实证论文，覆盖信息收集、IMRaD 章节组织、文献与假设论证、结果汇报、讨论及表达润色。适用于量化、实验或准实验论文的全文和单节写作请求；不用于纯理论、质性、元分析、统计计算或演示文稿制作。 |
@@ -726,7 +728,7 @@
 | photo-abstract-editorial | `doubao/skills/photo-abstract-editorial` | 其他 | photo-abstract-editorial | 18 | Create a clean, vertical editorial artwork that preserves an uploaded photograph as the original image and pairs it with a restrained, photo-derived abstract memory panel and poetic English title. Use when asked to tr... |
 | pipeline-outbound-account-growth | `doubao/skills/pipeline-outbound-account-growth` | 营销/内容运营 | pipeline-outbound-account-growth | 15 | 对CRM锚定或用户给定的账户/线索集合完成公司研究与字段补全、账户信号、可解释优先级、拓客草稿、管道健康、确定性forecast及扩建保有，输出管道拓客与账户增长经营包。CRM和Sales Intelligence连接器只负责真值读取、字段来源、映射与受控动作，不作为业务Skill。 |
 | plan-course-registration-cn | `doubao/skills/plan-course-registration-cn` | 教育/考试 | plan-course-registration-cn | 18 | 帮助中国大陆高校学生比较本校具体课程或教学班并制定可复核的选课、换课与退补选方案。用于核对培养方案、先修条件、时间冲突、学分归属或操作风险；单独做成绩统计、教师评价、课堂笔记或院校职业规划时不使用。 |
-| ppt | `doubao/skills/ppt` | 协作/办公 | ppt | 311 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
+| ppt | `doubao/skills/ppt` | 协作/办公 | ppt | 397 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
 | ppt-framework-planning | `doubao/skills/ppt-framework-planning` | 文档/表格/PPT | ppt-framework-planning | 1 | Use when the user needs to plan, review, restructure, or optimize a reporting PPT framework from meeting minutes, drafts, existing slides, 申报材料, 评分标准, 新增要求, or feedback; trigger keywords include “PPT框架”, “汇报逻辑”, “会议纪要... |
 | presentation-change-control | `doubao/skills/presentation-change-control` | 协作/办公 | presentation-change-control | 4 | 用于已有 PPT 或飞书幻灯片需要局部新增、删除、重排、替换或样式继承，且必须保护页序、关键数字和交付质量的场景。新建整份演示或简单读取不使用。 |
 | private-domain-marketing-operations | `doubao/skills/private-domain-marketing-operations` | 设计可视化 | private-domain-marketing-operations | 4 | 基于用户授权和生命周期信号设计私域分层、内容触达、社群服务、转化培育、留存召回和实验复盘。 |

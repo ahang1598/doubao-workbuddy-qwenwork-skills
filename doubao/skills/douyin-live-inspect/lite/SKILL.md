@@ -2,7 +2,7 @@
 name: lite
 metadata:
   display_name: 直播内容质检 Lite
-description: 免火山登录的直播与本地视频质检，检测字幕和抽检画面中的风险，交付质检报告及含评分的内容复盘。适用于用户明确选择 Lite 或免账号体验；已有正式任务沿原链路续办。
+description: 免火山登录的直播与本地视频质检，检测字幕和抽检画面中的风险，交付质检报告、含评分的内容复盘。适用于用户明确选择 Lite 或免账号体验；已有正式任务沿原链路续办。
 ---
 
 # 直播内容质检 Lite
@@ -11,7 +11,9 @@ description: 免火山登录的直播与本地视频质检，检测字幕和抽�
 
 - 直播：抖音、小红书、B 站详情长链接及官方分享短链。B 站按[来源准备](references/startup.md#b-站来源与恢复)解析。小红书启动前按[来源准备](references/startup.md#直播间断流后续采)取流。
 - 视频：本地文件或已物化附件，直接执行[视频流程](references/video.md)，不使用下方直播提交格式。
+- 按直播间和日期查询已归档商品、报价或二创片段时，按[历史商品知识库](references/delivery.md#历史商品知识库)执行 `history-search`，无需创建任务。
 - 新直播默认字幕检测与每分钟一帧画面抽检；用户明确只检字幕时传 `image_inspection=false`。
+- 新直播与视频在 ASR 期间独立采样原片画质，复盘展示问题时段与改进提示；范围见[画质观察](references/recap.md#画质观察)。
 
 ## 执行约定
 
@@ -25,6 +27,7 @@ description: 免火山登录的直播与本地视频质检，检测字幕和抽�
 
 - 按[启动指引](references/startup.md)一次询问新直播的质检时长，自定义值在同一问题中直接填写，纯数字按分钟；已指定时直接沿用，再执行 `start`。默认 `remote_first`，不前置 doctor 或等待本地模型下载。
 - 按[交付指引](references/delivery.md)立即在对话中交付可点击的控制台 HTML 入口；由用户点击，Agent 不主动打开核验。Chat 模式或交付失败按指引降级。
+- 启动回执带 QA 或凭证子任务时，先按[派发流程](references/live-dispatch.md)核查宿主权限并立即创建对应执行者，再继续主流程。仅宿主明确要求另行授权时提示用户。
 - 启动后进入领取循环，按下方[完成条件](#完成条件)持续执行。
 
 ### 2. 领取
@@ -43,6 +46,7 @@ description: 免火山登录的直播与本地视频质检，检测字幕和抽�
 ### 4. 提交并续办
 
 - 将判断写入返回的 `input_path`，按执行约定运行 `submit_command_argv`。
+- 抖音直播回执带 qa_worker_action 时，按[评论提取流程](references/live-dispatch.md#评论提取)启动评论子任务；分别提取观众问题和对具体商品的求购，不匹配主播回答。
 - 有下一批则继续判别；空批次按 `next_action` 等待；要求报告时进入交付。
 - 只修复失败项并执行 `retry_command_argv`。结果未知时用原 request-id 查询 `review-state`，不重复提交。
 

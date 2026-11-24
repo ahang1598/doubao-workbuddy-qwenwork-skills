@@ -13,14 +13,18 @@ from pathlib import Path
 import shutil
 import subprocess
 import time
+import uuid
 
-from .credentials import ENV_KEYS, environment, refresh, version as credential_version
+from .credentials import ENV_KEYS, BACKGROUND_SECRET_KEYS, environment, refresh, version as credential_version
+from runtime.credential_worker import eligible as credential_worker_eligible
 
 DIAGNOSTIC_CATEGORIES = frozenset({
     'upload_address_failed', 'authentication_rejected', 'missing_task_id',
     'rate_limited', 'request_timeout', 'network_error', 'service_unavailable',
     'cli_failed', 'cli_unavailable', 'invalid_response', 'credentials_unavailable',
 })
+HOST_REFRESH_CATEGORIES = frozenset({'authentication_rejected', 'credentials_unavailable', 'upload_address_failed'})
+HOST_REFRESH_WAIT_SECONDS = 30
 
 
 def format_unsupported(value, depth=0):
@@ -33,22 +37,61 @@ def format_unsupported(value, depth=0):
     return any(format_unsupported(value.get(key),depth+1) for key in ('error','result','data'))
 
 
+def failure_metadata(output):
+    """Extract bounded diagnostic scalars, never messages, URLs or credentials."""
+    detail = {}
+    def visit(value, depth=0, error=False):
+        if depth > 4 or not isinstance(value, dict):return
+        for key, item in value.items():
+            name = key.lower().replace('_', '').replace('-', '')
+            if name in {'httpstatus', 'statuscode'} and not isinstance(item, bool):
+                if re.fullmatch(r'[1-5]\d\d', str(item)):
+                    detail.setdefault('http_status', int(item))
+            elif name in {'code', 'errorcode', 'requestid', 'xrequestid', 'logid', 'xttlogid'}:
+                field = ('error_code' if name in {'code', 'errorcode'} else
+                         'log_id' if name in {'logid', 'xttlogid'} else 'request_id')
+                pattern = r'(?:[A-Za-z][A-Za-z0-9_.-]{0,63}|\d{1,12})' if field == 'error_code' else r'[A-Za-z0-9][A-Za-z0-9_-]{7,127}'
+                if isinstance(item, (str, int)) and not isinstance(item, bool) and re.fullmatch(pattern, str(item)):
+                    # JWTs and common credential prefixes are never diagnostic IDs.
+                    if not str(item).lower().startswith(('eyj', 'bearer', 'sk-', 'sk_')):
+                        if field == 'error_code' and error:detail[field] = str(item)
+                        else:detail.setdefault(field, str(item))
+            elif name in {'error', 'response', 'responsemetadata', 'result', 'data', 'body', 'headers'}:
+                visit(item, depth + 1, error or name == 'error')
+    decoder = json.JSONDecoder()
+    try:
+        visit(json.loads(output))
+    except (ValueError, TypeError):
+        # CLI stderr can prefix a JSON error with a log label or mix JSON lines.
+        for match in re.finditer(r'(?m)^[^\n{]*\{', output):
+            try:visit(decoder.raw_decode(output[match.end()-1:])[0])
+            except ValueError:pass
+    for key, value in re.findall(r'(?im)^\s*(request[_-]?id|log[_-]?id|x-request-id|x-tt-logid|error[_-]?code|http[_-]?status|status[_-]?code)\s*[:=]\s*([^\s]+)[ \t]*$', output):
+        visit({key:value})
+    return detail
+
+
 class CommandFailure(RuntimeError):
-    def __init__(self, exit_code, output='', *, category=None, not_submitted=False):
-        # Only fixed categories leave the adapter; never persist raw CLI output.
+    def __init__(self, exit_code, output='', *, category=None, not_submitted=False, env=None):
+        # Remove known host credentials before extracting any diagnostic fields.
+        for key, value in {**os.environ, **(env or {})}.items():
+            if value and (key in BACKGROUND_SECRET_KEYS or key.startswith('BYTECLOUD_CLI_API_JWT_TOKEN')):
+                output = output.replace(value, '[REDACTED]')
+        metadata = failure_metadata(output)
         text = output.lower()
         status = re.search(r'(?:http(?:/\d(?:\.\d)?)?\s+|["\']?(?:http_status|status_code|statuscode|status code)["\']?\s*[:=]\s*)([45]\d\d)\b', text)
-        http_status = int(status.group(1)) if status else None
+        http_status = metadata.get('http_status', int(status.group(1)) if status else None)
+        code = metadata.get('error_code', '').lower()
         upload_address=('申请上传地址响应缺少 result' in text or category=='upload_address_failed'
                         or bool(re.search(r'"(?:stage|phase)"\s*:\s*"upload_address"',text)))
         expired=any(v in text for v in ('token expired','token has expired','tokenexpired','expiredtoken','凭证已过期'))
         if category is not None:
             category=category if category in DIAGNOSTIC_CATEGORIES else 'cli_failed'
-        elif expired or http_status in (401,403) or any(v in text for v in ('invalid token','unauthorized','invalidparameter.invalidapikey')):
+        elif expired or http_status in (401,403) or code in {'authenticationerror', 'authenticationfailed', 'accessdenied'} or any(v in text for v in ('invalid token','unauthorized','invalidparameter.invalidapikey')):
             category='authentication_rejected'
-        elif http_status==429 or any(v in text for v in ('too many requests','too_many_requests','toomanyrequests','rate limit','限流')):
+        elif http_status==429 or code=='requestlimitexceeded' or any(v in text for v in ('too many requests','too_many_requests','toomanyrequests','rate limit','限流')):
             category='rate_limited'
-        elif (http_status is not None and http_status>=500) or any(v in text for v in ('service_unavailable','serviceunavailable')):
+        elif (http_status is not None and http_status>=500) or code in {'internalserviceerror', 'serviceinitializingerror'} or any(v in text for v in ('service_unavailable','serviceunavailable')):
             category='service_unavailable'
         elif any(v in text for v in ('etimedout','timed out','timeout','超时')):
             category='request_timeout'
@@ -63,7 +106,7 @@ class CommandFailure(RuntimeError):
         reason=('credential_expired' if category=='authentication_rejected' and expired else
                 category if category in {'authentication_rejected','rate_limited','service_unavailable','request_timeout','network_error'} else
                 'upload_response_missing' if upload_address else 'unknown')
-        self.diagnostic={'category':category,'reason':reason,'exit_code':exit_code,
+        self.diagnostic={**metadata,'category':category,'reason':reason,'exit_code':exit_code,
                          'failure_stage':'upload_address' if upload_address else 'submit'}
         try:
             if format_unsupported(json.loads(output)):self.diagnostic['format_unsupported']=True
@@ -75,16 +118,47 @@ class CommandFailure(RuntimeError):
         super().__init__(f'mediakit command failed (exit {exit_code}; {category})')
 
 
-def sync_credentials(store):
+def sync_credentials(store, *, refresh_id=None, refresh_cycle=None):
     """Called by a fresh host shell, never by the long-lived supervisor."""
-    from runtime.credentials import status
-    previous = status(store.workspace_root).get('version')
-    store.update_task(asr_host_refresh_at=time.time())
-    result = refresh(store.workspace_root)
-    result['credential_changed'] = bool(result['updated'] and result.get('version') != previous)
+    from runtime.credentials import status, read
+    with store.connection(True) as conn:
+        task = store._task(conn)
+        request = task.get('asr_host_refresh') or {}
+        if refresh_id and (request.get('request_id') != refresh_id or request.get('status') != 'pending'
+                           or not credential_worker_eligible(task)
+                           or (request.get('resident') and (refresh_cycle != request.get('cycle')
+                               or request.get('worker_status') in {'unavailable','stopped'}))):
+            return {'updated':False,'reason':'refresh_request_inactive','credential_changed':False}
+        previous = status(store.workspace_root).get('version')
+        try:previous_token=read(store.workspace_root)[ENV_KEYS[0]]
+        except (OSError,ValueError):previous_token=None
+        result = refresh(store.workspace_root)
+        result['credential_changed'] = bool(result['updated'] and result.get('version') != previous)
+        result['token_changed'] = bool(result['updated'] and os.environ.get(ENV_KEYS[0]) != previous_token)
+        active = request.get('status') == 'pending' and credential_worker_eligible(task)
+        if active:
+            state = 'refreshed' if result['updated'] else 'missing'
+            for segment in store._segments(conn):
+                waiting = segment.get('asr_host_refresh') or {}
+                if waiting.get('requested_at') == request['requested_at'] and waiting.get('status') == 'pending':
+                    store._update_segment(conn, segment['id'], asr_host_refresh={**waiting,'status':state})
+            task = store._task(conn)
+            request={**request,'status':state}
+            if request.get('resident'):
+                from runtime.credential_worker import REFRESH_SECONDS, RECHECK_SECONDS
+                request['next_refresh_at']=time.time()+(REFRESH_SECONDS if result['token_changed'] else RECHECK_SECONDS)
+                if result['token_changed']:request['last_rotated_at']=time.time()
+            task['asr_host_refresh'] = request
+        task['asr_host_refresh_at'] = time.time()
+        store._set_task(conn, task)
+    recovered = recover_credentials(store, allow_same=active) if result['updated'] else []
+    try:
+        store.log('mediakit_credential_refresh', json.dumps({'phase':'imported' if result['updated'] else 'missing',
+            'credential_changed':result['credential_changed'], 'token_changed':result['token_changed'], 'active_request':active, 'refresh_id':request.get('request_id'), 'cycle':request.get('cycle'),
+            'trigger':request.get('trigger'), 'next_refresh_at':request.get('next_refresh_at')}))
+    except Exception:pass
     if not result['updated']:
         return {**result, 'requeued_segments': 0, 'asr_health': asr_health(store.segments(), store.task())}
-    recovered = recover_credentials(store)
     # Preflight credential failures may precede any task-level block. An explicit
     # host refresh can requeue these too; they never invoked the submit command.
     with store.connection(True) as conn:
@@ -96,20 +170,67 @@ def sync_credentials(store):
 
 
 def host_refresh_due(task):
-    """Ask the active Agent for a fresh host invocation, never renew in a worker."""
-    if task.get('media_frozen') or task.get('asr_policy') not in {'remote_first','local_first'}:
+    """Keep host delegation pending independently of a segment's wait budget."""
+    if not credential_worker_eligible(task):
         return False
+    request = task.get('asr_host_refresh')
+    if request:
+        return request['status'] == 'pending' or (request['status'] == 'timed_out' and not request.get('request_id'))
     category = (task.get('asr_credential_block') or {}).get('category') or task.get('asr_cloud_failure')
-    return (category in {'authentication_rejected','credentials_unavailable','upload_address_failed'}
-            and time.time() - task.get('asr_host_refresh_at', 0) >= 120)
+    # Older tasks may have a failure but no per-segment handshake yet.
+    return category in HOST_REFRESH_CATEGORIES and not task.get('asr_host_refresh_at')
+
+
+def refresh_after_failure(store, segment, category, *, cancel=None, remaining=30, sleep=time.sleep):
+    """One bounded host import per segment; concurrent failures share the request."""
+    if category not in HOST_REFRESH_CATEGORIES or remaining <= 0 or (cancel is not None and cancel.is_set()):return False
+    sid = segment['id']
+    with store.connection(True) as conn:
+        task = store._task(conn)
+        current = next(s for s in store._segments(conn) if s['id'] == sid)
+        if (not credential_worker_eligible(task)
+                or current.get('asr_host_refresh') or current.get('asr_final')
+                or current.get('review_status') in {'done','skipped'}):return False
+        request = task.get('asr_host_refresh') or {}
+        if request.get('resident') and request.get('status') != 'pending':
+            from runtime.credential_worker import begin_cycle
+            request=begin_cycle(request,trigger='failure',now=time.time())
+            request['category']=category
+        elif request.get('status') != 'pending':
+            request = {'status':'pending', 'request_id':uuid.uuid4().hex, 'requested_at':time.time(),
+                       'deadline_at':time.time()+min(HOST_REFRESH_WAIT_SECONDS,remaining), 'category':category}
+        if not store._update_segment(conn, sid, asr_host_refresh={
+                'requested_at':request['requested_at'], 'status':'pending'}):return False
+        task = store._task(conn)
+        task['asr_host_refresh'] = request
+        store._set_task(conn, task)
+    try:store.log('mediakit_credential_refresh', json.dumps({'phase':'requested', 'category':category, 'refresh_id':request['request_id'], 'cycle':request.get('cycle'), 'trigger':'failure'}), sid)
+    except Exception:pass
+    deadline = time.time()+min(HOST_REFRESH_WAIT_SECONDS, remaining)
+    while time.time() < deadline:
+        if cancel is not None and cancel.is_set():return False
+        task = store.task()
+        if not credential_worker_eligible(task):return False
+        latest = next(s for s in store.segments() if s['id'] == sid).get('asr_host_refresh') or {}
+        if latest.get('status') != 'pending':
+            return latest.get('status') == 'refreshed'
+        sleep(min(.2, max(0,deadline-time.time())))
+    with store.connection(True) as conn:
+        current = next(s for s in store._segments(conn) if s['id'] == sid)
+        latest = current.get('asr_host_refresh') or {}
+        if latest.get('status') != 'pending':return latest.get('status') == 'refreshed'
+        store._update_segment(conn, sid, asr_host_refresh={**latest, 'status':'timed_out'})
+    try:store.log('mediakit_credential_refresh', json.dumps({'phase':'timed_out', 'category':category, 'refresh_id':request['request_id'], 'cycle':request.get('cycle')}), sid)
+    except Exception:pass
+    return False
 
 
 def credentials_env(store):
     return environment(store.workspace_root)
 
 
-def recover_credentials(store):
-    """A new host credential allows another attempt only before task creation."""
+def recover_credentials(store, *, allow_same=False):
+    """Recover safe submissions/known queries; a host handshake allows one same-token probe."""
     if not submissions_paused(store):
         return []
     try:
@@ -122,7 +243,7 @@ def recover_credentials(store):
         data = json.loads(row[0])
         blocked = data.get('asr_credential_block')
         legacy_upload_block = blocked and blocked.get('category') == 'upload_address_failed'
-        if not blocked or (blocked['version'] == version and not legacy_upload_block):
+        if not blocked or (blocked['version'] == version and not legacy_upload_block and not allow_same):
             return recovered
         for row in conn.execute('SELECT id,data FROM segments WHERE session_id=?', (store.session_id,)).fetchall():
             segment = json.loads(row['data'])
@@ -185,29 +306,70 @@ def config(task, key, default):
     return task.get('runtime_binaries', {}).get(key, task.get('config', {}).get(key, task.get(key, default)))
 
 
-def invoke(binary, args, timeout=60, env=None, store=None):
+def invoke(binary, args, timeout=60, env=None, store=None, segment_id=None):
+    from . import mediakit_diagnostics as diagnostics
+    command = ('asr_submit' if args[:2] == ['video', 'asr-subtitles'] else
+               'query_task' if args[:2] == ['shared', 'query-task'] else 'other')
+    trace = {}
+    started = time.monotonic()
+    failure = None
+    try:
+        return _invoke(binary, args, timeout=timeout, env=env, store=store, trace=trace)
+    except CommandFailure as error:
+        failure = {**error.diagnostic, 'failure_stage': 'query'} if command == 'query_task' else error.diagnostic
+        raise
+    finally:
+        if store is not None and (command == 'asr_submit' or command == 'query_task' and failure is not None):
+            elapsed_ms = round((time.monotonic() - started) * 1000)
+            try:
+                diagnostics.record(store, cli=diagnostics.identity(binary), command=command,
+                                   segment_id=segment_id, elapsed_ms=elapsed_ms,
+                                   trace=trace, diagnostic=failure)
+            except Exception:
+                pass  # Diagnostics never change submission outcome or retry policy.
+
+
+def _invoke(binary, args, timeout=60, env=None, store=None, trace=None):
     """One invocation only; a failed submission must never be replayed implicitly."""
     from runtime.media import media_command
     if not any(flag in args for flag in ('--schema','--help','--version')):
         env={**(os.environ if env is None else env),'MEDIAKIT_SURFACE':'skill',
-             'MEDIAKIT_RUNTIME':(env or os.environ).get('MEDIAKIT_RUNTIME') or 'unknown'}
+             'MEDIAKIT_RUNTIME':(env or os.environ).get('MEDIAKIT_RUNTIME') or 'unknown',
+             'MEDIAKIT_DIAGNOSTICS':'1'}
     try:
         result = media_command([binary, *args], capture_output=True, text=True, timeout=timeout, env=env, store=store)
-    except subprocess.TimeoutExpired:
-        raise CommandFailure(None, category='request_timeout') from None
+    except subprocess.TimeoutExpired as error:
+        if trace is not None:
+            try:
+                from .mediakit_diagnostics import output_shape
+                trace.update(stdout=output_shape(error.stdout), stderr=output_shape(error.stderr), exit_code=None)
+            except Exception:
+                pass
+        partial = [part.decode('utf-8', errors='replace') if isinstance(part, bytes) else part or ''
+                   for part in (error.stdout, error.stderr)]
+        raise CommandFailure(None, '\n'.join(partial), category='request_timeout', env=env) from None
     except (FileNotFoundError, PermissionError):
         raise CommandFailure(None, category='cli_unavailable',not_submitted=True) from None
     except OSError:
         raise CommandFailure(None, category='cli_unavailable') from None
+    if trace is not None:
+        try:
+            from .mediakit_diagnostics import output_shape, upstream_events
+            trace.update(stdout=output_shape(result.stdout), stderr=output_shape(result.stderr), exit_code=result.returncode)
+            events = upstream_events(result.stderr, env)
+            if events:
+                trace['upstream_events'] = events
+        except Exception:
+            pass
     if result.returncode:
-        raise CommandFailure(result.returncode, result.stdout + '\n' + result.stderr)
+        raise CommandFailure(result.returncode, result.stdout + '\n' + result.stderr, env=env)
     try:
         value = json.loads(result.stdout)
     except (ValueError, TypeError):
-        raise CommandFailure(result.returncode, category='invalid_response') from None
+        raise CommandFailure(result.returncode, result.stdout + '\n' + result.stderr, category='invalid_response', env=env) from None
     if isinstance(value,dict) and value.get('status')=='failed' and format_unsupported(value):return value
     if isinstance(value, dict) and (value.get('error') or value.get('success') is False):
-        raise CommandFailure(result.returncode, result.stdout)
+        raise CommandFailure(result.returncode, result.stdout + '\n' + result.stderr, env=env)
     if not isinstance(value, dict):
         raise CommandFailure(result.returncode, category='invalid_response')
     return value
@@ -337,7 +499,7 @@ def reconcile_submission(store, request):
         return {'status': 'credentials_unavailable', 'next_action': 'refresh-credentials'}
     try:
         result = invoke(config(task, 'mediakit_bin', 'mediakit-cli'),
-                        ['shared', 'query-task', '--task-id', remote_id], env=env, store=store)
+                        ['shared', 'query-task', '--task-id', remote_id], env=env, store=store, segment_id=sid)
     except CommandFailure as error:
         return {'status': 'query_failed', 'diagnostic': {**error.diagnostic, 'stage': 'query',
                                                        'credential_source': 'workspace'}}
@@ -415,8 +577,13 @@ def process_asr(store, segment, *, poll_seconds=3, clock=None, sleep=time.sleep,
     def update(**fields):
         return store.update_segment(segment['id'], _remote_asr=True,
                                     _defer_asr_failure=defer_failure, **fields)
+    def refresh_env(category):
+        if refresh_after_failure(store, segment, category, cancel=cancellation,
+                                 remaining=deadline-clock(), sleep=sleep):
+            return request_credentials(store, {**segment, 'asr_task_id':task_id}, defer_failure=defer_failure)
+        return None
     if submissions_paused(store):
-        return
+        if refresh_env((store.task().get('asr_credential_block') or {}).get('category')) is None:return
     if (task.get('asr_policy')=='remote_first' or current_live) and clock()>=deadline:
         if update(asr_status='timed_out') and task_id:
             observe('query','failed',0,{'query_status':'timed_out','failure_stage':'query'})
@@ -435,7 +602,21 @@ def process_asr(store, segment, *, poll_seconds=3, clock=None, sleep=time.sleep,
         try:
             # Authentication may change while this upload waits for a slot.
             if cancellation.is_set() or submissions_paused(store):return
+            media_path = store.local_path(segment['audio_file'])
+            media_flag = '--audio-url'
+            if media_path.suffix.lower() == '.flv':
+                from runtime.flv import black_video
+                try:
+                    media_path = black_video(media_path, store.root / 'audio' / f"asr-{segment['id']}.flv")
+                except (OSError, ValueError):
+                    update(asr_status='failed', asr_diagnostic={'category':'ASR_RECOVERY_FAILED',
+                        'stage':'prepare', 'submission_state':'not_submitted'})
+                    store.log('asr_prepare_failed', 'ASR black video preparation failed before any cloud call', segment['id'])
+                    return
+                media_flag = '--video-url'
+            if cancellation.is_set():return
             env = request_credentials(store, segment, defer_failure=defer_failure)
+            if env is None:env = refresh_env('credentials_unavailable')
             if env is None or cancellation.is_set():return
             # Waiting for an upload slot must not look like an unknown submission.
             if clock() >= deadline:
@@ -455,19 +636,26 @@ def process_asr(store, segment, *, poll_seconds=3, clock=None, sleep=time.sleep,
                 if not update(asr_submit_attempts=attempts,asr_status='submission_unknown',asr_diagnostic=None):return
                 try:
                     observe('attempt','started',attempts)
-                    result = invoke(binary, ['video', 'asr-subtitles', '--audio-url',
-                                              str(store.root / segment['audio_file'])], env=env, store=store, timeout=max(.001,min(deadline-clock(),media_remaining(store.task(), 15 if v2 else 60))))
+                    result = invoke(binary, ['video', 'asr-subtitles', media_flag,
+                                              str(media_path)], env=env, store=store, segment_id=segment['id'], timeout=max(.001,min(deadline-clock(),media_remaining(store.task(), 15 if v2 else 60))))
                     remote_id=result.get('task_id')
                     if isinstance(remote_id,bool) or not isinstance(remote_id,(str,int)) or not str(remote_id).strip():
-                        raise CommandFailure(0,category='missing_task_id')
+                        raise CommandFailure(0,json.dumps(result),category='missing_task_id',env=env)
                     observe('result','success',attempts,{'submission_state':'submitted'})
                     break
                 except CommandFailure as failure:
                     observe('result','failed',attempts,failure.diagnostic)
+                    # Refresh even an ambiguous auth error, but never replay an unknown submission.
+                    refreshed = refresh_env(failure.diagnostic.get('category'))
+                    if (refreshed is not None and failure.diagnostic.get('submission_state')=='not_submitted'
+                            and attempts<limit and clock()<deadline and not cancellation.is_set()):
+                        env = refreshed
+                        continue
                     if (failure.diagnostic.get('submission_state')!='not_submitted' or attempts>=limit
+                            or failure.diagnostic.get('category') in HOST_REFRESH_CATEGORIES
                             or (task.get('kind','live')=='live' and (task.get('asr_policy')=='remote_first' or current_live)
                                 and failure.diagnostic.get('failure_stage')=='upload_address')
-                            or failure.diagnostic.get('category')=='authentication_rejected'):
+                            ):
                         raise
                     # The failed call is known not to have created a remote
                     # task. Persist that fact before waiting or being stopped.
@@ -523,10 +711,13 @@ def process_asr(store, segment, *, poll_seconds=3, clock=None, sleep=time.sleep,
             return
         try:
             env = request_credentials(store, {**segment, 'asr_task_id': task_id}, defer_failure=defer_failure)
+            if env is None:
+                env = refresh_env('credentials_unavailable')
+                if env is not None:update(asr_status='submitted')
             if env is None or cancellation.is_set():
                 return
             result = invoke(binary, ['shared', 'query-task', '--task-id', task_id],
-                            timeout=max(.001,media_remaining(store.task(), min(5 if v2 else 60, deadline-clock()))), env=env, store=store)
+                            timeout=max(.001,media_remaining(store.task(), min(5 if v2 else 60, deadline-clock()))), env=env, store=store, segment_id=segment['id'])
             if cancellation.is_set():return
             state = str(result.get('status', '')).lower()
             if state == 'completed':
@@ -535,22 +726,32 @@ def process_asr(store, segment, *, poll_seconds=3, clock=None, sleep=time.sleep,
                     observe('query','success',0,{'query_status':'completed','subtitle_count':len(subtitles)})
                 return
             if state in ('failed', 'canceled', 'cancelled'):
+                diagnostic = {**CommandFailure(0,json.dumps(result),env=env).diagnostic,
+                              'stage':'query','failure_stage':'query'}
                 if update(asr_status='failed', asr_outcome=state,
+                          asr_diagnostic=diagnostic,
                           asr_format_unsupported=state=='failed' and format_unsupported(result)):
-                    observe('query','failed',0,{'query_status':'failed' if state=='failed' else 'cancelled','failure_stage':'query'})
-                store.log('asr_' + state, 'ASR task ' + state, segment['id'])
+                    observe('query','failed',0,{**diagnostic,'query_status':'failed' if state=='failed' else 'cancelled'})
+                    store.log('asr_' + state, 'ASR task ' + state + ': ' + json.dumps(diagnostic), segment['id'])
                 return
         except (OSError, ValueError, KeyError, TypeError, RuntimeError, subprocess.SubprocessError) as error:
             if cancellation.is_set():return
-            diagnostic = getattr(error, 'diagnostic', {})
-            last_query_failure = {**diagnostic, 'failure_stage':'query'}
-            if diagnostic.get('category') == 'authentication_rejected':
-                store.update_task(asr_credential_block={'version': credential_version(env), 'category': 'authentication_rejected'})
+            diagnostic = {**getattr(error, 'diagnostic', {}), 'stage':'query', 'failure_stage':'query'}
+            last_query_failure = diagnostic
+            update(asr_diagnostic=diagnostic)
+            if refresh_env(diagnostic.get('category')) is not None:
+                update(asr_status='submitted')
+                continue
+            if diagnostic.get('category') in HOST_REFRESH_CATEGORIES:
+                if diagnostic['category'] in {'authentication_rejected','credentials_unavailable'}:
+                    store.update_task(asr_credential_block={'version': credential_version(env), 'category': diagnostic['category']})
                 if update(asr_status='timed_out', asr_diagnostic=diagnostic):
-                    observe('query','failed',0,{**last_query_failure,'query_status':'authentication_rejected'})
+                    observe('query','failed',0,{**last_query_failure,'query_status':
+                        'authentication_rejected' if diagnostic['category']=='authentication_rejected' else 'failed'})
+                    store.log('asr_query_failed', 'ASR query failed: ' + json.dumps(diagnostic), segment['id'])
                 return
             # Queries are read-only and safe to retry against the same stored task ID.
-            store.log('asr_query_retry', 'ASR query unavailable or malformed', segment['id'])
+            store.log('asr_query_retry', 'ASR query unavailable or malformed: ' + json.dumps(diagnostic), segment['id'])
         remaining = deadline - clock()
         if remaining > 0:
             if cancel is not None:
@@ -558,6 +759,6 @@ def process_asr(store, segment, *, poll_seconds=3, clock=None, sleep=time.sleep,
             else:
                 sleep(min(poll_seconds, remaining))
     if cancellation.is_set():return
-    if update(asr_status='timed_out'):
+    if update(asr_status='timed_out', asr_diagnostic=last_query_failure or {'stage':'query','failure_stage':'query','category':'request_timeout'}):
         observe('query','failed',0,{**last_query_failure,'query_status':'timed_out','failure_stage':'query'})
-    store.log('asr_timed_out', 'ASR wait expired; saved task ID can be resumed', segment['id'])
+    store.log('asr_timed_out', 'ASR wait expired; saved task ID can be resumed: ' + json.dumps(last_query_failure), segment['id'])

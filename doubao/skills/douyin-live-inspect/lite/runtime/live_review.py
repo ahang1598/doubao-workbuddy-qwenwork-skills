@@ -219,9 +219,6 @@ def _claim(store, conn, known_rules_version, limit, dispatcher_id, target_batch_
     store._set_task(conn, task)
 
     if not allocated and waiting and executor:
-        from runtime.mediakit import host_refresh_due
-        if task.get('kind','live') == 'live' and host_refresh_due(task):
-            return {'task_id':store.task_id,'segments':[], 'next_action':'refresh-credentials'}
         waiting_ids = {segment['id'] for segment in waiting}
         retry = next((
             batch for batch in batches
@@ -361,6 +358,10 @@ def bind(conn, store, payload, segment):
     batch = row(conn, store.session_id, payload.get('batch_id'))
     if not batch or batch['generation'] != payload.get('generation') or batch['status'] not in ACTIVE:
         raise ValueError('stale or missing review batch')
+    if batch.get('context_id'):
+        context=context_record(conn,store,batch['context_id'])
+        if context.get('clarification_check_version')==2 and payload.get('_source_context')!=batch['context_id']:
+            raise ValueError('clarification checks require the frozen review context')
     if batch.get('executor') != 'main':
         if not review_dispatch.enabled(store._task(conn)):
             raise ValueError('legacy child review batch must be reclaimed')

@@ -1641,6 +1641,7 @@
 
 .page .inspection-details { margin-top: 8px; font-size: 13px; line-height: 1.6; }
 .page .inspection-details summary { cursor: pointer; color: var(--muted); }
+.page .evidence-group > summary { cursor: pointer; padding: 12px; color: var(--muted); }
 
 .page .priority-tag { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 700; line-height: 20px; }
 .page .priority-p0 { color: #b42318; background: #fee4e2; }

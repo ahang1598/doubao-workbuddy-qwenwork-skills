@@ -154,6 +154,7 @@ def projection_key(frozen):
     status = frozen.status()
     # These projections are monitor-only; coverage uses full_live as a boolean.
     status.pop('task', None)
+    status.pop('comment_summary', None)
     if 'full_live' in status: status['full_live'] = True
     status.get('finishing', {}).pop('remaining_seconds', None)
     files = []
@@ -165,7 +166,7 @@ def projection_key(frozen):
     templates = [(str(path.relative_to(ASSETS)), path.stat().st_mtime_ns, path.stat().st_size)
                  for path in sorted(ASSETS.rglob('*')) if path.is_file()]
     templates += [(name, Path(__file__).with_name(name).stat().st_mtime_ns)
-                  for name in ('static_delivery.py', 'ui.py', 'report_data.py', 'recap.py', 'remediation.py')]
+                  for name in ('static_delivery.py', 'ui.py', 'report_data.py', 'report_knowledge.py', 'recap.py', 'remediation.py', 'clarifications.py', 'sales_state.py', 'interactions.py', 'live_room.py', 'customer_service.py')]
     return hashlib.sha256(script_json([task, frozen.segments(), status, files, templates]).encode()).hexdigest()
 
 
@@ -308,6 +309,16 @@ def export(store, *, snapshot=None, bundle=False, single_file=False, refresh_mon
                 atomic(root/filename, render_html('monitor', monitor, live=not snapshot))
             artifacts.insert(0, artifact(root/filename, 'monitor', version))
         if not snapshot: atomic(root/'data.js', 'window.__INSPECT_DATA__=' + script_json(monitor) + ';\n')
+        if archive_url:
+            artifacts.append(artifact(archive_file, 'media', version))
+        if deliverable and playback and not single_file:
+            artifacts.append(artifact(root/media_url, 'media', version))
+        summary = None
+        if deliverable and task.get('kind', 'live') == 'live':
+            from runtime.report_knowledge import summary_markdown
+            summary = summary_markdown(frozen, report, review, artifacts)
+            atomic(root/'summary.md', summary)
+            artifacts.append(artifact(root/'summary.md', 'summary', version))
         if bundle and deliverable:
             fd, temporary = tempfile.mkstemp(dir=root, prefix='.bundle-')
             os.close(fd)
@@ -320,16 +331,18 @@ def export(store, *, snapshot=None, bundle=False, single_file=False, refresh_mon
                         archive.writestr('monitor.html', render_html('monitor', packed))
                     for group, page in report_pages.items():
                         archive.writestr(group + '.html', page)
+                    if summary is not None:
+                        packed_summary = summary
+                        for item in artifacts:
+                            if item['type'] in report_pages:
+                                packed_summary = packed_summary.replace('](' + Path(item['path']).name + ')', '](' + item['type'] + '.html)')
+                        archive.writestr('summary.md', packed_summary)
                     if archive_url: archive.write(archive_file, archive_url, compress_type=zipfile.ZIP_STORED)
                     if playback: archive.write(root/media_url, media_url)
                 os.replace(temporary, root/(f'reports-{version}.zip' if task.get('kind')=='video' else 'reports.zip'))
             finally:
                 if os.path.exists(temporary): os.unlink(temporary)
             artifacts.append(artifact(root/(f'reports-{version}.zip' if task.get('kind')=='video' else 'reports.zip'), 'bundle', version))
-        if archive_url:
-            artifacts.append(artifact(archive_file, 'media', version))
-        if deliverable and playback and not single_file:
-            artifacts.append(artifact(root/media_url, 'media', version))
         manifest = {'evidence_version':review.get('evidence_version'), 'media_layout':'embedded' if single_file else 'separate','version':version, 'artifact_status':'ready', 'artifacts':artifacts, 'complete':monitor['complete']}
         atomic(state_path, script_json({**manifest, 'projection_cache': projection, 'monitor_input_key': monitor_key, 'report_input_key': report_key, 'report_fingerprints': {**previous.get('report_fingerprints', {}), **report_fingerprints}}))
         return manifest
@@ -513,7 +526,7 @@ def _attach_artifacts(store, data, command):
     from runtime.delivery_notice import effective_delivery_mode
     mode = effective_delivery_mode(store.task().get('delivery_mode', 'local_dashboard'))
     data['delivery_mode'] = mode
-    if mode == 'chat' or command in ('serve','snapshot'): return
+    if mode == 'chat' or command in ('serve','snapshot','qa-next','qa-submit','qa-worker'): return
     if 'artifacts' in data: return
     if mode == 'local_dashboard':
         if command in ('start','start-video','resume','report','recap-report','recap-submit'):
