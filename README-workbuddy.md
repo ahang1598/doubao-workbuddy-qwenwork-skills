@@ -8,7 +8,7 @@
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：653
 - 当前索引文件数：18137
-- 最近变更：[2026-11-23-180005](workbuddy/change-logs/2026-11-23-180005.md) - WorkBuddy 本次同步新增 113 个文件、修改 2 个文件、删除 0 个文件。 新增条目：experts/knowledge-video-expert, experts/paper-to-latex-diagram-generator, experts/research-paper, experts/teachable-figures-expe...
+- 最近变更：[2026-11-25-180008](workbuddy/change-logs/2026-11-25-180008.md) - WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。
 
 ## 数据来源
 
@@ -721,6 +721,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-11-25-180008 | [2026-11-25-180008](workbuddy/change-logs/2026-11-25-180008.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。 |
 | 2026-11-23-180005 | [2026-11-23-180005](workbuddy/change-logs/2026-11-23-180005.md) | WorkBuddy 本次同步新增 113 个文件、修改 2 个文件、删除 0 个文件。 新增条目：experts/knowledge-video-expert, experts/paper-to-latex-diagram-generator, experts/research-paper, experts/teachable-figures-expe... |
 | 2026-11-22-203209 | [2026-11-22-203209](workbuddy/change-logs/2026-11-22-203209.md) | WorkBuddy 本次同步新增 102 个文件、修改 1 个文件、删除 0 个文件。 新增条目：experts/remotion-video-generator, skills/arxiv-daily-digest。 受影响范围：experts/remotion-video-generator, skills/arxiv-daily-digest,... |
 | 2026-11-20-210502 | [2026-11-20-210502](workbuddy/change-logs/2026-11-20-210502.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。 |
@@ -740,4 +741,3 @@
 | 2026-10-13-180008 | [2026-10-13-180008](workbuddy/change-logs/2026-10-13-180008.md) | WorkBuddy 本次同步新增 9 个文件、修改 1 个文件、删除 8 个文件。 受影响范围：cb_teams_experts/finance-data。 |
 | 2026-10-08-090557 | [2026-10-08-090557](workbuddy/change-logs/2026-10-08-090557.md) | WorkBuddy 本次同步新增 0 个文件、修改 2 个文件、删除 0 个文件。 受影响范围：skills/wechat-article-pro。 |
 | 2026-09-28-180010 | [2026-09-28-180010](workbuddy/change-logs/2026-09-28-180010.md) | WorkBuddy 本次同步新增 35 个文件、修改 1 个文件、删除 0 个文件。 新增条目：experts/expert-tax-advisory-practice, experts/senior-accessible-travel。 受影响范围：experts/expert-tax-advisory-practice, experts/senio... |
-| 2026-09-26-180002 | [2026-09-26-180002](workbuddy/change-logs/2026-09-26-180002.md) | WorkBuddy 本次同步新增 5 个文件、修改 54 个文件、删除 0 个文件。 受影响范围：connectors/marketplace/.codebuddy-connector, connectors/marketplace/connectors/cloudbase, connectors/marketplace/connectors/cnb-... |
