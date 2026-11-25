@@ -7,15 +7,19 @@ delta id:
 mechanism:
 state: EXPERIMENT_REQUIRED | ACCEPT | REJECT | RESTORE | REMEASURE
 
-fingerprint
-- revision/worktree:
+variant identity (one per side)
+- revision/worktree and code hash:
+- declared comparison axis:
+- mutant derivation, if applicable:
+
+controlled context (held equal except the declared axis)
 - dependency/runtime:
 - configuration and modes:
 - input/seed and request or reader chunking:
 - measurement boundary:
 - reset/warmup:
 - runner:
-- single changed variable:
+- sampling plan, valid/invalid policy, statistics and budget:
 
 source basis
 - entry/callers:
@@ -34,8 +38,9 @@ protected semantics
 oracle integrity
 - baseline characterization command + raw artifact + result:
 - minimum counterexample:
-- deliberate mutant:
-- mutant must fail:
+- same oracle: baseline pass / incorrect candidate fail / equivalent candidate pass:
+- representative mutant or known-invalid counterexample must fail:
+- diagnostic snapshots (separate from acceptance gate):
 
 measurement
 - workload × configuration matrix:
@@ -52,9 +57,9 @@ verdict
 
 ## Integrity rules
 
-- Require exact fingerprint equality across baseline characterization, semantic oracle, mutant, and paired measurement.
+- Require equal controlled context except the declared comparison axis. Bind each artifact to its own side's revision and code hash; a mutant has its own derivation. Revisions need not equal across sides. Reject missing required comparison fields, even when both sides omit them.
 - Preserve raw observations before derived summaries.
-- Treat a test of the candidate's desired behavior as a candidate test, not a baseline oracle.
+- Apply the same baseline-derived acceptance oracle to both implementations. A snapshot of a known defect can document it, but must not make that defect pass the equivalence gate or reject an equivalent repaired candidate. Mutant self-tests passing does not mean candidate acceptance.
 - Reject normalization that erases a protected difference.
 - State arithmetic and state transitions with literal operands and computed old/new relations.
-- Restrict `ACCEPT` to the measured workload and boundary. Use `EVIDENCE_REQUIRED` when any ticket is absent.
+- Restrict `ACCEPT` to the measured workload and boundary. Missing acceptance evidence requires `EVIDENCE_REQUIRED`; this does not prevent delivery of authorized tools or source-based rejection of a semantic defect.

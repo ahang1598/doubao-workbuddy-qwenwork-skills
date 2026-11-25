@@ -2,16 +2,16 @@
 
 向妙记所有者发起查看或编辑权限申请。**写操作**，只在用户明确要求申请权限时才调用；调用后不代表立即获得权限，只是提交了一条申请。
 
-本 skill 对应 shortcut：`lark-cli minutes +apply-permission`（调用 `POST /open-apis/minutes/v1/minutes/{minute_token}/permissions/apply`）。以 `--as user` 身份运行。
+本 skill 对应 shortcut：`lark-cli minutes +apply-permission`（调用 `POST /open-apis/minutes/v1/minutes/{minute_token}/permissions/apply`）。自动以当前登录用户身份运行。
 
 ## 命令
 
 ```bash
 # 以 user 身份申请查看权限
-lark-cli minutes +apply-permission --minute-token obcnxxxxxxxxxxxxxxxxxxxx --perm view --as user
+lark-cli minutes +apply-permission --minute-token obcnxxxxxxxxxxxxxxxxxxxx --perm view
 
 # 以 user 身份申请编辑权限
-lark-cli minutes +apply-permission --minute-token obcnxxxxxxxxxxxxxxxxxxxx --perm edit --as user
+lark-cli minutes +apply-permission --minute-token obcnxxxxxxxxxxxxxxxxxxxx --perm edit
 
 # 预览 API 调用
 lark-cli minutes +apply-permission --minute-token obcnxxxxxxxxxxxxxxxxxxxx --perm view --dry-run

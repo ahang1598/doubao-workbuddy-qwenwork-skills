@@ -4,7 +4,7 @@
 
 ## 用途
 
-产出一个 `canvas_workspace_id`，七个 Item／Frame 读写命令都要拿它当 `--canvas-workspace-id`。当前对话没有 Workspace ID 时，第一轮创作先调用本命令；已有唯一有效 ID 时直接复用，不重复创建。
+产出一个 `canvas_workspace_id`，七个 Item／Frame 读写命令都要拿它当 `--canvas-workspace-id`。仅在用户明确要求创建画布时调用。
 
 它与 `+get-workspace` 都不带 `--canvas-workspace-id`。本命令创建 Workspace，`+create` 创建 Item／Frame，两者不要混用。
 
@@ -45,10 +45,6 @@ Content-Type: application/json
 ```
 
 只回 ID 与版本，不回画布内容——新画布本来就是空的。**记下 `canvas_workspace_id`**，后续所有命令都要用它。
-
-## Workspace 画布卡片交付门禁
-
-读取响应中的 `canvas_workspace_id` 后，由主 Agent 立即调用一次独立的 `present_files(<canvas_workspace_id>)`：唯一输入必须是响应中的原始 Workspace ID，由该调用交付新建画布卡片。不得创建 `workspace-id.txt` 或其他中间文件，也不得加入字段名、标题、版本、XML、JSON、说明或任何包装。画布卡片交付成功前不得调用媒体生成／编辑工具，也不得执行 Item／Frame 写命令。
 
 `version` 是画布的全局版本号，新建时为 `1`。
 

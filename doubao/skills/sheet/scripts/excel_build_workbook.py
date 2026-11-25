@@ -13,7 +13,6 @@ import os
 from pathlib import Path
 import re
 import sys
-import tempfile
 
 try:
     from openpyxl import Workbook
@@ -28,6 +27,22 @@ else:
 
 class BuildError(ValueError):
     """配置、数据或输出不满足无损构建要求时报告的错误。"""
+
+
+class InputNotFoundError(BuildError):
+    """标明缺失的是构建输入，供调用方局部恢复。"""
+
+    def __init__(self, path):
+        self.path = str(path.resolve())
+        super().__init__("构建输入不存在：{}".format(self.path))
+
+
+def open_input(path):
+    """打开输入；其它读取错误仍保留原来的错误语义。"""
+    try:
+        return path.open(encoding="utf-8-sig")
+    except FileNotFoundError as exc:
+        raise InputNotFoundError(path) from exc
 
 
 CELL_TYPES = ("text", "number", "boolean", "date", "formula")
@@ -69,8 +84,10 @@ def fields(obj, allowed, required, where):
 
 def text(value, where):
     """验证并返回非空、未超出单格长度限制的文本。"""
-    if not isinstance(value, str) or not value.strip() or len(value) > 32767:
+    if not isinstance(value, str) or not value.strip():
         raise BuildError("{} 必须是非空文本且不超过 32767 字符".format(where))
+    if len(value.encode('utf-16-le')) // 2 > 32767:
+        raise BuildError('{} 文本超过 32767 个 UTF-16 单元'.format(where))
     return value
 
 
@@ -85,14 +102,15 @@ def dimension(value, where, maximum):
 
 def read_spec(path):
     """读取建表配置，校验子表与列定义并解析数据块路径。"""
-    spec = parse_json(path.read_text(encoding="utf-8-sig"), str(path))
+    with open_input(path) as source:
+        spec = parse_json(source.read(), str(path))
     fields(spec, {"sheets"}, {"sheets"}, "spec")
     if not isinstance(spec["sheets"], list) or not spec["sheets"]:
         raise BuildError("sheets 必须是非空数组")
     names, inputs = set(), {path.resolve()}
     for sheet in spec["sheets"]:
-        fields(sheet, {"name", "columns", "data_files", "data_keys", "defaults",
-                       "row_height", "freeze_header", "expected_rows"},
+        fields(sheet, {"name", "columns", "data_files", "data_keys", "defaults", "omit_keys",
+                       "row_height", "freeze_header", "expected_rows", "header_row"},
                {"name", "columns", "data_files"}, "sheet")
         name = text(sheet["name"], "sheet.name")
         if len(name) > 31 or re.search(r"[\\/*?:\[\]]", name) or name.startswith("'") or name.endswith("'"):
@@ -119,6 +137,13 @@ def read_spec(path):
                 raise BuildError("{}.column.align 只支持 left / center / right".format(name))
             if "type" in column and column["type"] not in CELL_TYPES:
                 raise BuildError("{}.column.type 只支持 {}".format(name, " / ".join(CELL_TYPES)))
+        omitted = sheet.get("omit_keys", [])
+        if not isinstance(omitted, list):
+            raise BuildError("{}.omit_keys 必须是明确不输出的字段名数组".format(name))
+        for key in omitted:
+            text(key, name + ".omit_keys[]")
+        if len(set(omitted)) != len(omitted) or set(omitted) & keys:
+            raise BuildError("{}.omit_keys 不能重复或包含输出字段".format(name))
         fields(sheet.get("defaults", {}), keys, (), name + ".defaults")
         if "data_keys" in sheet:
             data_keys = sheet["data_keys"]
@@ -128,6 +153,10 @@ def read_spec(path):
                 text(key, name + ".data_keys[]")
             if len(set(data_keys)) != len(data_keys):
                 raise BuildError("{}.data_keys 包含重复字段".format(name))
+            unmapped = set(data_keys) - keys - set(omitted)
+            if unmapped:
+                raise BuildError("{} 输入字段未映射到输出列：{}；补齐 columns，"
+                                 "仅任务明确裁列时用 omit_keys 声明，不静默丢字段".format(name, sorted(unmapped)))
             missing = keys - set(data_keys) - set(sheet.get("defaults", {}))
             if missing:
                 raise BuildError("{} 的 data_keys / defaults 缺少输出字段 {}".format(name, sorted(missing)))
@@ -136,6 +165,9 @@ def read_spec(path):
                 raise BuildError("{} 紧凑数组的输出列须声明 type：{}；混合类型或字段不稳定时用具名对象".format(
                     name, untyped))
         sheet["row_height"] = dimension(sheet.get("row_height", 30), name + ".row_height", 409)
+        sheet['header_row'] = sheet.get('header_row', 1)
+        if type(sheet['header_row']) is not int or not 1 <= sheet['header_row'] < 1048576:
+            raise BuildError('header_row 必须为 1~1048575 的整数')
         if not isinstance(sheet.get("freeze_header", False), bool):
             raise BuildError("freeze_header 必须是 boolean")
         expected = sheet.get("expected_rows")
@@ -172,6 +204,8 @@ def assign(cell, value, where):
             formula = text(value["formula"], where + ".formula")
             if not formula.startswith("=") or not formula[1:].strip():
                 raise BuildError("{} 的公式必须以 = 开头且有表达式".format(where))
+            if len(formula.encode('utf-16-le')) // 2 > 8192:
+                raise BuildError('{} 公式超过 8192 个 UTF-16 单元'.format(where))
             cell.value = formula
             return 1
         if set(value) == {"date"}:
@@ -180,7 +214,7 @@ def assign(cell, value, where):
             return 0
         raise BuildError("{} 仅支持 JSON 标量或单字段 formula/date 对象".format(where))
     if isinstance(value, str):
-        if len(value) > 32767:
+        if len(value.encode('utf-16-le')) // 2 > 32767:
             raise BuildError("{} 文本超出 Excel 单格长度，未截断保存".format(where))
         if re.search(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", value):
             raise BuildError("{} 含 Excel 不支持的控制字符，未自动删除内容".format(where))
@@ -209,6 +243,10 @@ def bind_record(record, sheet, where):
         record = dict(zip(keys, record))
     elif not isinstance(record, dict):
         raise BuildError("{} 必须是具名字段 object；紧凑数组须先声明 data_keys".format(where))
+    unmapped = set(record) - {c["key"] for c in sheet["columns"]} - set(sheet.get("omit_keys", []))
+    if unmapped:
+        raise BuildError("{} 输入字段未映射到输出列：{}；补齐 columns，"
+                         "仅任务明确裁列时用 omit_keys 声明，不静默丢字段".format(where, sorted(unmapped)))
     result = dict(sheet.get("defaults", {}))
     result.update(record)  # 只补缺省字段；显式 null / 0 / false / 空字符串均覆盖默认值。
     missing = [c["key"] for c in sheet["columns"] if c["key"] not in result]
@@ -246,20 +284,16 @@ def horizontal_alignment(cell):
 
 
 def publish_workbook(temp_path, destination, overwrite):
-    """只发布完整文件；默认原子创建且不覆盖，完成后移除临时名称。"""
-    if overwrite:
-        os.replace(str(temp_path), str(destination))
-    else:
-        # 目标名称出现时已是完整工作簿；并发创建同名文件时 os.link 拒绝覆盖。
-        # 文件系统不支持此操作时向调用方报告失败，不降级为可见的半成品复制。
-        os.link(str(temp_path), str(destination))
-        temp_path.unlink()
+    """从持有的文件描述符发布完整文件；默认不覆盖。"""
+    from _lo_reuse import publish_output
+    stream, directory = temp_path
+    publish_output(stream, directory, destination, overwrite=overwrite)
 
 
 def append_data_file(ws, sheet, data_path, count, body_font):
     """校验并追加一个 JSONL 数据块，返回累计行数与新增公式数。"""
     formulas, nonempty = 0, False
-    with data_path.open(encoding="utf-8-sig") as stream:
+    with open_input(data_path) as stream:
         for line_no, line in enumerate(stream, 1):
             if not line.strip():
                 continue
@@ -267,10 +301,10 @@ def append_data_file(ws, sheet, data_path, count, body_font):
             where = "{}:{}".format(data_path, line_no)
             record = bind_record(parse_json(line, where), sheet, where)
             count += 1
-            if count > 1048575:
+            if count + sheet['header_row'] > 1048576:
                 raise BuildError("{} 超过 Excel 行数限制".format(ws.title))
             for j, column in enumerate(sheet["columns"], 1):
-                cell = ws.cell(count + 1, j)
+                cell = ws.cell(count + sheet['header_row'], j)
                 try:
                     validate_type(record[column["key"]], column, where)
                     formulas += assign(cell, record[column["key"]], where + "." + column["key"])
@@ -281,7 +315,7 @@ def append_data_file(ws, sheet, data_path, count, body_font):
                                            vertical="center", wrap_text=True)
                 if "number_format" in column:
                     cell.number_format = column["number_format"]
-            ws.row_dimensions[count + 1].height = sheet["row_height"]
+            ws.row_dimensions[count + sheet['header_row']].height = sheet["row_height"]
     if not nonempty and sheet.get("expected_rows") != 0:
         raise BuildError("数据块意外为空：{}；补齐该块；仅确认业务结果为零条时声明 expected_rows=0".format(data_path))
     return count, formulas
@@ -291,6 +325,7 @@ def build(spec_path, output, overwrite=False):
     """按配置创建工作簿，完整保存后原子发布并返回构建摘要。"""
     if OPENPYXL_IMPORT_ERROR is not None:
         raise OPENPYXL_IMPORT_ERROR
+    from _lo_reuse import output_file
     spec, inputs = read_spec(spec_path)
     destination = output.resolve()
     if destination.suffix.lower() != ".xlsx":
@@ -303,7 +338,6 @@ def build(spec_path, output, overwrite=False):
     wb = Workbook()
     wb.remove(wb.active)
     summaries, formulas = [], 0
-    temp_path = None
     try:
         for sheet in spec["sheets"]:
             ws = wb.create_sheet(sheet["name"])
@@ -311,7 +345,7 @@ def build(spec_path, output, overwrite=False):
             header_font = Font(name="微软雅黑", size=11, bold=True, color="FFFFFF")
             body_font = Font(name="微软雅黑", size=11)
             for j, column in enumerate(columns, 1):
-                cell = ws.cell(1, j)
+                cell = ws.cell(sheet['header_row'], j)
                 assign(cell, column["title"], "{} 子表 {} 表头字段 {}".format(
                     spec_path, sheet["name"], column["key"]))
                 cell.font = header_font
@@ -319,7 +353,7 @@ def build(spec_path, output, overwrite=False):
                 cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
                 cell.border = Border(bottom=Side(style="thin", color="B8C7D9"))
                 ws.column_dimensions[get_column_letter(j)].width = column["width"]
-            ws.row_dimensions[1].height = 30
+            ws.row_dimensions[sheet['header_row']].height = 30
             count = 0
             for data_path in sheet["data_files"]:
                 count, added_formulas = append_data_file(ws, sheet, data_path, count, body_font)
@@ -327,22 +361,20 @@ def build(spec_path, output, overwrite=False):
             if sheet.get("expected_rows") is not None and count != sheet["expected_rows"]:
                 raise BuildError("{} 记录数为 {}，要求 {}；按需求修正数据，不凑数或静默裁剪".format(
                     ws.title, count, sheet["expected_rows"]))
-            ws.auto_filter.ref = "A1:{}{}".format(get_column_letter(len(columns)), count + 1)
+            ws.auto_filter.ref = "A{}:{}{}".format(sheet['header_row'], get_column_letter(len(columns)), count + sheet['header_row'])
             if sheet.get("freeze_header", False):
-                ws.freeze_panes = "A2"
-            summaries.append({"sheet_name": ws.title, "rows": count, "columns": len(columns)})
+                ws.freeze_panes = "A{}".format(sheet['header_row'] + 1)
+            summaries.append({"sheet_name": ws.title, "rows": count, "columns": len(columns),
+                              "output_keys": [c["key"] for c in columns],
+                              "omitted_keys": sheet.get("omit_keys", [])})
         destination.parent.mkdir(parents=True, exist_ok=True)
-        fd, name = tempfile.mkstemp(prefix=".excel-build-", suffix=".xlsx", dir=str(destination.parent))
-        os.close(fd)
-        temp_path = Path(name)
-        wb.save(str(temp_path))
-        publish_workbook(temp_path, destination, overwrite)
+        with output_file(destination, mode=0o600) as output:
+            wb.save(output[0])
+            publish_workbook(output, destination, overwrite)
         return {"status": "built", "output": str(destination), "sheets": summaries,
                 "formula_cells": formulas, "formula_results_calculated": False}
     finally:
         wb.close()
-        if temp_path is not None and temp_path.exists():
-            temp_path.unlink()
 
 
 def main():
@@ -354,6 +386,13 @@ def main():
     args = parser.parse_args()
     try:
         result = build(args.spec, args.output, args.overwrite)
+    except InputNotFoundError as exc:
+        print(json.dumps({"status": "error", "error_code": "input_not_found",
+                          "error": str(exc), "missing_path": exc.path}, ensure_ascii=False))
+        print("先核对工作目录与 missing_path，只恢复缺失的配置或数据块；"
+              "保留其余输入与已有输出，不整份重写或连续换目录试写。"
+              "恢复后同一输入仍不可用时，不重复同一恢复过程并说明限制。", file=sys.stderr)
+        return 2
     except (OSError, ValueError, TypeError, OverflowError, ImportError) as exc:
         print(json.dumps({"status": "error", "error": str(exc)}, ensure_ascii=False))
         print("构建未完成。修复指定数据块或配置后重跑，已有输出不因输入错误被覆盖。"

@@ -10,11 +10,15 @@
 """
 import argparse
 import json
+import re
 from copy import copy, deepcopy
 from pathlib import Path
 
 try:
     from openpyxl.cell.rich_text import CellRichText, TextBlock
+    from openpyxl.formula.tokenizer import TokenizerError
+    from openpyxl.formula.translate import Translator, TranslatorError
+    from openpyxl.utils.cell import column_index_from_string, coordinate_to_tuple, get_column_letter
     from openpyxl.styles import Color, PatternFill, Protection, Side
     from openpyxl.formatting.rule import (
         CellIsRule,
@@ -34,6 +38,73 @@ except ModuleNotFoundError as _missing:  # 缺少 Python 库时先安装，再�
     raise SystemExit(1) from _missing
 
 from _excel_utils import emit, emit_error, load_or_create_wb, parse_range, require_sheet
+from _formula_references import MAX_EXCEL_COLUMN, axis_range, split_reference
+
+MAX_EXCEL_ROW = 1048576
+
+
+class _GridTranslator(Translator):
+    def __init__(self, formula, origin, column_checks=None):
+        super().__init__(formula, origin)
+        self.column_checks = column_checks
+
+    @staticmethod
+    def translate_row(row_str, rdelta):
+        absolute = row_str.startswith('$')
+        row = int(row_str.lstrip('$')) + (0 if absolute else rdelta)
+        if not 1 <= row <= MAX_EXCEL_ROW:
+            raise TranslatorError(f'row {row} is outside the Excel grid')
+        return row_str if absolute else str(row)
+
+    @staticmethod
+    def translate_col(col_str, cdelta):
+        absolute = col_str.startswith('$')
+        column = column_index_from_string(col_str.lstrip('$')) + (0 if absolute else cdelta)
+        if not 1 <= column <= MAX_EXCEL_COLUMN:
+            raise TranslatorError(f'column {column} is outside the Excel grid')
+        return col_str if absolute else get_column_letter(column)
+
+    @classmethod
+    def _translate_endpoint(cls, address, rdelta, cdelta):
+        cell = cls.CELL_REF_RE.fullmatch(address)
+        if cell is None:
+            if re.fullmatch(r'\$[A-Za-z]{1,3}', address):
+                return cls.translate_col(address, cdelta)
+            return address
+        column, row = cell.groups()
+        # A bare name outside the A1 grid can be a defined name in Excel.
+        if ('$' not in address and
+                (column_index_from_string(column) > MAX_EXCEL_COLUMN or int(row) > MAX_EXCEL_ROW)):
+            return address
+        return cls.translate_col(column, cdelta) + cls.translate_row(row, rdelta)
+
+    def _record_qualified_columns(self, endpoints, shifted, reference):
+        names = {column.casefold() for (_, address), translated in zip(endpoints, shifted)
+                 if not address.startswith('$') for column in (address, translated)}
+        if not names:
+            return
+        sheets = []
+        for prefix, _ in endpoints:
+            sheet = prefix[:-1]
+            if sheet.startswith("'") and sheet.endswith("'"):
+                sheet = sheet[1:-1].replace("''", "'")
+            sheets.append(sheet.casefold())
+        left, right = sheets
+        if left != right or self.column_checks is None:
+            raise ValueError(f'ambiguous range reference: {reference}')
+        self.column_checks.append((left, names, reference))
+
+    def translate_range(self, reference, rdelta, cdelta):
+        intersection, endpoints = split_reference(reference)
+        both_qualified = len(endpoints) == 2 and all(prefix for prefix, _ in endpoints)
+        coordinates = axis_range(endpoints, allow_qualified_columns=both_qualified)
+        if coordinates:
+            shifted = super().translate_range(coordinates, rdelta, cdelta).split(':')
+            if both_qualified and cdelta and self.COL_RANGE_RE.fullmatch(coordinates):
+                self._record_qualified_columns(endpoints, shifted, reference)
+        else:
+            shifted = [self._translate_endpoint(address, rdelta, cdelta) for _, address in endpoints]
+        return intersection + ':'.join(prefix + address for (prefix, _), address in zip(endpoints, shifted))
 
 
 def _load_json_arg(raw: str):
@@ -49,7 +120,21 @@ def _normalize_color(c: str) -> str:
     return c if len(c) == 8 else f"FF{c}"
 
 
-def _build_conditional_rule(spec: dict):
+def _translate_formula(value, origin, target_anchor, target_end, column_checks=None):
+    destination = target_anchor
+    try:
+        translator = _GridTranslator(value if value.startswith('=') else '=' + value, origin, column_checks)
+        formula = translator.translate_formula(destination)
+        # Relative A1 references move monotonically from the first to the last cell.
+        if target_end is not None and target_end != target_anchor:
+            destination = target_end
+            translator.translate_formula(destination)
+    except (TokenizerError, TranslatorError, ValueError, IndexError) as error:
+        raise ValueError(f'formula translation from {origin} to {destination}: {error}') from error
+    return formula[1:]
+
+
+def _build_conditional_rule(spec: dict, target_anchor=None, target_end=None, *, column_checks=None):
     rule_type = spec.get("type")
     params = dict(spec.get("params", {}))
     if rule_type == "color_scale":
@@ -59,6 +144,22 @@ def _build_conditional_rule(spec: dict):
     if rule_type == "icon_set":
         return IconSetRule(**params)
     if rule_type == "formula":
+        if 'origin' in spec:
+            origin = spec['origin']
+            if not isinstance(origin, str) or not re.fullmatch(r'[A-Za-z]{1,3}[1-9][0-9]{0,6}', origin) or target_anchor is None:
+                raise ValueError('formula origin requires a cell and a target range')
+            origin_row, origin_column = coordinate_to_tuple(origin)
+            if not 1 <= origin_row <= MAX_EXCEL_ROW or not 1 <= origin_column <= MAX_EXCEL_COLUMN:
+                raise ValueError('formula origin must be within the Excel grid')
+            formulas = params.get('formula')
+            if not isinstance(formulas, list) or not formulas or any(not isinstance(value, str) or not value for value in formulas):
+                raise ValueError('formula must be a nonempty list of formula strings')
+            params['formula'] = [
+                _translate_formula(value, origin, target_anchor, target_end, column_checks) for value in formulas]
+        fill_spec = params.get('fill')
+        if isinstance(fill_spec, dict):
+            color = _normalize_color(fill_spec.get('fgColor', 'FFC7CE'))
+            params['fill'] = PatternFill(start_color=color, end_color=color, fill_type='solid')
         return FormulaRule(**params)
     if rule_type == "cell_is":
         fill_spec = params.get("fill")
@@ -67,6 +168,15 @@ def _build_conditional_rule(spec: dict):
             params["fill"] = PatternFill(start_color=fg, end_color=fg, fill_type="solid")
         return CellIsRule(**params)
     raise ValueError(f"Unsupported conditional format type: {rule_type}")
+
+
+def _validate_qualified_column_names(workbook, column_checks):
+    workbook_names = {name.casefold() for name in workbook.defined_names}
+    sheet_names = {sheet.title.casefold(): {name.casefold() for name in sheet.defined_names}
+                   for sheet in workbook.worksheets}
+    for sheet, names, reference in column_checks:
+        if sheet not in sheet_names or names & sheet_names[sheet] or names & workbook_names:
+            raise ValueError(f'ambiguous range reference: {reference}')
 
 
 def main():
@@ -136,9 +246,11 @@ def main():
             emit_error(f"Invalid --protection JSON: {e}")
 
     rule = None
+    column_checks = []
     if args.cond_format:
         try:
-            rule = _build_conditional_rule(_load_json_arg(args.cond_format))
+            rule = _build_conditional_rule(_load_json_arg(args.cond_format), f'{get_column_letter(sc)}{sr}',
+                                           f'{get_column_letter(ec)}{er}', column_checks=column_checks)
         except (OSError, ValueError, TypeError, KeyError, AttributeError) as e:
             emit_error(f"Failed to apply conditional format: {e}")
 
@@ -147,6 +259,12 @@ def main():
         ws = require_sheet(wb, args.sheet)
     except ValueError as e:
         emit_error(str(e))
+
+    if column_checks:
+        try:
+            _validate_qualified_column_names(wb, column_checks)
+        except ValueError as e:
+            emit_error(f"Failed to apply conditional format: {e}")
 
     merge_requested = args.merge and (er > sr or ec > sc)
     merge_source = None

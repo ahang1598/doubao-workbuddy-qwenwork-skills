@@ -32,11 +32,14 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import zipfile
 import zlib
 from pathlib import Path
 from typing import List, Optional
 from xml.parsers import expat
+from _xml_bytes import PatchXml
+from _lo_reuse import OutputReuse, digest_file, publish_new_output, reuse_result
 
 # 只依赖 LibreOffice 运行时模块，不依赖 openpyxl：转换本身用不到它。
 from excel_lo_runtime import (
@@ -189,7 +192,7 @@ def _read_workbook_xml(src: Path) -> str:
     with zipfile.ZipFile(src) as zin:
         if WORKBOOK_PART not in zin.namelist():
             raise ValueError(f"{WORKBOOK_PART} not found in the package")
-        return zin.read(WORKBOOK_PART).decode("utf-8")
+        return PatchXml(zin.read(WORKBOOK_PART)).utf8.decode("utf-8")
 
 
 def _single_sheet_copy(src: Path, sheet: str, workdir: Path) -> Path:
@@ -200,7 +203,9 @@ def _single_sheet_copy(src: Path, sheet: str, workdir: Path) -> Path:
         for info in zin.infolist():
             data = zin.read(info.filename)
             if info.filename == WORKBOOK_PART:
-                data = _show_only_sheet(data.decode("utf-8"), sheet).encode("utf-8")
+                xml = PatchXml(data)
+                patched = _show_only_sheet(xml.utf8.decode("utf-8"), sheet).encode("utf-8")
+                data = xml.restore(patched)
                 rewritten = True
             zout.writestr(info, data)
     if not rewritten:
@@ -293,7 +298,67 @@ def _single_output(staging: Path, ext: str) -> Optional[Path]:
     return found[0] if len(found) == 1 else None
 
 
-def convert(src: Path, fmt: str, outdir: Path, timeout: int, sheet: Optional[str] = None) -> dict:
+def convert(src: Path, fmt: str, outdir: Path, timeout: int, sheet: Optional[str] = None,
+            reuse: bool = False) -> dict:
+    started = time.monotonic()
+    result = _convert_with_reuse(src, fmt, outdir, timeout, sheet, reuse)
+    result['elapsed_ms'] = round((time.monotonic() - started) * 1000, 3)
+    return result
+
+
+_REUSE_OUTPUT_ERROR = ('output must be new unless an unchanged output receipt matches; '
+                       'choose another --outdir, do not delete or overwrite the existing file')
+
+
+def _convert_with_reuse(src, fmt, outdir, timeout, sheet, reuse):
+    """Optionally reuse the exact prior output; ordinary conversion keeps its contract."""
+    engine = shutil.which("soffice")
+    cache = None
+    reason = 'disabled' if not reuse else 'engine_unavailable' if engine is None else 'unsupported_request'
+    if timeout <= 0:
+        return reuse_result({"status": "invalid_input", "error": "timeout must be positive"}, reason='invalid_request')
+    if reuse and engine and fmt in ("pdf", "png"):
+        reason = 'render_dependencies_untracked'
+    if reuse and engine and fmt in ("csv", "xlsx") and (sheet is None or fmt in SHEET_FORMATS):
+        name = src.stem + ("__" + _sheet_file_part(sheet) if sheet is not None else "") + "." + fmt
+        destination = outdir / name
+        try:
+            destination = destination.parent.resolve() / destination.name
+            if destination.resolve() != src.resolve() and not (destination.exists() and destination.samefile(src)):
+                cache = OutputReuse(src, destination, {"operation": "convert", "format": fmt, "sheet": sheet}, engine)
+                cached = cache.lookup()
+                if cached is not None:
+                    return cached
+                if destination.exists() or destination.is_symlink():
+                    return reuse_result({'status': 'invalid_input', 'error': _REUSE_OUTPUT_ERROR}, cache)
+        except OSError as exc:
+            return reuse_result({'status': 'invalid_input', 'error': 'cannot access output: {}'.format(exc)}, cache, reason)
+    if cache is not None:
+        try:
+            with tempfile.TemporaryDirectory(prefix=PROFILE_PREFIX + "output-") as directory:
+                engine_started = time.monotonic()
+                result = reuse_result(_convert(src, fmt, Path(directory), timeout, sheet), cache)
+                result['engine_elapsed_ms'] = round((time.monotonic() - engine_started) * 1000, 3)
+                if result.get('status') == 'success':
+                    produced = Path(result['output'])
+                    produced_hash = digest_file(produced) if cache.key is not None else None
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    try:
+                        publish_new_output(produced, destination)
+                    except FileExistsError:
+                        return reuse_result({'status': 'invalid_input', 'error': _REUSE_OUTPUT_ERROR}, cache)
+                    result['output'] = str(destination)
+                    cache.remember(result, produced_hash)
+                return result
+        except (OSError, ValueError) as exc:
+            return reuse_result({'status':'convert_failed', 'error':'cannot publish conversion output: {}'.format(exc)}, cache)
+    engine_started = time.monotonic()
+    result = _convert(src, fmt, outdir, timeout, sheet)
+    result['engine_elapsed_ms'] = round((time.monotonic() - engine_started) * 1000, 3)
+    return reuse_result(result, cache, reason)
+
+
+def _convert(src: Path, fmt: str, outdir: Path, timeout: int, sheet: Optional[str] = None) -> dict:
     """使用隔离 profile 转换文件，并返回结构化执行结果。"""
     if shutil.which("soffice") is None:
         return {"status": "skipped_no_libreoffice", "error": "soffice not found"}
@@ -338,7 +403,10 @@ def convert(src: Path, fmt: str, outdir: Path, timeout: int, sheet: Optional[str
 
 def _run_convert(src: Path, fmt: str, outdir: Path, timeout: int, locate) -> dict:
     """跑 soffice --convert-to；locate() 返回产物路径或 None。启动失败换新 profile 重试一次。"""
-    outdir.mkdir(parents=True, exist_ok=True)
+    try:
+        outdir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        return {"status": "convert_failed", "error": f"cannot prepare output directory {outdir}: {exc}"}
     sweep_stale_profiles(PROFILE_PREFIX)
     sweep_stale_profiles(SHEET_COPY_PREFIX)
     last = {}
@@ -399,10 +467,11 @@ def main() -> None:
     ap.add_argument("--outdir", default=".", help="输出目录，默认当前目录")
     ap.add_argument("--timeout", type=int, default=120, help="单次转换超时秒数，默认 120")
     ap.add_argument("--sheet", help="仅 png / csv：要转换的子表名，默认第一个可见子表")
+    ap.add_argument("--reuse", action="store_true", help="仅复用未变化的 xlsx 输入转 CSV/XLSX 的结果，已有输出不匹配回执时换新 --outdir；PDF/PNG 始终重新渲染")
     args = ap.parse_args()
 
     result = convert(Path(args.input).absolute(), args.format, Path(args.outdir).absolute(), args.timeout,
-                     sheet=args.sheet)
+                     sheet=args.sheet, reuse=args.reuse)
     print(json.dumps(result, ensure_ascii=False))
     if result["status"] == "success":
         sys.exit(0)

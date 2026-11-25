@@ -143,7 +143,7 @@ _公共四件套 · 系统：`--dry-run`_
 | Flag | Type | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `--range` | string | required | A1 范围，如 `A1:F10`（不带 sheet 前缀；用 `--sheet-id` / `--sheet-name` 指定 sheet） |
-| `--max-chars` | int | optional | 单次返回字符上限，默认 500000（兜底防爆） |
+| `--max-chars` | int | optional | 单次返回字符上限，默认 500000（防止返回内容过大） |
 
 ### `+cond-format-create`
 

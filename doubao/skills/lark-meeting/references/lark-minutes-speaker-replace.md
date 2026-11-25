@@ -22,7 +22,7 @@
 2. **查说话人列表（必须先做）**
    - 用 **`lark-cli api`** 直接调用内部 HTTP 接口：
      ```bash
-     lark-cli api GET "/open-apis/minutes/v1/minutes/<minute_token>/transcript/speakerlist" --as user
+     lark-cli api GET "/open-apis/minutes/v1/minutes/<minute_token>/transcript/speakerlist"
      ```
    - 返回 `data.speakers[]`，每项含 `speaker_id`（不透明 id）与 `name`（逐字稿展示名）。示例：
      ```json
@@ -57,7 +57,7 @@
 
 ```bash
 # 1. 先查列表（裸调 HTTP）
-lark-cli api GET "/open-apis/minutes/v1/minutes/obcnxxxxxxxxxxxxxxxxxxxx/transcript/speakerlist" --as user
+lark-cli api GET "/open-apis/minutes/v1/minutes/obcnxxxxxxxxxxxxxxxxxxxx/transcript/speakerlist"
 
 # 2. 再替换（from-speaker-id 来自上一步的 speaker_id）
 lark-cli minutes +speaker-replace \

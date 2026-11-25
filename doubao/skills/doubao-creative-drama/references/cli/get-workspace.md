@@ -9,9 +9,7 @@
 - **有** → 返回 `canvas_workspace_id` 与 `version`，用于显式恢复或核对目标 Workspace
 - **没有** → 返回 `exists=false`
 
-本命令只用于显式查询、恢复和排障，不是创作任务的默认初始化入口。执行创作 Skill 时先读取当前对话：已有唯一有效 Workspace ID 就直接使用；对话没有 ID 就按 Skill 规则调用 [`+workspace-create`](workspace-create.md)，不要先用本命令查询。
-
-创作初始化时，当前对话已有唯一有效 Workspace ID 就直接复用；没有 ID 时，在规划确认完成且后续确需生成媒体后直接调用 `+workspace-create`，不先查询。本命令仅用于显式查询、恢复或排障；Mobile 不执行本命令或 Workspace 创建。
+本命令用于显式查询、恢复和排障。
 
 ## 命令
 

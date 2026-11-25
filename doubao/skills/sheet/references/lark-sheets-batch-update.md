@@ -30,6 +30,8 @@
 - 写前：先读 `references/lark-sheets-formula-translation.md`，把公式改写成飞书可执行语义。
 - 写时：用 `+batch-update` 一次性完成插行/写公式/复制模板等成套动作。
 
+**坐标沿操作顺序计算**：每个子操作看到前序操作修改后的表。插入一行后，原位置及其后的行号加一；待写位置据此直接填写，不在成功插入与写入间另起一次回读。多个插入点可从靠后位置向前处理以保留原定位，或逐步更新后续坐标；复制 / 公式的引用同样跟随。需要前序返回的新对象 ID、输入尚不确定或操作不支持嵌套时才拆批，失败不能按上述成功路径推断已落盘范围。
+
 **`+dropdown-update` 的选项模式（`--options` / `--source-range` 二选一）+ 配色规则**（更新会重写完整验证规则；需要保留已有配色时先回读并透传 `--colors`）见 [`references/lark-sheets-write-cells.md`](lark-sheets-write-cells.md) 的「Dropdown 选项 + 配色」节，本文不重复。`+dropdown-delete` 不涉及这些 flag。
 
 ## Shortcuts
@@ -219,4 +221,4 @@ lark-cli sheets +cells-batch-clear --url "..." \
 - `Validate`：`+batch-update` 的 `--operations` 必须合法 JSON，且为非空数组；逐个子操作 `shortcut` / `input` 字段必填校验，input 键必须在该 shortcut 的 flag 词汇表内（未知键报错并提示最近似键与完整键契约）；**校验错误聚合上报**——所有子操作的首错一次性返回，全部修完再重发一次即可；**禁止嵌套 `+batch-update`**。`+cells-batch-clear` 的 `--ranges` 必须 JSON 数组、每项带 sheet 前缀，`high-risk-write` 强制 `--yes` 或 `--dry-run`（`--scope` 默认 `content`）。
 - `DryRun`：按顺序输出每个子操作的目标 API + 请求 body 模板，不发起调用。
 
-===== 全文完（共 222 行）=====
+===== 全文完（共 224 行）=====

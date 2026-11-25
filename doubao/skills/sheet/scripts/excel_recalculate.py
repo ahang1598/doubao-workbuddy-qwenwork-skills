@@ -8,14 +8,19 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+from datetime import date, time as datetime_time, timedelta
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
+import time
+import uuid
 from pathlib import Path
 from typing import Tuple
+from _lo_reuse import OutputReuse, digest_file, publish_new_output, reuse_result
 
 from excel_lo_runtime import (LO_START_FAILURE_MARKERS, get_soffice_env, profile_arg,
                               run_managed_process, soffice_detail, sweep_stale_profiles)
@@ -185,49 +190,236 @@ def _run_recalculation(target: Path, timeout: int) -> dict:
                 return {"status": "failed", "failure_kind": kind, "error": reason, "attempts": attempt}
 
 
-def recalculate(filename, output, timeout=30):
+def _parse_read_ranges(items):
+    if items is None:
+        return []
+    if not isinstance(items, (list, tuple)) or not 1 <= len(items) <= 16:
+        raise ValueError('read_ranges must contain 1 to 16 explicit sheet!A1:B2 ranges')
+    from openpyxl.utils.cell import range_boundaries
+    selections, count = [], 0
+    pattern = r"('(?:[^']|'')+'|[^'!]+)!(\$?[A-Za-z]{1,3}\$?[1-9][0-9]*(?::\$?[A-Za-z]{1,3}\$?[1-9][0-9]*)?)"
+    for item in items:
+        match = re.fullmatch(pattern, item) if isinstance(item, str) else None
+        if not match:
+            raise ValueError('read range must include a sheet and bounded A1 cells: {!r}'.format(item))
+        sheet, address = match.groups()
+        sheet = sheet[1:-1].replace("''", "'") if sheet.startswith("'") else sheet
+        address = address.replace('$', '').upper()
+        first_column, first_row, last_column, last_row = range_boundaries(address)
+        if not (1 <= first_column <= last_column <= 16384 and 1 <= first_row <= last_row <= 1048576):
+            raise ValueError('read range is reversed or exceeds Excel bounds: ' + item)
+        count += (last_column - first_column + 1) * (last_row - first_row + 1)
+        if count > 1000:
+            raise ValueError('read ranges exceed 1000 cells; request only the values needed next')
+        selections.append((sheet, address, (first_column, first_row, last_column, last_row)))
+    return selections
+
+
+def _range_read_groups(selections):
+    groups = []
+    for index, (sheet, _, bounds) in enumerate(selections):
+        for group in groups:
+            if group['sheet'] != sheet:
+                continue
+            previous = group['bounds']
+            merged = (min(previous[0], bounds[0]), min(previous[1], bounds[1]),
+                      max(previous[2], bounds[2]), max(previous[3], bounds[3]))
+            if (merged[2] - merged[0] + 1) * (merged[3] - merged[1] + 1) <= 1000:
+                group['bounds'] = merged
+                group['indices'].append(index)
+                break
+        else:
+            groups.append(dict(sheet=sheet, bounds=bounds, indices=[index]))
+    return groups
+
+
+def _load_calculated_workbook(output):
+    """Load cached values lazily without modifying shared-string text."""
+    from openpyxl.cell.text import Text
+    from openpyxl.reader.excel import ExcelReader
+    from openpyxl.xml.constants import SHARED_STRINGS, SHEET_MAIN_NS
+    from openpyxl.xml.functions import iterparse
+
+    class CachedTextReader(ExcelReader):
+        def read_strings(self):
+            """Keep the serialized text for one-pass decoding when a cell is read."""
+            part = self.package.find(SHARED_STRINGS)
+            if part is None:
+                return
+            with self.archive.open(part.PartName.lstrip('/')) as source:
+                for _, node in iterparse(source):
+                    if node.tag == '{' + SHEET_MAIN_NS + '}si':
+                        self.shared_strings.append(Text.from_tree(node).content)
+                        node.clear()
+
+    reader = CachedTextReader(output, read_only=True, data_only=True, keep_links=False)
+    try:
+        reader.read()
+    except Exception:
+        reader.archive.close()
+        raise
+    return reader.wb
+
+
+def _decode_cached_text(value):
+    """Decode OOXML escapes once, preserving escaped literals and surrogate pairs."""
+    decoded = re.sub(r'_x([0-9A-Fa-f]{4})_', lambda match: chr(int(match.group(1), 16)), value)
+    return decoded.encode('utf-16-le', errors='surrogatepass').decode('utf-16-le')
+
+
+def _read_calculated_ranges(output, selections):
+    workbook = _load_calculated_workbook(output)
+    try:
+        missing = [sheet for sheet, _, _ in selections if sheet not in workbook.sheetnames]
+        if missing:
+            raise ValueError('requested sheet not found: ' + ', '.join(missing))
+        result = []
+        for sheet, address, bounds in selections:
+            first_column, first_row, last_column, last_row = bounds
+            result.append(dict(sheet=sheet, range=address, error_cells=[],
+                               values=[[None] * (last_column - first_column + 1)
+                                       for _ in range(last_row - first_row + 1)]))
+        for group in _range_read_groups(selections):
+            worksheet = workbook[group['sheet']]
+            worksheet.reset_dimensions()
+            first_column, first_row, last_column, last_row = group['bounds']
+            rows = worksheet.iter_rows(min_row=first_row, max_row=last_row,
+                                       min_col=first_column, max_col=last_column)
+            for row_number, row in enumerate(rows, first_row):
+                row_values = []
+                for cell in row:
+                    value = cell.value
+                    if isinstance(value, (date, datetime_time)):
+                        value = value.isoformat()
+                    elif isinstance(value, timedelta):
+                        value = dict(type='duration', seconds=value.total_seconds())
+                    elif isinstance(value, str) and cell.data_type == 's':
+                        value = _decode_cached_text(value)
+                    row_values.append(value)
+                for index in group['indices']:
+                    left, top, right, bottom = selections[index][2]
+                    if top <= row_number <= bottom:
+                        start, stop = left - first_column, right - first_column + 1
+                        result[index]['values'][row_number - top] = row_values[start:stop]
+                        result[index]['error_cells'].extend(
+                            dict(cell=cell.coordinate, value=cell.value)
+                            for cell in row[start:stop] if cell.data_type == 'e')
+        return result
+    finally:
+        workbook.close()
+
+
+def recalculate(filename, output=None, timeout=30, reuse=True, read_ranges=None):
+    started = time.monotonic()
+    try:
+        selections = _parse_read_ranges(read_ranges)
+    except (ValueError, ImportError) as exc:
+        return reuse_result(dict(status='invalid_input', error=str(exc), output=None), reason='invalid_request')
+    result = _recalculate(filename, output, timeout, reuse)
+    if result.get('status') == 'recalculated':
+        result.update(source=str(Path(filename).resolve()), output_role='values_only')
+        if selections:
+            read_started = time.monotonic()
+            try:
+                result['ranges'] = _read_calculated_ranges(result['output'], selections)
+                result['read_status'] = 'read'
+            except Exception as exc:
+                result.update(read_status='failed', read_error=str(exc))
+            result['values_read_ms'] = round((time.monotonic() - read_started) * 1000, 3)
+    result['elapsed_ms'] = round((time.monotonic() - started) * 1000, 3)
+    return result
+
+
+def _recalculate(filename, output, timeout, reuse):
+    managed = output is None
+    if managed:
+        source = Path(filename).resolve()
+        directory = source.parent / '.sheet-calculated'
+        if directory.is_symlink() or (directory.exists() and not directory.is_dir()):
+            return reuse_result({'status': 'invalid_input', 'error': 'managed output directory must be a real directory; use a new --output path'}, reason='unsafe_output')
+        output = directory / source.name
     source, destination = Path(filename).resolve(), Path(output).resolve()
     if timeout <= 0 or not source.is_file():
-        return {"status": "invalid_input", "error": "input must exist and timeout must be positive"}
+        return reuse_result({"status": "invalid_input", "error": "input must exist and timeout must be positive"}, reason="invalid_request")
+    engine = shutil.which("soffice")
+    reason = 'disabled' if not reuse else 'engine_unavailable' if engine is None else 'invalid_request'
+    cache = (OutputReuse(source, destination, {"operation": "recalculate"}, engine, managed=managed)
+             if reuse and engine and source != destination else None)
+    if managed:
+        destination = cache.output if cache and cache.key else destination.with_name(uuid.uuid4().hex + source.suffix)
+        if cache is not None:
+            cache.retarget(destination)
+    replacement_prefix = ''
+    if cache is not None:
+        cached = cache.lookup()
+        if cached is not None:
+            return cached
+        if managed and cache.key is not None:
+            replacement_prefix = destination.stem + '-'
+            initial_miss_reason = cache.reason
+            try:
+                for candidate in destination.parent.glob(replacement_prefix + '*' + source.suffix):
+                    cache.retarget(candidate)
+                    cached = cache.lookup()
+                    if cached is not None:
+                        return cached
+            except OSError:
+                pass  # Reuse is optional even when the directory cannot be listed.
+            cache.retarget(destination)
+            cache.reason = initial_miss_reason
+    if managed and (destination.exists() or destination.is_symlink()):
+        destination = destination.with_name(replacement_prefix + uuid.uuid4().hex + source.suffix)
+        if cache is not None:
+            cache.retarget(destination)
     if source == destination or destination.exists():
-        return {"status": "invalid_input", "error": "output must be a new file distinct from source"}
+        return reuse_result({"status": "invalid_input", "error": "output must be new and distinct from source unless an unchanged output receipt matches; choose a new --output path, do not delete or overwrite the existing file"}, cache, reason)
     if destination.suffix.lower() != source.suffix.lower():
-        return {"status": "invalid_input", "error": "output must have the same extension as source"}
-    if shutil.which("soffice") is None:
-        return {"status": "skipped_no_libreoffice", "output": None}
+        return reuse_result({"status": "invalid_input", "error": "output must have the same extension as source"}, reason="invalid_request")
+    if engine is None:
+        return reuse_result({"status": "skipped_no_libreoffice", "output": None}, reason=reason)
     try:
         destination.parent.mkdir(parents=True, exist_ok=True)
         with _recalc_workspace(str(source)) as target:
-            result = _run_recalculation(target, timeout)
+            engine_started = time.monotonic()
+            result = reuse_result(_run_recalculation(target, timeout), cache, reason)
+            result['engine_elapsed_ms'] = round((time.monotonic() - engine_started) * 1000, 3)
             if result["status"] != "recalculated":
                 result["output"] = None
                 return result
-            # Exclusive creation prevents replacing a concurrent caller's output.
+            produced_hash = digest_file(target) if cache is not None and cache.key is not None else None
             try:
-                stream = destination.open("xb")
+                publish_new_output(target, destination)
             except OSError as exc:
-                return {"status": "failed", "error": str(exc), "output": None}
-            try:
-                with stream, target.open("rb") as data:
-                    shutil.copyfileobj(data, stream)
-            except OSError:
-                _quiet_unlink(destination)
-                raise
+                return reuse_result({"status": "failed", "error": str(exc), "output": None}, cache, reason)
             result["output"] = str(destination)
             if target.parent != source.parent:
                 result["warning"] = "Temporary copy is outside source directory; relative workbook links may not resolve."
+            if cache is not None:
+                cache.remember(result, produced_hash)
             return result
     except (OSError, RuntimeError, _WorkspaceError) as exc:
-        return {"status": "failed", "error": str(exc), "output": None}
+        return reuse_result({"status": "failed", "error": str(exc), "output": None}, cache, reason)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("file")
-    parser.add_argument("--output", required=True, help="New copy for reading calculated values")
+    parser.add_argument("--output", help="Explicit new values-only copy; omit to manage reusable copies beside the source")
     parser.add_argument("--timeout", type=int, default=30)
+    parser.add_argument("--read-range", action="append", dest="read_ranges",
+                        help=("Return needed values from the calculated copy in this response: 'Sheet!A1:B2'; "
+                              "repeat up to 16 ranges / 1000 cells"))
+    reuse_options = parser.add_mutually_exclusive_group()
+    reuse_options.add_argument("--reuse", dest="reuse", action="store_true",
+                               help=("Default: reuse only a matching unchanged receipt; "
+                                     "first calls and changed inputs recalculate automatically."))
+    reuse_options.add_argument("--fresh", dest="reuse", action="store_false",
+                               help=("Explicitly bypass reuse, e.g. to diagnose a prior receipt; "
+                                     "not needed for first calls or changed inputs. --output is optional; "
+                                     "if supplied, it must be new and distinct from source."))
+    parser.set_defaults(reuse=True)
     args = parser.parse_args()
-    result = recalculate(args.file, args.output, args.timeout)
+    result = recalculate(args.file, args.output, args.timeout, reuse=args.reuse, read_ranges=args.read_ranges)
     print(json.dumps(result, ensure_ascii=False))
     if result["status"] == "skipped_no_libreoffice":
         print("本机缺少 LibreOffice，本次公式重算未执行，源文件未修改。\n"
@@ -239,6 +431,9 @@ def main():
     if result["status"] != "recalculated":
         print("重算未完成，源文件未修改。按返回原因处理；没有可用引擎时说明无法取得计算值。", file=sys.stderr)
         return 3
+    if result.get('read_status') == 'failed':
+        print('重算已完成，但指定范围读取失败。保留并读取回执output副本，不重复重算。', file=sys.stderr)
+        return 5
     return 0
 
 

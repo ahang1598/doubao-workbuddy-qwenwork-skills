@@ -1,28 +1,20 @@
 # Design CLI 命令 Reference
 
-## 素材资产读取：`design-asset +get`
-
-用户引用素材资产 ID 时，读取 [素材资产读取协议](design-asset-get.md)，使用 `design-cli design-asset +get --asset-ids <真实资产ID>`。该命令独立于画布命令，不需要 Workspace ID，不查询、创建或写入 Workspace；资产 ID 与 Workspace ID 不混用。返回的 `resource_url` 是云盘文件页，不是媒体下载地址。
-
-下文的命令数量、domain、公共参数及请求约定均针对 `design-workspace`；`design-asset +get` 以单独的命令页为准。
+用户引用素材资产时，使用 `design-cli design-asset +get --asset-ids <资产ID>`；参数和返回结构见 [素材资产详情](design-asset-get.md)。该命令无需画布 ID，不支持 revision-id。
 
 > 状态：CLI 与服务端均已实现（`+ls` / `+tree` / `+get` / `+create` / `+create-batch` / `+update` / `+update-batch` 七个接口已上线，不再是 mock）。请求与响应结构以 Alice IDL 的 `ItemContent` / `FrameContent` 为准。
 
 本目录逐条记录九个 Canvas Workspace 命令的参数、请求体与返回结构。共用的调用约定写在本文，各命令页只描述自己的差异。
 
-## 本 Skill 的媒体操作边界
-
-图片／视频直交和产后目录整理以 [`media-delivery.md`](../media-delivery.md) 为唯一权威。下列命令页是通用接口协议，不授权本 Skill 调用 `+create`／`+create-batch` 手工创建媒体 Item／Frame，或修改媒体内容、URL、尺寸与来源。媒体工具通过真实 Workspace ID 自动关联；处理后版本未关联时只记录归档未完成，不补建对象。主 Agent 在本轮 RichMediaCard 直交后，才用 `+tree`／`+ls`／`+get` 定位真实已有对象，并仅用 `+update`／`+update-batch` 更新 path、回读核验。归档读取和更新不作为媒体交付、串行生成或用户确认的前置条件。Mobile 显式字段判定和禁用范围以主 `SKILL.md` 与交付参考为准。
-
 ## Windows 执行约束
 
-实际执行设备为 Windows 时，执行本目录任何命令前必须完整读取 [`windows-compat.md`](../windows-compat.md)。使用当前环境提供的终端工具并确认实际 Shell，不要求存在 Bash 工具。各页标为 `bash` 的续行与输入重定向示例仅用于 Bash；PowerShell 使用单行命令或任务专属 Python 脚本。
+实际执行设备为 Windows 时，先完整读取 [`windows-compat.md`](../references/workflow/windows-compat.md)。使用当前环境的终端工具并确认实际 Shell，不要求存在 Bash 工具；各页的 Bash 续行与重定向示例仅用于 Bash。
 
-四个写命令的 `--input` **只接受 `-`**：Windows 按兼容说明用 Python 将 UTF-8 XML 送入 stdin，不使用 `< 文件`、Shell 管道或 `--input "@文件"`。画布 `--path` 仍使用 `/` 开头的逻辑路径；本地任务文件路径单独处理。Mobile 路由优先，不因此启用 Canvas。
+四个写命令的 `--input` **只接受 `-`**：Windows 按兼容说明用 Python 将 UTF-8 XML 送入 stdin，不使用 `< 文件`、Shell 管道或 `--input "@文件"`。画布逻辑 `--path` 保留 `/`；本地任务路径单独处理。Mobile 禁止 Canvas 的规则优先。
 
 ## 调用形状
 
-所有命令都属于 `design-workspace` 这个 domain，且命令名**带 `+` 前缀**：
+下列九个画布命令属于 `design-workspace` 这个 domain，且命令名**带 `+` 前缀**：
 
 ```bash
 design-cli design-workspace +<command> [flags]
@@ -48,13 +40,7 @@ domain 名与 `+` 都不可省略。三层 `--help` 都可用：`design-cli --he
 | `+update` | 修改顶层 Item／Frame 的 brief／path | [`update.md`](update.md) | `/creativity/canvas_workspace/cli/update` |
 | `+update-batch` | 批量修改顶层 brief／path | [`update-batch.md`](update-batch.md) | `/creativity/canvas_workspace/cli/update_batch` |
 
-**先从当前对话确定画布 ID**：当前对话已有唯一有效 `canvas_workspace_id` 时直接复用；没有时调用 `+workspace-create` 建一张并取得 ID。`+get-workspace` 只用于显式查询、恢复或排障，不代替“对话无 ID 时必须创建”的初始化规则。`+get-workspace` 与 `+workspace-create` 都不带 `--canvas-workspace-id`，其余七个命令消费它。`+workspace-create` 的名字不叫 `+create` 是因为后者已经是“建节点”。
-
-### Workspace 初始化与画布卡片交付
-
-若当前对话没有 Workspace ID，立即调用 `design-cli design-workspace +workspace-create --title "<title>"`；从响应 XML 读取唯一 ID，再由主 Agent 调用 `present_files(<workspace_id>)`，将原始 Workspace ID 作为唯一输入并交付新建画布卡片。不得先调用 `+get-workspace`，不得创建 `workspace-id.txt` 或其他中间文件，也不得附字段名、标题、版本、XML、JSON 或说明。画布卡片交付成功前不得生成／编辑媒体，也不得执行 Item／Frame 写命令。多个 ID 冲突且未指定当前目标时必须先确认，不得猜测。
-
-读取三个命令是渐进式披露：`+tree` 看骨架 → `+ls` 展开分支 → `+get` 读完整内容。不要用 `+get` 试探性地拉大量对象。
+用户明确要求创建画布时，参见[创建画布](workspace-create.md)。
 
 ## 内容模型
 
@@ -66,12 +52,12 @@ domain 名与 `+` 都不可省略。三层 `--help` 都可用：`design-cli --he
 
 所有写入请求的顶层 Item／Frame `path` 必须是以 `/` 开头的画布绝对路径，例如 `/deliverables/key-visuals`；Frame 成员不填 `path`。相对路径禁止写入。
 
-## 公共参数
+## 画布命令公共参数
 
 | 参数 | 适用命令 | 必填 | 说明 |
 |---|---|---:|---|
 | `--title` | `+workspace-create` | 是 | 新画布标题；空值或纯空白按缺失处理，退出码 `2` |
-| `--canvas-workspace-id` | 除 `+get-workspace` / `+workspace-create` 外全部 | 是 | 目标 Canvas Workspace；空值或纯空白按缺失处理 |
+| `--canvas-workspace-id` | 九个画布命令中除 `+get-workspace` / `+workspace-create` 外的七个 | 是 | 目标 Canvas Workspace；空值或纯空白按缺失处理 |
 | `--path` | `+ls`、`+tree` | 否 | 画布绝对目录路径，非空值必须以 `/` 开头；未传或为空时取默认根路径 `/` |
 | `--item-ids` | `+get` | 条件 | 逗号分隔或重复传入；与 `--frame-ids` 至少一项，合计最多 10 个 |
 | `--frame-ids` | `+get` | 条件 | 同上 |
@@ -118,7 +104,7 @@ CLI 不改写 HTTP 返回，完整响应体原样输出。响应结构是 Alice 
 一期服务端对所有非网络逻辑错误固定返回「请你仔细阅读 SKILL 再来调用」，`msg` 没有诊断价值。按退出码分支，不要匹配文案：
 
 - 退出码 `2` → 参数拼错了，对照本目录检查 flag 与取值
-- 退出码 `1` → 重读对应命令页与 XML 结构约定，核对后重试
+- 退出码 `1` → 保留 stdout、stderr 与真实退出码，重读对应命令页与 XML 结构约定；写入状态不明时先只读恢复确认，确认未成功且原因已修正后才重试
 
 ## XML 约定
 
@@ -138,7 +124,7 @@ CLI 不改写 HTTP 返回，完整响应体原样输出。响应结构是 Alice 
 
 **`title` 与 `brief` 分工不同**：`title` 是端上展示给用户的短名（几个字），
 `brief` 只给你自己消费、用来判断要不要继续 `+get`。`+create` 时两个都要给，
-**不要填成一样的内容**。
+**不要填成一样的内容**；详见 [`../items/README.md`](../references/items/README.md)。
 
 **数组套一层容器**：`<items>` 装 `<item>`、`<points>` 装 `<point>`、`<stops>` 装 `<stop>`、
 `<contents>` 装 `<content>`。单个对象的根节点用单数，与容器成员同形。
@@ -175,7 +161,7 @@ CLI 不改写 HTTP 返回，完整响应体原样输出。响应结构是 Alice 
 
 > 兼容性提示：引入本规则的上游提交注明，`<source_ids>`／`<source_id>` 依赖新版 `canvas_xml_define`，文档可能暂时领先于线上 SDK。实际调用若因标签未被当前运行时识别而失败，必须保留错误并停止依赖步骤，不得伪造成功、静默删除本应存在的来源关系或改用 `+update` 补写血缘。
 
-通用 XML 节点结构见上文；各类型字段、取值与支持范围以当前运行时实际 schema 为准。本 Skill 仅使用初始化、恢复和目录整理能力，不因本通用协议扩大媒体写入范围。
+各类型的字段、取值与示例见 [`../items/README.md`](../references/items/README.md)。
 
 ## 写命令的根节点与 ID
 

@@ -22,7 +22,7 @@
 | 读取目的 | 用这个 shortcut | 数据去向 | 说明 |
 |---------|----------------|---------|------|
 | 快速查看纯值数据、批量处理 | `+csv-get` | 对话上下文 | 返回标准 CSV（`csv` 字段，可直接喂 csv.reader）；**不传 `--max-chars` 即读全量**，大表由 CLI 内部分批取回拼接。要按字面行号逐行定位时加 `--include-row-prefix` 拿回 `[row=N]` 版本。已通过产物交付工具交付的表格，在回复中用产物名称指代，不再追加 URL 引用。引用其他来源表的信息时，保留工具结果 `citations` 字段中 `<url>...</url>` 内的原始 URL，并紧随对应表述以 `<RichMediaReference>["url"]</RichMediaReference>` 格式标注。 |
-| 按列类型结构化读出（喂 DataFrame / round-trip 回 `+table-put`） | `+table-get` | 对话上下文 | 返回 typed 协议（`columns:[列名]` + `data` + `dtypes`/`formats` + `range`），输出形状对齐 pandas split；可一行 `pd.DataFrame(sheet["data"], columns=sheet["columns"]).astype(sheet["dtypes"])` 还原 DataFrame，或直接 round-trip 回 `+table-put`。不带 `--range` 时读**完整 used range**（跨过表中部空行 / 空列），每个子表回传读取范围 `range`；used range 超 20 万格时会被拒绝并给出替代命令——每格是一个对象，体积约为 `+csv-get` 的 17 倍，整表读走 `+workbook-export --file-extension csv --output-path` 或 `+csv-get`；不传 `--max-chars` 时读全量；显式给了才会截断，此时该子表带 `truncated: true` 与 `truncation_warning`。回执的 `complete` 是读全判据，`complete:false` 必定伴随非零退出码。注意这与下文 `current_region` "遇表中部空行截断"不矛盾：`+table-get` 读的是子表物理 used range（飞书记录的已用矩形，含中间空行），`current_region` 是从锚点连通扩展、遇整行空行就断 |
+| 按列类型结构化读出（喂 DataFrame / round-trip 回 `+table-put`） | `+table-get` | 对话上下文 | 返回 typed 协议（`columns:[列名]` + `data` + `dtypes`/`formats` + `range`），输出形状对齐 pandas split；可一行 `pd.DataFrame(sheet["data"], columns=sheet["columns"]).astype(sheet["dtypes"])` 还原 DataFrame，或直接 round-trip 回 `+table-put`。不带 `--range` 时读**完整 used range**（跨过表中部空行 / 空列），每个子表回传读取范围 `range`；used range 超 20 万格时会被拒绝并给出替代命令——每格是一个对象，体积约为 `+csv-get` 的 17 倍，整表读走 `+workbook-export --file-extension csv --output-path` 或 `+csv-get`；不传 `--max-chars` 时读全量；显式给了才会截断，此时该子表带 `truncated: true` 与 `truncation_warning`。回执的 `complete` 是读全判据，`complete:false` 必定伴随非零退出码。注意这与下文 `current_region` "遇表中部空行截断"不矛盾：`+table-get` 读的是子表物理 used range（飞书记录的已用矩形，含中间空行），局部读取的 `current_region` 从请求范围向外扩展，可能在整行空行处停止 |
 | 查看公式、样式、批注、数据验证 | `+cells-get` | 对话上下文 | 返回单元格完整信息，token 开销较大 |
 | 查看某区域的下拉框（数据验证）配置 | `+dropdown-get` | 对话上下文 | 返回该 A1 范围的下拉选项、多选开关和胶囊配色 |
 
@@ -116,7 +116,7 @@ detect 最多确认 10 个跨窗口合并锚点；超限会在 `warnings` 中说
 - `annotated_csv` — 每一逻辑行前加 `[row=N] ` 前缀（N = 真实表格行号）的同一份数据，**仅在 `--include-row-prefix` 时返回**。需要把行号填进下游工具参数时加这个 flag，读前缀比按序推算可靠。
 - `col_indices` — **定位列字母唯一入口**。在表头中找到目标字段是第 j 个（0-based），用 `col_indices[j]` 取列字母。**禁止手数逗号**——列数超过 10 时极易 off-by-one（例如把 W 误判为 X）。
 - `row_indices` — 与 `csv` 数据行一一对应的真实行号数组。不开 `--include-row-prefix` 时行号从这里取；按下标取值即可，不要自己从 `actual_range` 心算累加。
-- `current_region` — 从请求范围扩展到被空行空列包围的连续数据区域（等价于 Excel Ctrl+Shift+*）。它**遇表中部整行空行 / 整列空列就截断**，可能遗漏空行之后的数据，不能单独作为整表边界。已确认范围直接复用；边界不明时按下方「确定数据范围的正确流程」定位。
+- `current_region` — 从请求范围向外扩展到空行 / 空列边界的连续区域，可能遗漏后续数据，不能单独作为整表扫描上界，即使未传 `--range`。空表结合返回数据判断；已有业务范围直接复用，边界不明时按下方流程定位，实际读取覆盖仍以 `actual_range` 为准。
 
 注意：
 
@@ -136,8 +136,8 @@ detect 最多确认 10 个跨窗口合并锚点；超限会在 `warnings` 中说
 - **CSV 行号计数错误**：`+csv-get` 返回的 CSV 遵循 RFC 4180 标准，被双引号 `"..."` 包裹的字段中的换行符属于**字段内容的一部分**（即单元格内换行），不代表新的一行。计算行号时必须按**逻辑记录**计数，而非按物理换行符 `\n` 计数
 - **手动数列确定列号**：禁止通过在 CSV 表头中手动数逗号/字段来确定目标列的列字母。当列数超过 10 时，手动计数极易产生 off-by-one 偏移（例如把 W 列误判为 X 列）。**必须使用 `col_indices`**：先在 CSV 表头中找到目标字段名是第 j 个字段（0-based），再用 `col_indices[j]` 获取该列的实际列字母
 - **用数据列的值推导行号（常被巧合掩盖）**：CSV 中常见"序号 / ID / 编号 / No."等形似行号的列，其值与实际表格行号**没有任何绑定关系**——序号可能跳号（1,2,3,5,6...）、可能从非 1 开始、可能有重复或被中途重置。此规则适用于**所有需要行号的下游操作**：合并单元格、区间写入/清空/格式化、插入/删除行、条件格式范围、筛选器范围、图表数据源、透视表范围、搜索替换范围等等——**凡是要把行号填进任何工具参数的场景，行号一律取自 `row_indices`（或加 `--include-row-prefix` 后读行首 `[row=N]` 前缀）**，禁止用"序号=行号"、"表头占 1 行所以数据从第 2 行开始"、"第 N 个序号就在第 N+1 行"等心算，也禁止先心算再"事后核对"。**危险特征**：前几十行中序号恰好等于表格行号（典型成因：表头 +1 与一次跳号 -1 的偏移互相抵消形成巧合），模型一旦把这个巧合当作规律，会在后续所有行沿用；而中间再出现跳号时，从该行起整块区域全部错位。**正确工作流**：①在 `csv` 里定位目标逻辑行（按字段内容匹配）；②取同下标的 `row_indices[i]` 得到真实表格行号（开了 `--include-row-prefix` 就直接读该行的 `[row=N]`）；③把这个行号填进下游工具参数。区间操作时，起止行各取各自的行号。
-- **`row_count` 与 `current_region` 都不能单独定末行**：`+workbook-info` 的 `row_count` 是网格物理行数，通常大于真实数据末行；`current_region` 遇整行空行会截断，可能小于业务范围。二者分别是上界和连续块参考；已有完整读取或用户指定范围时直接使用，边界仍不明时再按下方流程定位。
-- **current_region 当作纯数据范围**：`current_region` 返回的是从请求范围向四周扩展到被空行空列包围的**连续非空区域**，等价于 Excel 的 Ctrl+Shift+\*。它包含该区域内**所有非空行**——不仅包含数据行，还可能包含标题行、汇总行（如"总计"）、签名行（如"编制人/审批人"）、脚注等非数据内容。**严禁直接将 `current_region` 的末尾行作为数据范围的结束行**。正确做法见下方「确定数据范围的正确流程」
+- **`row_count` 与 `current_region` 都不能单独定末行**：`+workbook-info` 的 `row_count` 是网格物理行数，通常大于真实数据末行；`current_region` 可能在空行处停止，也可能包含标题、汇总和备注。二者都不能直接等同于目标表的纯明细范围；已有完整读取或用户指定范围时直接使用，边界仍不明时再按下方流程定位。
+- **current_region 当作纯数据范围**：`current_region` 是从请求范围扩展的连续块。它包含区域内**所有非空行**——不仅包含数据行，还可能包含标题行、汇总行（如"总计"）、签名行（如"编制人/审批人"）、脚注等非数据内容。**严禁直接将 `current_region` 的末尾行作为数据范围的结束行**。正确做法见下方「确定数据范围的正确流程」
 
 ### 确定数据范围的正确流程（边界不明时补读）
 
@@ -234,7 +234,7 @@ lark-cli sheets +csv-get --spreadsheet-token shtXXX --sheet-name "销售明细"
 
 - `csv` — 标准 CSV 主入口；`annotated_csv` — 含 `[row=N]` 前缀的同一份数据，仅 `--include-row-prefix` 时返回
 - `col_indices` / `row_indices` — 列字母 / 行号映射数组
-- `current_region` — 从锚点扩展到被空行空列包围的连续区域的 A1 范围。它不是整表真实边界：中间空行 / 空列可能使范围偏小，表尾汇总 / 签名 / 脚注可能使其大于纯明细范围。已有业务边界直接复用，未知时按上方「确定数据范围的正确流程」定位。
+- `current_region` — 请求范围扩展出的连续块的 A1 范围，不是整表扫描上界；具体边界及空表含义见上方说明。需要单独取字段时用 `--jq '.data.current_region'`，不以 `head -c` 截断 JSON。
 - `actual_range` — **本次实际读到的 A1 范围**。续读 / 校验覆盖度一律以它为准：`actual_range` 小于请求范围时，哪怕 `has_more=false` 也说明只拿到部分窗口，不能把 `row_count` 当成"已读全"
 - `row_count` / `col_count` — **本次返回的行 / 列数**（= `actual_range` 的尺寸，随 `--range` 变），**不是整表物理总行列数**；整表物理尺寸取 `+workbook-info`
 - `has_more` — 仅在显式给了 `--max-chars` 时才可能为 true，表示本次按你要求截断了；不传 `--max-chars` 时恒为 `false`（已读全量）。它不反映整表边界——覆盖到哪里一律看 `actual_range`
@@ -288,6 +288,17 @@ df_sales = sheets["销售"]
 
 #### round-trip：读 → 改 → 写回（写读对偶）
 
+多表字段不同且已取得完整 `columns/data` 时，仓库版的 `scripts/sheet_data.py` 可直接对齐字段并集，表头与数据共用列序；源字段按完整表头或列位置消除重名，明确裁列才用各源 `omit`。已有等价映射直接复用；二进制内嵌版无脚本时在现有循环维护同一映射。模块只转换当前数据，不打开或重建工作簿；下面的列定义与行迭代器交给已有写入路径。
+
+```python
+import sys; sys.path.insert(0, "scripts")  # cwd不在skill根时填本次实际scripts路径
+from sheet_data import MappedTable
+
+table = MappedTable([{"fields": s["columns"], "rows": s["data"]} for s in source_tables])
+columns = table.fields
+rows = iter(table)  # 只消费一次；输出仍按原CLI路径写入，派生计算用公式
+```
+
 `sheet_to_df` 和 `df_to_sheet` 一对镜像 helper（[`scripts/lark_sheets_df.py`](../scripts/lark_sheets_df.py)）让 round-trip 三段读 / 改 / 写各一行：
 
 ```python
@@ -318,4 +329,4 @@ subprocess.run(["lark-cli","sheets","+table-put","--url",URL,"--sheets","-"],
 - `DryRun` 输出请求模板：`--sheet-name` 在 dry-run 输出里生成为 `<resolve:销售明细>` 占位符，不实际解析。
 - `Execute` 阶段才进行 sheet-name → sheet-id 解析与 API 调用。
 
-===== 全文完（共 321 行）=====
+===== 全文完（共 332 行）=====

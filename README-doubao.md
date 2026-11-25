@@ -7,8 +7,8 @@
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：278
-- 当前索引文件数：4521
-- 最近变更：[2026-11-24-180007](doubao/change-logs/2026-11-24-180007.md) - Doubao 本次同步新增 158 个文件、修改 95 个文件、删除 110 个文件。 新增条目：skills/miniapp-caocao-ride-hailing-moa。 受影响范围：skills/doubao-announcement-analysis, skills/doubao-market-hotspot, skills/doubao-p...
+- 当前索引文件数：4527
+- 最近变更：[2026-11-25-180008](doubao/change-logs/2026-11-25-180008.md) - Doubao 本次同步新增 9 个文件、修改 68 个文件、删除 3 个文件。 受影响范围：skills/doubao-coding-optimize-performance, skills/doubao-creative-drama, skills/doubao-critical-reading-companion, skills/doubao-he...
 
 ## 数据来源
 
@@ -91,14 +91,14 @@
 | doubao-coding-develop-frontend-features | `doubao/skills/doubao-coding-develop-frontend-features` | skill | 3 | 在既有前端代码库中实现新增或有意改变的用户可见页面、组件、交互、数据接入或样式，并交付可运行界面。已有行为异常改用 Bugfix；关键产品或架构选择未决时先做设计；纯审查、解释、补测试或无行为变化的重构不使用。 |
 | doubao-coding-develop-unit-tests | `doubao/skills/doubao-coding-develop-unit-tests` | skill | 14 | 当用户要求编写、补充、修复或运行单元测试，进行 TDD、为缺陷添加回归测试，或提升指定代码的单元测试覆盖率时使用。适用于函数、方法、类、组件、模块、包或代码变更；不用于端到端测试、完整集成测试、性能测试、仅做代码审查，或仅定位既有产品故障。 |
 | doubao-coding-diagnose-and-fix-bugs | `doubao/skills/doubao-coding-diagnose-and-fix-bugs` | skill | 3 | 在已有代码出现报错、崩溃、错误结果、测试或构建失败、回归、环境差异或间歇故障时定位根因，并在用户要求修复时实施原因级补丁。新增需求或有意改变既有预期改用功能开发；正确预期尚未确定时先澄清或设计；纯审查、无故障重构、单纯补测试、无回归基线的性能优化或纯运维操作不使用。 |
-| doubao-coding-optimize-performance | `doubao/skills/doubao-coding-optimize-performance` | skill | 7 | 当任务的裁决标准是可测量的性能指标（延迟、吞吐、CPU、内存、I/O、竞争、启动时间、扩展性）时使用：解释 profile/benchmark、建立可重复基线、定位瓶颈机制、验证单变量优化、建立性能回归守卫。用户问为什么慢、能否更快、内存为何增长、优化是否有效、如何 profile 或压测时触发。不用于普通功能调试、无测量的一般方案设计或代码审查；组合任务只处理性能子问题。 |
+| doubao-coding-optimize-performance | `doubao/skills/doubao-coding-optimize-performance` | skill | 8 | 当任务的裁决标准是可测量的性能指标（延迟、吞吐、CPU、内存、I/O、竞争、启动时间、扩展性）时使用：解释 profile/benchmark、建立可重复基线、定位瓶颈机制、验证单变量优化、建立性能回归守卫。用户问为什么慢、能否更快、内存为何增长、优化是否有效、如何 profile 或压测时触发。不用于普通功能调试、无测量的一般方案设计或代码审查；组合任务只处理性能子问题。 |
 | doubao-coding-review-code | `doubao/skills/doubao-coding-review-code` | skill | 4 | 审查 MR/PR、分支、commit 范围、本地改动或独立 diff，报告本次变更新引入、激活或明显放大且当前可触发、证据闭合的代码缺陷。用于 Code Review、代码审查、CR；不用于设计评审或直接实现修复。 |
 | doubao-compliance-assessment-public | `doubao/skills/doubao-compliance-assessment-public` | skill | 28 | 基于公开法律来源开展交互式合规评估并生成可审阅报告。用户要求评估业务法律风险、审阅 PRD、判断监管红线或生成合规报告时使用。 |
 | doubao-contract-amendment | `doubao/skills/doubao-contract-amendment` | skill | 2 | 用于在已签原协议基础上，依据用户提供的新情况起草补充协议、变更协议或终止协议。先重建主体、标的、资金、条件、时间和文件构成的整体法律状态，再在用户明确授权范围内成文。仅处理既有协议的派生修改；不用于全新合同起草、既有合同风险审查、一般法律咨询或纯 Word 排版与纯文件处理，纯文档编辑改用 lark-doc。 |
 | doubao-contract-drafting | `doubao/skills/doubao-contract-drafting` | skill | 24 | 直接起草中国大陆商业合同并生成无批注、无颜色、中文字体正确的可编辑 Word 文件。适用于采购、服务、营销、工程施工、软件许可、SaaS、委托开发、联合研发、知识产权、租赁、数据处理和保密等场景；读取题干及附件后完成交易信息拆解、风险识别、起草方标准条款与默认商业参数填充、合同生成与交付校验。涉及跨境交易、境外法域或境外争议解决安排时，需升级并要求复核。 |
 | doubao-contract-reviewer | `doubao/skills/doubao-contract-reviewer` | skill | 35 | 专业审查合同并逐条批注。上传 .doc/.docx → 输出带 Track Changes + 批注的修订版 Word（.docx）。触发：合同审查/审核/审阅/看合同/帮我看看这份合同/合同风险/合同有没有问题/这份合同能签吗/合同把关/review contract/legal review；上传合同文件要求查问题也触发。 |
 | doubao-creative-design | `doubao/skills/doubao-creative-design` | skill | 178 | 用于简单的图片生成、编辑、同时zhi c商业、品牌、社媒、电商与知识表达视觉的创作、既有源编辑、复刻、系列延展、多比例适配及审查；覆盖海报、科普说明类信息图、关系与流程图、Logo、VI、IP、包装、应用物料和可编辑HTML设计。 |
-| doubao-creative-drama | `doubao/skills/doubao-creative-drama` | skill | 32 | 完整制作短剧、微电影、剧情短片、动画短片、动态漫、剧情视频和长篇剧本。用户明确需要角色驱动、冲突因果、剧情弧线、角色与道具资产、分段视频、抽帧连续性和成片交付时调用。当用户提出短剧、动画短片、微电影、短片、电影、剧情视频、AI视频、影视化短片、动态漫、宣传片、预告片等影视剧制作需求，或包含"做个短剧"、"拍个微电影"、"弄个动画短片"、"做个长视频"、"宣传片"等表达时调用。只有宣传片、预告片或广告片被明确要求做成完整剧情链、角色... |
+| doubao-creative-drama | `doubao/skills/doubao-creative-drama` | skill | 30 | 完整制作短剧、微电影、剧情短片、动画短片、动态漫、剧情视频和长篇剧本。用户明确需要角色驱动、冲突因果、剧情弧线、角色与道具资产、分段视频、抽帧连续性和成片交付时调用。当用户提出短剧、动画短片、微电影、短片、电影、剧情视频、AI视频、影视化短片、动态漫、宣传片、预告片等影视剧制作需求，或包含"做个短剧"、"拍个微电影"、"弄个动画短片"、"做个长视频"、"宣传片"等表达时调用。只有宣传片、预告片或广告片被明确要求做成完整剧情链、角色... |
 | doubao-creative-video | `doubao/skills/doubao-creative-video` | skill | 30 | 当用户需要通用视频生成、视频创作、视频提示词规划或文生/图生视频时使用，包括创意视频、长视频规划、产品广告、商品广告、UGC 口播/带货/信息流视频、品牌 TVC、企业宣传片、商务视频、品牌形象片、产品功能介绍、知识讲解/科普/操作教程视频、门店服务/文旅推广视频、带旁白视频，以及带参考素材的视频生成。只有用户明确提出短剧、微电影、剧情短片、影视短片、动画短片、动态漫、分集剧情、长篇剧本或等价剧情影视制作场景时，才应调用 doub... |
 | doubao-critical-reading-companion | `doubao/skills/doubao-critical-reading-companion` | skill | 5 | 深度解读文章，把新闻、长评或宣传文案等非学术公共文本转成便于理解、可追溯的阅读地图；用于重建论证链、评价证据与推理、识别隐藏前提、补充替代解释、核查关键事实，并输出可追溯的阅读地图。适用于可信度判断、论证拆解、宣传分析、作者自检和行动决策。 |
 | doubao-cron-scheduler | `doubao/skills/doubao-cron-scheduler` | skill | 1 | 创建、查看、更新或删除定时任务，包括一次性提醒、周期任务、复杂日历规则、后台监控和多轮编辑。用于用户要求提醒、持续关注、按小时/日/周/月/年运行或管理已有任务。 |
@@ -116,7 +116,7 @@
 | doubao-finance-model-builder | `doubao/skills/doubao-finance-model-builder` | skill | 116 | 对 A 股、港股和美股上市公司执行中文、可审计且带机器阻断质量门的三表预测、DCF、LBO或可比公司估值。支持最新公告增量检索、除权除息和送转股等公司行动证据冻结、收入增速和多产品量价预测、三表勾稽、FCFF/WACC/终值、分层债务与回报、同行筛选和相对估值。用于财务预测、预算、目标价、杠杆回报或交易可比分析；不要用于自动下单、纯信用评级或并购法律意见。 |
 | doubao-finance-sector | `doubao/skills/doubao-finance-sector` | skill | 14 | 分析股票市场板块的识别、异动归因、热度、阶段、内部结构、主线、产业传导、持续性与历史复盘；当问题需要有截止边界的行情证据链、可比计算、情景或可复现文件时使用。 |
 | doubao-game-designer | `doubao/skills/doubao-game-designer` | skill | 74 | 把游戏创意、参考作品、现有方案、配置或试玩证据转化为玩法成立、规则闭合、数值可复算且能进入制作的 GDD、玩法方案与系统规格；需要验证关键玩法时，联合前端或开发能力交付可直接运行的 HTML 游戏 Demo。用于核心循环、战斗、成长、经济、关卡、引导、平衡、活动、版本设计、方案评审与修订，以及按需追加的立项、发行、商业和制作内容。 |
-| doubao-headlines-calendar | `doubao/skills/doubao-headlines-calendar` | skill | 8 | 跨平台内容生成、改写、评估和A/B测试标题，并结合账号定位、受众、产能和节点规划可执行的周度或月度内容选题日历。用于爆款标题、多平台标题适配、标题优化、标题拆解、A/B标题、周选题、月度排期、栏目规划、热点日历和新媒体内容策划；不用于直接写完整文章、小说、脚本、PPT或其他成品。能力范围外或多意图任务先说明边界并提供可转化、分模块交付方案。除非用户明确指定其他格式，必须实际创建、写入并校验飞书/Lark文档后返回可访问链接；不得用... |
+| doubao-headlines-calendar | `doubao/skills/doubao-headlines-calendar` | skill | 8 | 跨平台内容生成、改写、评估和A/B测试标题，并结合账号定位、受众、产能和节点规划可执行的周度或月度内容选题日历。用于爆款标题、多平台标题适配、标题优化、标题拆解、A/B标题、周选题、月度排期、栏目规划、热点日历和新媒体内容策划；不用于直接写完整文章、小说、脚本、PPT或其他成品。能力范围外或多意图任务先说明边界并提供可转化、分模块交付方案。总标题数不超过30个。短任务直接对话输出即可，长日历或需要分享时才建飞书文档。 |
 | doubao-human-signal | `doubao/skills/doubao-human-signal` | skill | 13 | 去除或避免文本中的 AI 味。用于用户强制调用本 Skill，或写作/改写时提到“不要有 AI 味”“不要太假”“真情实感”“有人感”，或对已有文本/上一轮输出反馈“太像 AI”“太空泛”“太模板”“太官方”“不像我说的”等场景。 |
 | doubao-identity | `doubao/skills/doubao-identity` | skill | 6 | 当用户询问豆包工作、豆包专业版、豆包会员与付费服务（包含权益、充值、退款、发票、订阅、连续包月/包年比较、学生优惠、录音转写、创作额度等）、平台规则与隐私安全（使用条款、隐私政策、内容安全、客服投诉、聊天记录存储/删除/恢复、数据是否用于训练、个人数据、定位、IP）、记忆功能（用途、可记录内容、查询/删除/清空、开关及生效规则）或记忆认知（为什么记得、知道、忘记、记错个人信息）、产品功能问题（比如定时任务为什么不准时）时，必须先调... |
 | doubao-industry-analysis | `doubao/skills/doubao-industry-analysis` | skill | 15 | 针对某一行业（半导体、新能源、医药、消费等）的中长期基本面与产业研究，覆盖行业定义与规模、产业链与竞争格局、政策与驱动力、景气周期、趋势研判与三情景、盈利质量与落地建议。先想清楚这篇报告要证明什么判断（判断主线），再用三级数据分级取证、按固定五大板块写透，最终交付一份可直接用于战略规划、投资决策与商业化落地的飞书深度报告。默认简单模式，只回答用户所问问题；明确要求完整深度报告时执行完整模式。不触发并转其他场景：问该行业今天涨跌/热... |
@@ -136,7 +136,7 @@
 | doubao-novel-writing | `doubao/skills/doubao-novel-writing` | skill | 10 | 用于网文小说创作、改写、续写、诊断、卖点包装、市场调查和编辑视角分析。当用户需要写或优化开篇、第一章、前三章、章节正文、大纲、设定、人设、CP、情节桥段、简介、导语、投稿文，或要求分析相似网文、研究题材市场、拆解公开作品、模拟网文编辑审稿、制定连载规划时使用。适用于女频、男频、短篇、长篇、爽文、甜宠、悬疑、玄幻、末世、无限流等网文任务。不用于范文批量入库、小说素材库维护、小红书运营或非小说类写作任务。 |
 | doubao-oceanengine-adops-agent | `doubao/skills/doubao-oceanengine-adops-agent` | skill | 5 | 字节UG自动化投放Agent 的巨量引擎只读盯盘与数据分析 Skill。适用于查询已授权账户报表、分析核心投放指标、识别长尾候选和诊断效果问题；使用官方 Remote MCP，只输出观察与建议，不创建、暂停、开启、删除或调整广告。 |
 | doubao-official-doc | `doubao/skills/doubao-official-doc` | skill | 41 | 这是一个用于生成政企公文的专项 skill，任务是生成、改写和润色政企场景下的各类正式公文，输出符合机关公文语体和文种规则的正式文本。适用于中国各级党政机关对内对外发文场景，也适用于企业等各类法人主体和自然人主体面向公共部门撰写正式文件的场景。该 skill 不适用于非党政机关场景和非对公场景，包括但不限于企业内部业务管理文件、商业往来文电、市场和产业信息和研究报告、媒体文章、新媒体宣传稿、市场营销稿件，以及个人文学性创作、工作总... |
-| doubao-paper-close-reading | `doubao/skills/doubao-paper-close-reading` | skill | 2 | 用于用户提供一篇或少量学术论文后，进行专业深度精读，讲清研究问题、研究故事、方法或理论机制、关键证据、实验结果、可信边界、复现风险与研究启示，并生成高级 Markdown 报告和飞书文档。用户要求“论文精读”“深度解读”“分析方法与实验”“判断论文价值或局限”时使用。开放主题综述、单纯题录核验、论文代写或语言润色时不使用。 |
+| doubao-paper-close-reading | `doubao/skills/doubao-paper-close-reading` | skill | 2 | 用于用户提供一篇或少量学术论文后，进行专业深度精读，讲清研究问题、研究故事、方法或理论机制、关键证据、实验结果、可信边界、复现风险与研究启示，并生成高级 Markdown 报告。输出形式可选（对话直接输出或飞书文档），但深度精读的内容要求不变。用户要求"论文精读""深度解读""分析方法与实验""判断论文价值或局限"时使用。开放主题综述、单纯题录核验、论文代写或语言润色时不使用。 |
 | doubao-patent-drafting | `doubao/skills/doubao-patent-drafting` | skill | 7 | 用户要求基于技术交底书撰写或修改中国发明、实用新型专利申请文件，或者审查已有权利要求书时使用。典型触发包括“专利撰写”“专利申请”“技术交底书”“权利要求”“说明书”“实用新型”“发明专利”。专利检索、FTO/侵权分析、无效宣告、审查意见答复、商标或著作权是相邻业务：用户只提这些时不适用本流程；与撰写需求混在一起提出时，撰写照常进行，但最终回复必须对其中每一项其他诉求逐一说明处理情况——漏掉任何一项，这次交付就是不完整的。 |
 | doubao-pc-optimizer | `doubao/skills/doubao-pc-optimizer` | skill | 10 | 用户需要清理磁盘垃圾、释放空间、处理电脑卡顿或开机慢、优化 Windows/macOS 性能、提升游戏帧率、生成安全清理脚本，或提到 C 盘满、磁盘空间不足、掉帧、运行慢时使用。 |
 | doubao-personal-info-audit | `doubao/skills/doubao-personal-info-audit` | skill | 69 | 开展中国个人信息保护合规审计、审计触发判断、证据登记与证明力评价、事实和不确定性分析、数据分类、处理活动盘点、法律角色和处理情形识别、适用规则检索、上下位法与配套规范衔接、26模块107子项评价、风险与整改设计，并生成可追溯的Word审计报告和Excel底稿。用于个人信息保护法、网络数据安全、App/SDK、敏感个人信息、未成年人、人脸识别、自动化决策、AI、委托共享、数据出境、监管检查准备及整改复核任务。 |
@@ -148,7 +148,7 @@
 | doubao-product-selection | `doubao/skills/doubao-product-selection` | skill | 1 | 面向电商商家、卖家和经营团队的选品与品类机会分析技能。根据商家的预算、目标平台、货源优势，按“市场需求×竞争度×利润空间×季节性×复购率”五维打分，输出3-5个候选品类及切入建议。适用于新手商家不知道卖什么、老商家想拓新品类、想判断某个品是否值得进货的场景。 |
 | doubao-public-company-analysis | `doubao/skills/doubao-public-company-analysis` | skill | 15 | 分析单一上市公司的商业模式、竞争地位、财务质量、估值与风险，形成可追溯、可复算的基本面判断。适用于公司速览、聚焦问题拆解、财务与现金流质量核验、隐含预期分析及单一公司深度研究；不用于多股批量筛选、市场热点事件传导、非上市项目评估或个人资产配置。 |
 | doubao-questionnaire-designer | `doubao/skills/doubao-questionnaire-designer` | skill | 6 | 用户研究与需求洞察,覆盖四大能力:①问卷设计(按调研目标产出可落地问卷,含试填优化,交付 Word/飞书文档);②访谈提纲(题量按诉求动态确定、含追问轮次/方向/触发条件的深访提纲);③开放题原声打标(五步工作流建立标签体系并批量标注);④定量问卷分析(仅需回收数据,自动识别题型、自动清洗、直接出关键发现/画像/详细发现/原声引用报告)。触发词:设计问卷、写问卷、满意度调研、NPS、访谈提纲、深访提纲、开放题打标、原声编码、VOC... |
-| doubao-record | `doubao/skills/doubao-record` | skill | 1 | 「录音转写」技能：现场录制面聊或会议并实时转写，结束后生成纪要。用于发起录音，及录音中查询内容和状态；面向新录音，不处理已有音频文件。用户选中本技能未输入内容时，通常是想开始录音。 |
+| doubao-record | `doubao/skills/doubao-record` | skill | 1 | 「录音转写」技能：现场录制面聊或会议并实时转写，结束后生成纪要。用于发起录音，及录音中查询内容和状态；面向新录音，不处理已有音频文件。用户选中本技能且未输入其他内容时，直接开始新录音。 |
 | doubao-reference-audit | `doubao/skills/doubao-reference-audit` | skill | 3 | 用于用户提交论文、学位论文或参考文献清单后，系统审查参考文献真实性、题录准确性、文内—文后对应关系以及正文主张是否得到被引文献支持，并生成专业、清晰、可直接指导修改的论文引用审计报告与飞书文档。用户要求“论文审计”“参考文献检查”“引用核对”“引用是否支持观点”“检查错引、过度推断或二手转引”时使用。开放主题综述、普通论文精读、论文代写或仅做语言润色时不使用。 |
 | doubao-research-proposal | `doubao/skills/doubao-research-proposal` | skill | 14 | 用于国自然、国社科等基金申请、开题报告、博士后/人才计划、研究计划书等学术提案的撰写、审查和优化；当用户需要基于已有研究成果形成立项书、区分事实与 AI 建议、检查任务书一致性、补强论证逻辑时使用。 |
 | doubao-sentiment-tracker | `doubao/skills/doubao-sentiment-tracker` | skill | 6 | 当用户在网页端或电脑客户端需要进行舆情监控、调研、社交媒体反馈收集、用户评价、品牌声量追踪时使用。支持微博、知乎、即刻、脉脉、B站、抖音.等多平台的舆情搜索、内容筛选和原始帖子溯源。注意：判断用户所处平台是手机端时，禁止触发这个skill。 |
@@ -266,7 +266,7 @@
 | seedance-25 | `doubao/skills/seedance-25` | skill | 1 | 介绍 Seedance 2.5 的视频生成参数。用户指定 Seedance 2.5 或显式调用本 Skill 时使用；实际生成前必须路由 doubao-creative-video，固定使用 seedance_2.5。 |
 | seedance-real-selling-video | `doubao/skills/seedance-real-selling-video` | skill | 3 | Seedance 2.5 真人感出海 AI 带货视频技能，整合「去 AI 感」与「去广告感」双向优化。四大真实感支柱（混合光源、生活杂物、毛孔纹理、手机拍摄）+ 六条核心补丁语句 + 负面轰炸 + 三段锁定 + 结尾质量指令区块 + 15–25 秒带货四段式脚本。当用户需要：(1)做 AI 真人带货 / UGC 口播 / 种草视频，(2)让 AI 视频更真实更像手机实拍、降低 AI 味和广告感，(3)排查塑料皮肤、崩手多指、眼神闪... |
 | seedream-55 | `doubao/skills/seedream-55` | skill | 1 | 用户指定 Seedream 5.5、seedream_5.5 或「图片模型 5.5」生图或修图时使用。直接调用 image_gen 或 image_edit 工具，固定使用 seedream_5.5，保留原始 prompt、参考图及尺寸/比例要求。 |
-| sheet | `doubao/skills/sheet` | skill | 47 | 表格全场景（本地Excel/CSV与飞书/doubao在线表格）：创建、读写、分析、计算、财务建模、语义处理、可视化与美化。若用户上传附件、提供表格链接/token，或要求任何表格操作，必须加载。 |
+| sheet | `doubao/skills/sheet` | skill | 54 | 表格全场景（本地Excel/CSV与飞书/doubao在线表格）：创建、读写、分析、计算、财务建模、语义处理、可视化与美化。若用户上传附件、提供表格链接/token，或要求任何表格操作，必须加载。 |
 | siyu-calendar | `doubao/skills/siyu-calendar` | skill | 8 | 仅用于餐饮行业品牌（含餐饮连锁与单店），独立生成餐饮私域月度营销日历。用户提供品牌资料、固定栏目、推品计划、新品、会员活动、节日或门店节点，要求策划长期栏目、规划社群/朋友圈/1V1月度内容、设计待确认活动，或在确认后展开每日内容配置时使用。适用于“品牌大日历”“月度运营日历”“私域内容排期”“固定栏目策划”等餐饮场景；非餐饮行业不得触发，不要求先执行品牌初步策略或专项活动 Skill。 |
 | siyu-lifecycle | `doubao/skills/siyu-lifecycle` | skill | 8 | 仅用于餐饮行业品牌（含餐饮连锁与单店），讲清顾客全生命周期营销方法论，并生成“五类状态→7大触达场景”的可落地 HTML 方案。用户需要理解新客黄金期与老客复购期、梳理人群状态、触达场景、权益方向、企微1V1文案和触达闭环时使用。非餐饮行业不得触发；也不用于泛品牌诊断、品牌内容大日历、精细排期或运营复盘。 |
 | siyu-strategy | `doubao/skills/siyu-strategy` | skill | 10 | 专门为餐饮品牌做轻量私域经营诊断与策略规划。适用于餐饮品牌不知道私域先做什么、会员或企微规模已有但经营效果不清、需要确定季度重点或90天行动方向时；通过固定六题的逐题开放交互诊断识别优先经营问题，每题均接受单选、多选或自然语言回答，并按 iCC Grow 私域增长五步法生成《餐饮私域诊断与策略》HTML 报告。不适用于非餐饮行业，也不用于直接制作月度内容日历、具体会员机制、专项活动方案或运营复盘。 |
@@ -309,6 +309,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-11-25-180008 | [2026-11-25-180008](doubao/change-logs/2026-11-25-180008.md) | Doubao 本次同步新增 9 个文件、修改 68 个文件、删除 3 个文件。 受影响范围：skills/doubao-coding-optimize-performance, skills/doubao-creative-drama, skills/doubao-critical-reading-companion, skills/doubao-he... |
 | 2026-11-24-180007 | [2026-11-24-180007](doubao/change-logs/2026-11-24-180007.md) | Doubao 本次同步新增 158 个文件、修改 95 个文件、删除 110 个文件。 新增条目：skills/miniapp-caocao-ride-hailing-moa。 受影响范围：skills/doubao-announcement-analysis, skills/doubao-market-hotspot, skills/doubao-p... |
 | 2026-11-22-173931 | [2026-11-22-173931](doubao/change-logs/2026-11-22-173931.md) | Doubao 本次同步新增 85 个文件、修改 69 个文件、删除 70 个文件。 新增条目：skills/browser-operator, skills/computer-operator。 受影响范围：skills/browser-operator, skills/computer-operator, skills/doubao-creative... |
 | 2026-11-20-210502 | [2026-11-20-210502](doubao/change-logs/2026-11-20-210502.md) | Doubao 本次同步新增 23 个文件、修改 32 个文件、删除 12 个文件。 新增条目：skills/doubao-interpretation。 受影响范围：skills/doubao-academic-researcher, skills/doubao-creative-design, skills/doubao-creative-video... |
@@ -328,4 +329,3 @@
 | 2026-10-20-180008 | [2026-10-20-180008](doubao/change-logs/2026-10-20-180008.md) | Doubao 本次同步新增 0 个文件、修改 5 个文件、删除 13 个文件。 移除条目已归档：skills/student-discount-application。 受影响范围：skills/html, skills/lark-doc, skills/student-discount-application。 |
 | 2026-10-19-195418 | [2026-10-19-195418](doubao/change-logs/2026-10-19-195418.md) | Doubao 本次同步新增 8 个文件、修改 90 个文件、删除 0 个文件。 受影响范围：skills/campus-service-navigator, skills/competition-scholarship-application, skills/course-presentation-builder, skills/doubao-equi... |
 | 2026-10-17-180008 | [2026-10-17-180008](doubao/change-logs/2026-10-17-180008.md) | Doubao 本次同步新增 10 个文件、修改 30 个文件、删除 1 个文件。 受影响范围：skills/doubao-visualization, skills/html, skills/lark-drive, skills/lark-im, skills/ppt, skills/sheet。 |
-| 2026-10-16-180002 | [2026-10-16-180002](doubao/change-logs/2026-10-16-180002.md) | Doubao 本次同步新增 287 个文件、修改 132 个文件、删除 112 个文件。 受影响范围：skills/browser-use-automation, skills/doubao-creative-drama, skills/doubao-creative-video, skills/html, skills/lark-base, skil... |

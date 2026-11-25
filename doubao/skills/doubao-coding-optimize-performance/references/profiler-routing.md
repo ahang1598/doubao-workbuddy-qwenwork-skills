@@ -9,8 +9,8 @@
 只有「选择或解释单个**已存在且可读**的 artifact，且已判为简单任务」时，才可直接使用本文件与命中的一个技术栈参考。轻量任务的边界：
 
 1. 采集 profile/trace、运行 benchmark、安装工具、访问共享环境都**不是**轻量任务，即使用户只写了「profile」。
-2. 轻量任务只冻结 artifact 来源、revision、环境、workload、采集参数和问题边界，交付 `EXPLAINED` 或 `EVIDENCE_REQUIRED`。
-3. 需要端到端因果归因、跨 artifact 综合、baseline/candidate、guard 或实现变更时，升级到[性能证据闭环](performance-workflow.md)；不得用轻量路由跳过必要证据。
+2. 轻量任务核实已有 artifact 的来源、环境、workload、采集参数和问题边界，未知项如实保留；按用户需要直接交付解释和限制，内部状态可记 `EXPLAINED` 或 `EVIDENCE_REQUIRED`，不必展示标签。
+3. 需要新建端到端因果归因、跨 artifact 综合、baseline/candidate、guard 或实现变更时，按[性能证据闭环](performance-workflow.md)选适用阶段。指出一份离线 profile 不能外推在线收益，本身无需升级完整实验。
 
 ## 症状到证据
 
@@ -48,4 +48,4 @@
 
 生产观测需预先固定窗口、采样率、资源上限、敏感字段、保留/删除、值班联系人和停止条件；授权不足时使用测试或回放环境方案。
 
-**完成判据：** 首要候选与最强替代解释有互斥预测，证据组合能区分它们，观测影响和权限边界均已记录。
+**完成判据：** `explain` 只需准确解释已有 artifact、核对数字并交代来源未知项与外推限制。`diagnose` 或新采集方案才要求首要机制与最强替代解释有可区分预测，并记录观测影响和权限边界。

@@ -83,7 +83,7 @@ lark-cli minutes +search --query "预算复盘" --format json
 
 ### 2. 身份与权限
 
-该接口以 `--as user` 身份运行，需要具备 `minutes:minutes.search:read` 权限；凭证或 scope 未就绪时由 agent 平台为当前用户补开。
+该接口自动以当前登录用户身份运行，需要具备 `minutes:minutes.search:read` 权限；凭证或 scope 未就绪时由 agent 平台为当前用户补开。
 
 ### 3. `me` 表示当前用户
 

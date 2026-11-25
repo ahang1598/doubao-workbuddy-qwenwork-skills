@@ -5,114 +5,76 @@ description: "当任务的裁决标准是可测量的性能指标（延迟、吞
 
 # 性能优化：证据链接裁决
 
-开始时声明：**「使用性能优化流程：无测量，不结论；无同合同证据，不授权。」**
-
-默认只读，答案必须自包含。没有 profile 或可比 A/B 时，合法交付物是可复跑的最小实验合同，不为显得有用而给收益、优先级或实施承诺。
+按用户需要交付解释、工具或优化结果。默认只读业务实现；用户已要求的测试、采样或守卫文件可直接编写，是否执行遵守本轮范围。没有可比测量时不承诺实际收益；源码已能证明的语义差异可直接指出，不必等待性能实验。
 
 ## 0. 选择主模式
 
-只选一个主模式并停在其完成边界：
+只执行当前模式适用的阶段，停在用户所需的完成边界：
 
 | 模式 | 完成边界 |
 |---|---|
-| `explain` | 复核已有 artifact 的有效性、含义和适用范围 |
-| `establish-baseline` | 闭合 workload、命令、原始样本、漂移检查 |
-| `diagnose` | 运行证据命中机制并裁决替代解释 |
-| `optimize` | 同 fingerprint 的单变量 A/B、语义 oracle 和 guard 全过 |
-| `guard` | 闭合指标、workload、门槛来源和失败动作 |
+| `explain` | 解释已有 artifact 的含义、适用范围与不能推出的结论 |
+| `establish-baseline` | 建立可重放 workload、采样命令、原始记录与有效性检查 |
+| `diagnose` | 用运行证据区分限制机制与替代解释 |
+| `optimize` | 单变量 A/B、同语义 oracle、guard 与改善判定成立 |
+| `guard` | 把发布合同落实为可运行的门禁与失败动作 |
 
-不得把 `diagnose` 的热点、`explain` 的相关性或未来实验计划写成 `optimize` 已授权。
+仅解释一份采样或给发布复核意见时，不自动展开整套实验账本。首次基线和守卫不虚构优化候选。用户只要文件、以后运行时，交付完整文件及说明，标为“工具已准备，目标环境未运行”；不称数值基线或运行门禁已经验证。编写或复核工具时读[工具实现与验收](references/tool-delivery.md)。
 
-## 1. 冻结 Evidence card
+## 1. 冻结当前事实
 
-先记录：
+记录与结论有关的 revision、运行时/依赖、workload、测量边界及原始 artifact 定位。分析源码时先读点名入口和实际调用者，区分当前选中实现、相邻实现与测试替身。
 
-`revision/worktree | dependency/runtime | 点名入口的 literal signature + locator | actual callers | selected vs adjacent implementation | capacity/batch/concurrency/output/error boundaries`
+- 静态事实、运行观测、已有采样与假设分开；依赖/运行时事实注明所属来源，不能归成目标源码事实。
+- 状态、容量、索引、字节数或调用顺序影响结论时，按字面操作数复算旧值到新值，不用模糊名称代替实际关系。
+- 缺关键材料时标未知并给最小判别动作，不编造运行记录或已确认瓶颈。
 
-- 点名对象可读时必须先读；相邻能力、文档和未来测试不能改写当前实现。
-- 静态阅读只产生源码事实和待测机制假设，不产生瓶颈或收益结论。
-- 涉及状态、容量、索引、字节数或调用次序时，建立**字面状态转移表**：逐式抄录操作数、代入旧值并算出新值；例如表达式为 `new = old + 2*old` 时必须记录 `new = 3*old`，不得用“倍增”等模糊词替代。
-- 为每个结论标明 owner 与证据类型：`SOURCE | TEST_OBSERVATION | RUNTIME_ARTIFACT | ASSUMPTION`。依赖或运行时事实不能归到目标仓源码。
+## 2. 候选语义门（有候选或审查测试时）
 
-## 2. 建立单 Delta dossier
+按[证据合同](references/evidence-contract.md)记录单 delta 的机制、触碰边界与受保护行为。先从当前契约和 baseline 刻画期望，再对 candidate 施加同一 oracle。
 
-一次只研究一个 delta。按 [证据合同](references/evidence-contract.md) 填写：
+按实际触碰面保护：内容/基数、顺序/重复、身份/别名/可变性、时间/可见性/副作用、空值/未知、错误/partial/恢复，以及配置输出/元数据。配置分支使用实际参数值；缓存/并发另核对完整 key、所有权、失效和 waiter 错误/取消。
 
-`mechanism | delta fingerprint | touched boundaries | protected semantics | baseline characterization | minimum counterexample | mutant sensitivity | state`
+- 等价性门应当 baseline 通过、错误候选失败、等价副本通过。错误行为的快照只作诊断，不得要求候选继续与正确值不同；“测试全绿”必须能表示候选满足契约。
+- 用能改变受保护行为的代表性 mutant 检查 oracle 敏感性；已有失败候选可作反例，不为每条断言重复造一套 mutant。通过 mutant 自检不等于候选通过。
+- 规范化只适用于契约允许无序或忽略的部分，不能抹掉受保护差异。语言/库的边界语义从源码、文档或最小运行核实，避免混淆不同类型的同名 API。
+- 需要改变公开契约、责任边界或多变量结构时，明确这是设计变更，再按用户范围处理或交接，不能称同语义优化。
 
-状态初始固定为 `EXPERIMENT_REQUIRED`。
+## 3. 冻结测量合同（需要采样或比较时）
 
-### Baseline-first oracle
+分开保存两类信息，详见[实验合同](references/experiment-contract.md)：
 
-先用当前实现刻画 oracle，再验证候选；不得把候选希望得到的行为反写成基线契约。
+- **受控条件**：deps/runtime、实际 config/mode、输入/seed、请求或 reader 分片、计时边界、重置/预热、runner、样本计划与统计方法。
+- **版本身份**：各侧 revision/代码哈希、声明的比较轴；run ID、时间戳与产物路径作来源元数据。
 
-对适用项逐一保护：
+比较轴可以不同，其他决定实验含义的条件须一致；不要求 baseline/candidate 的 revision 相等。同一侧的 characterization、oracle 和测量绑定该侧版本；mutant 单独登记派生关系。比较器核对必需字段和实际值，不能只比矩阵名称，也不能因两侧都缺字段就放行。
 
-`content/cardinality | ordering/duplicates | identity/aliasing/mutability | time/visibility | state/side-effect sequence | empty/unknown | error/partial/recovery | configured output/metadata`
+合同还应包括：适用 workload/配置/错误矩阵；微基准、组件与端到端边界；可重放顺序与原始样本；匹配假设的 wall、CPU、allocation/RSS/竞争指标；采样前确定的门槛、来源、预算和停止动作。Profile 用于机制归因，最终性能比较关闭额外诊断。既有发布合同要求的统计量与边界优先，不能擅自改成另一套收益标准。
 
-- 配置、模式或分支必须列成可枚举矩阵，不得用“生产/调试”“常规/边界”等标签压缩不同语义分支。
-- 缓存/并发另列 key 的全部身份与版本维度、对象所有权、失效、waiter error/cancellation。
-- 每个 oracle 至少配一个故意改变受保护语义的 mutant；mutant 没有失败，说明 oracle 无敏感性，不能进入收益比较。
-- 排序、去重、解析后比较或其他规范化若抹掉受保护差异，直接 `REJECT` 该 oracle。
-- 需要改变公开/默认契约、责任边界或数据结构的候选交给 design-solution；不得包装成“同语义性能优化”。
+症状到工具的选择见[Profiler 证据分流](references/profiler-routing.md)，需要完整分析时读[性能证据闭环](references/performance-workflow.md)，栈语义按需读[栈笔记](references/stack-notes.md)。
 
-## 3. 冻结 Measurement contract
+## 4. 证据决定结论强度
 
-每一对 baseline/candidate 都引用同一份可机读 fingerprint：
+只有采用优化候选的裁决才需要闭合：`baseline characterization → 同一 oracle + 敏感性反例 → 同受控条件的 A/B 原始样本 → guards`。
 
-`revision + deps + runtime + config/mode + input/seed + request/reader chunking + measurement boundary + reset/warmup + runner + single delta`
-
-合同必须包含：
-
-1. 完整 workload × 配置/模式/错误分支矩阵。
-2. 分开的微基准、组件边界、端到端边界；任何一层的差量不得外推到另一层。
-3. 同输入、同进程或可证明等价隔离下的交替配对顺序，以及每对原始样本。
-4. wall-time、CPU、allocation/RSS/竞争等与假设匹配的指标；profile 只用于机制归因，最终 A/B 关闭诊断。
-5. 采样前登记的噪声、改善、回归和停止门槛，并写明门槛来源；没有来源就把门槛作为待确定实验变量。
-6. 任一 fingerprint 不同、baseline characterization 失败、mutant 未失败、oracle 失败或样本失效时的 `REMEASURE/REJECT/RESTORE` 动作。
-
-症状到 profiler 的选择见[Profiler 证据分流](references/profiler-routing.md)；通用实验细节见[实验合同](references/experiment-contract.md)；需要完整流程时读[性能证据闭环](references/performance-workflow.md)；具体技术栈语义按需读[栈笔记](references/stack-notes.md)。
-
-## 4. 只由 artifact 链裁决
-
-每个 verdict 都必须回链同一 delta、完全相同 fingerprint 的三类 artifact：
-
-`baseline characterization | semantic oracle + mutant result | paired A/B raw samples`
-
-只选一个：
-
-- `ACCEPT`：机制命中、baseline 与 mutant 门通过、全部 oracle 通过、同合同 A/B 在预登记门槛内改善。
-- `REJECT`：机制、语义或收益被反证。
-- `RESTORE`：已应用候选触发撤销条件。
+- `ACCEPT`：机制、语义和 guards 成立，同合同测量达到预登记改善标准；只覆盖已证明 workload/environment。
+- `REJECT`：候选已被语义、机制或有效测量反证。
+- `RESTORE`：已应用的候选触发撤销条件。
 - `REMEASURE`：可比性、噪声或样本无效。
-- `EVIDENCE_REQUIRED`：尚无足够运行证据。
+- `EVIDENCE_REQUIRED`：缺少决定性证据。
 
-只有 `ACCEPT` 可给实施步骤、参数、优先级、收益范围和 guard，且只能覆盖已证明 workload/environment。其余 verdict 只写下一判别动作；摘要和结尾也不得升级语气。
+没有 `ACCEPT` 仍可交付已授权工具、纠错要求、实验参数和有证据的调查方向；不得把它们写成已证实收益或上线放行。已有热点可支持调查方向，不能换算实际收益或跨测量边界外推。其余模式按各自完成边界说明“已解释、工具已准备、基线已实测”等真实状态，不强套候选裁决。
 
-## 5. 交付结构
+## 5. 交付
 
-按顺序输出：
+先给用户所需的成品和决定性依据，篇幅随任务：
 
-1. `verdict + proven scope + 最大未验证项`
-2. Evidence card 与字面状态转移
-3. Delta dossier 与语义矩阵
-4. 已测 artifact 链；若缺失则给最小可复跑实验合同
-5. 候选账本（保留被反证候选）
-6. 仅 `ACCEPT` 的实施、guard、撤销条件；否则明确不授权
+- 一段可转发解释：直接给这一段，只留改变结论的关键数字、依据和外推限制，不展开完整账目或所有极端假设；不附固定口号、角色标签、证据卡或完整实验合同，除非用户需要。
+- 工具：完整文件、入口/依赖、结果位置、失败状态与真实验证范围；内部验收不堆进使用流程。
+- 完整候选比较：结论及范围、证据定位、单 delta 与语义矩阵、实测原始记录/限制、被反证候选、实施或下一判别动作，以及 guard/恢复条件。
 
-交付前检查：
-
-- 每个实现性陈述是否来自 `ACCEPT` 字段，而不是凭措辞扫描推断？
-- 每个数值是否有同 fingerprint 的 raw pair？
-- 每个 oracle 是否先通过 baseline、再击中 mutant？
-- 每个配置、身份、错误和时间分支是否显式入矩阵？
-- 每个算术/状态结论是否能从字面操作数逐式复算？
-- 篇幅不足时是否删叙述而保留 evidence、oracle、raw artifact 与限制，并以 `PARTIAL` 收口？
-
-任一项不过，回到对应阶段；不得靠更保守的语气掩盖缺失 artifact。
+内部复核适用项：结论来源可定位、数字可复算、oracle 正反方向正确、比较条件有效、原始样本未丢、状态不超证据。发现缺口回到对应步骤；不能靠保守措辞或完整格式掩盖缺失证据。空间不足时保留决定性证据与限制并完整收口，不留半截文件或表格。
 
 ## 交接
 
-- 可接收 analyze-codebase 的现状路径证据，但仍须核验本题状态、容量和运行配置。
-- 需要改公开契约、责任边界或多变量结构时，把已确认瓶颈、失败 oracle 和 proven scope 交给 design-solution。
-- 复杂任务需要独立反证时，按[多角色性能协议](references/multi-agent-performance-protocol.md)执行；无独立上下文则标 `DEGRADED_SEQUENTIAL`。
+可接收代码分析给出的路径证据，仍核验本题状态与运行配置。复杂、高影响且存在未决反证的任务，可按[多角色性能协议](references/multi-agent-performance-protocol.md)组织复核；没有独立上下文则如实说明，简单任务不强制多角色或展示降级标签。需要设计变更时交付已确认瓶颈、失败 oracle 与适用范围，不把其他可选 Skill 当成必需依赖。
